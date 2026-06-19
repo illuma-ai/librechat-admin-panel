@@ -16,8 +16,10 @@ import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as AppHelpRouteImport } from './routes/_app/help'
 import { Route as AppGrantsRouteImport } from './routes/_app/grants'
 import { Route as AppAccessRouteImport } from './routes/_app/access'
+import { Route as AppTracesIndexRouteImport } from './routes/_app/traces.index'
 import { Route as AppConfigurationIndexRouteImport } from './routes/_app/configuration/index'
 import { Route as AuthOpenidCallbackRouteImport } from './routes/auth/openid/callback'
+import { Route as AppTracesTraceIdRouteImport } from './routes/_app/traces.$traceId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -53,6 +55,11 @@ const AppAccessRoute = AppAccessRouteImport.update({
   path: '/access',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTracesIndexRoute = AppTracesIndexRouteImport.update({
+  id: '/traces/',
+  path: '/traces/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppConfigurationIndexRoute = AppConfigurationIndexRouteImport.update({
   id: '/configuration/',
   path: '/configuration/',
@@ -63,6 +70,11 @@ const AuthOpenidCallbackRoute = AuthOpenidCallbackRouteImport.update({
   path: '/auth/openid/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTracesTraceIdRoute = AppTracesTraceIdRouteImport.update({
+  id: '/traces/$traceId',
+  path: '/traces/$traceId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -71,8 +83,10 @@ export interface FileRoutesByFullPath {
   '/grants': typeof AppGrantsRoute
   '/help': typeof AppHelpRoute
   '/users': typeof AppUsersRoute
+  '/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/configuration/': typeof AppConfigurationIndexRoute
+  '/traces/': typeof AppTracesIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/help': typeof AppHelpRoute
   '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
+  '/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/configuration': typeof AppConfigurationIndexRoute
+  '/traces': typeof AppTracesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/_app/help': typeof AppHelpRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/_app/configuration/': typeof AppConfigurationIndexRoute
+  '/_app/traces/': typeof AppTracesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,8 +123,10 @@ export interface FileRouteTypes {
     | '/grants'
     | '/help'
     | '/users'
+    | '/traces/$traceId'
     | '/auth/openid/callback'
     | '/configuration/'
+    | '/traces/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -115,8 +135,10 @@ export interface FileRouteTypes {
     | '/help'
     | '/users'
     | '/'
+    | '/traces/$traceId'
     | '/auth/openid/callback'
     | '/configuration'
+    | '/traces'
   id:
     | '__root__'
     | '/_app'
@@ -126,8 +148,10 @@ export interface FileRouteTypes {
     | '/_app/help'
     | '/_app/users'
     | '/_app/'
+    | '/_app/traces/$traceId'
     | '/auth/openid/callback'
     | '/_app/configuration/'
+    | '/_app/traces/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -187,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccessRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/traces/': {
+      id: '/_app/traces/'
+      path: '/traces'
+      fullPath: '/traces/'
+      preLoaderRoute: typeof AppTracesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/configuration/': {
       id: '/_app/configuration/'
       path: '/configuration'
@@ -201,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthOpenidCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/traces/$traceId': {
+      id: '/_app/traces/$traceId'
+      path: '/traces/$traceId'
+      fullPath: '/traces/$traceId'
+      preLoaderRoute: typeof AppTracesTraceIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -210,7 +248,9 @@ interface AppRouteChildren {
   AppHelpRoute: typeof AppHelpRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppTracesTraceIdRoute: typeof AppTracesTraceIdRoute
   AppConfigurationIndexRoute: typeof AppConfigurationIndexRoute
+  AppTracesIndexRoute: typeof AppTracesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -219,7 +259,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppHelpRoute: AppHelpRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
+  AppTracesTraceIdRoute: AppTracesTraceIdRoute,
   AppConfigurationIndexRoute: AppConfigurationIndexRoute,
+  AppTracesIndexRoute: AppTracesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
