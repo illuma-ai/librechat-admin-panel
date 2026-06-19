@@ -9,7 +9,9 @@ import tailwindcss from '@tailwindcss/vite'
 const config = defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [
-    devtools(),
+    // TanStack Devtools binds a fixed event-bus port (42069); allow disabling it
+    // so a second dev instance can run alongside the primary one.
+    ...(process.env.DISABLE_TANSTACK_DEVTOOLS === '1' ? [] : [devtools()]),
     tailwindcss(),
     ...(process.env.VITEST ? [] : [tanstackStart()]),
     viteReact(),

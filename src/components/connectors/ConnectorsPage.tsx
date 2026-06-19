@@ -10,7 +10,9 @@ import {
   setConnectorCredentialsFn,
   triggerConnectorSyncFn,
 } from '@/server';
+import { isOAuthConnectable } from '@/constants';
 import { useLocalize } from '@/hooks';
+import { ConnectorConnectButton } from './ConnectorConnectButton';
 
 const EMPTY_CREATE: t.CreateConnectorInput = { source: '', name: '', tenantId: '' };
 const EMPTY_CREDS = { tenantId: '', clientId: '', clientSecret: '' };
@@ -114,6 +116,9 @@ export function ConnectorsPage() {
                 <td className="py-2 pr-3">{connector.tenantId ?? '—'}</td>
                 <td className="py-2 pr-3">{connector.status}</td>
                 <td className="flex justify-end gap-2 py-2">
+                  {isOAuthConnectable(connector.source) ? (
+                    <ConnectorConnectButton id={connector.id} source={connector.source} />
+                  ) : null}
                   <Button
                     type="secondary"
                     label={localize('com_connectors_credentials')}

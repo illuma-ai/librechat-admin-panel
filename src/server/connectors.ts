@@ -132,6 +132,37 @@ export const deleteConnectorFn = createServerFn({ method: 'POST' })
     }
   });
 
+export const getConnectorOAuthTicketFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ id: z.string(), source: z.string() }))
+  .handler(
+    async ({
+      data,
+    }: {
+      data: { id: string; source: string };
+    }): Promise<t.ConnectorOAuthTicket> => {
+      const response = await apiFetch(
+        `/api/admin/connectors/${encodeURIComponent(data.id)}/oauth/ticket?source=${encodeURIComponent(data.source)}`,
+        { method: 'POST' },
+      );
+      if (!response.ok) {
+        return extractApiError(response, 'Failed to start OAuth authorization');
+      }
+      return (await response.json()) as t.ConnectorOAuthTicket;
+    },
+  );
+
+export const getConnectorOAuthStatusFn = createServerFn({ method: 'GET' })
+  .inputValidator(z.object({ id: z.string() }))
+  .handler(async ({ data }: { data: { id: string } }): Promise<t.ConnectorOAuthStatus> => {
+    const response = await apiFetch(
+      `/api/admin/connectors/${encodeURIComponent(data.id)}/oauth/status`,
+    );
+    if (!response.ok) {
+      return extractApiError(response, 'Failed to fetch OAuth status');
+    }
+    return (await response.json()) as t.ConnectorOAuthStatus;
+  });
+
 export const connectorsQueryOptions = queryOptions({
   queryKey: ['connectors'],
   queryFn: () => getConnectorsFn(),

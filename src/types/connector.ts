@@ -35,3 +35,13 @@ export interface CreateConnectorInput {
   accessType?: string;
   config?: ConnectorConfig;
 }
+
+/** Short-lived signed ticket used to start the OAuth consent flow in a popup. */
+export interface ConnectorOAuthTicket {
+  ticket: string;
+}
+
+/** Whether a connector currently holds a valid OAuth grant. */
+export interface ConnectorOAuthStatus {
+  connected: boolean;
+}
