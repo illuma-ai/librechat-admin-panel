@@ -1,5 +1,5 @@
 import type { TUser } from 'librechat-data-provider';
-import { Avatar } from '@/components/shared';
+import { getInitials } from '@/utils';
 
 interface UserCellProps {
   user?: TUser;
@@ -7,9 +7,10 @@ interface UserCellProps {
 }
 
 /**
- * Resolve a trace's `user_id` to the real LibreChat user — avatar image when the
- * user has one, otherwise initials — plus name/email. Falls back to the raw id
- * for users not found (e.g. system or external producers).
+ * Resolve a trace's `user_id` to the real user — a circular avatar (photo or
+ * initials) plus name/email. The avatar is a fixed-size circle that never
+ * distorts (object-cover on images, centered initials otherwise). Falls back to
+ * the raw id for users not found (system/external producers).
  */
 export function UserCell({ user, fallback }: UserCellProps) {
   if (!user) {
@@ -18,15 +19,18 @@ export function UserCell({ user, fallback }: UserCellProps) {
   const display = user.name || user.email || fallback;
   return (
     <span className="flex min-w-0 items-center gap-2">
-      {user.avatar ? (
-        <img
-          src={user.avatar}
-          alt={display}
-          className="h-6 w-6 shrink-0 rounded-full object-cover"
-        />
-      ) : (
-        <Avatar name={display} size="sm" />
-      )}
+      <span className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-(--cui-color-background-accent-muted,#e5e7eb) text-[11px] font-semibold text-(--cui-color-text-default)">
+        {user.avatar ? (
+          <img
+            src={user.avatar}
+            alt={display}
+            className="size-full rounded-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          getInitials(display)
+        )}
+      </span>
       <span className="flex min-w-0 flex-col">
         <span className="truncate text-sm text-(--cui-color-text-default)">{display}</span>
         {user.name && user.email ? (

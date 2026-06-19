@@ -23,6 +23,12 @@ export interface TracesPage {
   total: number;
 }
 
+/** A normalized chat message extracted from a producer's serialized I/O. */
+export interface TraceMessage {
+  role: 'user' | 'assistant' | 'system' | 'tool' | 'unknown';
+  text: string;
+}
+
 /** One observation in a trace, as a node in the span tree. */
 export interface ObservationNode {
   id: string;
@@ -40,6 +46,9 @@ export interface ObservationNode {
   level: string;
   input: string;
   output: string;
+  /** Server-parsed chat messages from `input`/`output` (empty when not chat-shaped). */
+  inputMessages: TraceMessage[];
+  outputMessages: TraceMessage[];
   usageDetails: Record<string, number>;
   costDetails: Record<string, number>;
   children: ObservationNode[];
@@ -64,6 +73,12 @@ export interface TraceHeader {
 export interface TraceDetail {
   trace: TraceHeader;
   observations: ObservationNode[];
+  /** Request → response conversation derived from the root observation's I/O. */
+  conversation: TraceMessage[];
+  /** Primary model used in the trace (from its generation observations). */
+  model: string;
+  /** Wall-clock duration of the trace (root span span). */
+  latencyMs: number;
   totalCost: number;
   totalTokens: number;
   observationCount: number;

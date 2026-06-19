@@ -10,7 +10,13 @@ import { z } from 'zod';
 import { queryOptions } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import type * as t from '@/types';
-import { buildTree, rangeClause, toNumber } from './traces.logic';
+import {
+  buildTree,
+  deriveConversation,
+  extractMessages,
+  rangeClause,
+  toNumber,
+} from './traces.logic';
 import { chQuery } from './utils/clickhouse';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -186,26 +192,46 @@ export const getTraceFn = createServerFn({ method: 'GET' })
       params,
     );
 
-    const flat: t.ObservationNode[] = obsRows.map((r) => ({
-      id: String(r.id ?? ''),
-      parentId: String(r.parentId ?? ''),
-      type: String(r.type ?? 'span'),
-      name: String(r.name ?? ''),
-      model: String(r.model ?? ''),
-      startTime: String(r.startTime ?? ''),
-      endTime: String(r.endTime ?? ''),
-      latencyMs: toNumber(r.latencyMs),
-      inputTokens: toNumber(r.inputTokens),
-      outputTokens: toNumber(r.outputTokens),
-      totalTokens: toNumber(r.totalTokens),
-      totalCost: toNumber(r.totalCost),
-      level: String(r.level ?? ''),
-      input: String(r.input ?? ''),
-      output: String(r.output ?? ''),
-      usageDetails: (r.usageDetails as Record<string, number>) ?? {},
-      costDetails: (r.costDetails as Record<string, number>) ?? {},
-      children: [],
-    }));
+    const flat: t.ObservationNode[] = obsRows.map((r) => {
+      const input = String(r.input ?? '');
+      const output = String(r.output ?? '');
+      return {
+        id: String(r.id ?? ''),
+        parentId: String(r.parentId ?? ''),
+        type: String(r.type ?? 'span'),
+        name: String(r.name ?? ''),
+        model: String(r.model ?? ''),
+        startTime: String(r.startTime ?? ''),
+        endTime: String(r.endTime ?? ''),
+        latencyMs: toNumber(r.latencyMs),
+        inputTokens: toNumber(r.inputTokens),
+        outputTokens: toNumber(r.outputTokens),
+        totalTokens: toNumber(r.totalTokens),
+        totalCost: toNumber(r.totalCost),
+        level: String(r.level ?? ''),
+        input,
+        output,
+        inputMessages: extractMessages(input),
+        outputMessages: extractMessages(output),
+        usageDetails: (r.usageDetails as Record<string, number>) ?? {},
+        costDetails: (r.costDetails as Record<string, number>) ?? {},
+        children: [],
+      };
+    });
+
+    const roots = buildTree(flat);
+    const traceInput = String(trace.input ?? '');
+    const traceOutput = String(trace.output ?? '');
+    // Producers leave trace-level I/O empty; the root observation's output holds the
+    // fullest exchange. Walk a priority list and use the first that yields messages.
+    const root = roots[0];
+    const generation = flat.find((o) => o.type === 'generation');
+    const conversation = deriveConversation([
+      traceOutput,
+      root?.output ?? '',
+      root?.input ?? '',
+      generation?.output ?? '',
+    ]);
 
     const tags = Array.isArray(trace.tags) ? (trace.tags as string[]) : [];
     return {
@@ -219,10 +245,13 @@ export const getTraceFn = createServerFn({ method: 'GET' })
         release: String(trace.release ?? ''),
         version: String(trace.version ?? ''),
         tags,
-        input: String(trace.input ?? ''),
-        output: String(trace.output ?? ''),
+        input: traceInput,
+        output: traceOutput,
       },
-      observations: buildTree(flat),
+      observations: roots,
+      conversation,
+      model: generation?.model ?? '',
+      latencyMs: root?.latencyMs ?? 0,
       observationCount: flat.length,
       totalCost: flat.reduce((sum, o) => sum + o.totalCost, 0),
       totalTokens: flat.reduce((sum, o) => sum + o.totalTokens, 0),

@@ -15,17 +15,21 @@ export function TraceDetailPage({ tenant, traceId }: TraceDetailPageProps) {
     <div
       role="region"
       aria-label={localize('com_traces_detail')}
-      className="flex flex-1 flex-col gap-5 overflow-auto p-6"
+      className="flex min-h-0 flex-1 flex-col"
     >
-      <Link
-        to="/traces"
-        search={{ tenant, q: '', range: 'all', page: 1, trace: '' }}
-        className="inline-flex w-fit items-center gap-1 text-sm text-(--cui-color-text-muted) no-underline hover:text-(--cui-color-text-default)"
-      >
-        <Icon name="chevron-left" size="sm" />
-        {localize('com_traces_back')}
-      </Link>
-      <TraceDetailContent tenant={tenant} traceId={traceId} />
+      <div className="px-6 pt-5 pb-3">
+        <Link
+          to="/traces"
+          search={{ tenant, q: '', range: 'all', page: 1, trace: '' }}
+          className="inline-flex w-fit items-center gap-1 text-sm text-(--cui-color-text-muted) no-underline hover:text-(--cui-color-text-default)"
+        >
+          <Icon name="chevron-left" size="sm" />
+          {localize('com_traces_back')}
+        </Link>
+      </div>
+      <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-(--cui-color-stroke-default)">
+        <TraceDetailContent tenant={tenant} traceId={traceId} />
+      </div>
     </div>
   );
 }

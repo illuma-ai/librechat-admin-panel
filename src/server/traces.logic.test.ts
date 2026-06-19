@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import type * as t from '@/types';
-import { buildTree, rangeClause, toNumber } from './traces.logic';
+import {
+  buildTree,
+  deriveConversation,
+  extractMessages,
+  messageText,
+  rangeClause,
+  toNumber,
+} from './traces.logic';
 
 function node(id: string, parentId = ''): t.ObservationNode {
   return {
@@ -19,6 +26,8 @@ function node(id: string, parentId = ''): t.ObservationNode {
     level: '',
     input: '',
     output: '',
+    inputMessages: [],
+    outputMessages: [],
     usageDetails: {},
     costDetails: {},
     children: [],
@@ -78,5 +87,92 @@ describe('buildTree', () => {
 
   it('returns an empty array for no observations', () => {
     expect(buildTree([])).toEqual([]);
+  });
+});
+
+describe('messageText', () => {
+  it('returns a plain string as-is', () => {
+    expect(messageText('hello')).toBe('hello');
+  });
+
+  it('joins the text of content blocks', () => {
+    expect(
+      messageText([
+        { type: 'text', text: 'a' },
+        { type: 'text', text: 'b' },
+      ]),
+    ).toBe('a\nb');
+  });
+
+  it('ignores non-text blocks and returns empty for other shapes', () => {
+    expect(messageText([{ type: 'image' }, { text: 'x' }])).toBe('x');
+    expect(messageText({ foo: 'bar' })).toBe('');
+    expect(messageText(null)).toBe('');
+  });
+});
+
+describe('extractMessages', () => {
+  it('parses plain {messages:[{role,content}]} payloads', () => {
+    const raw = JSON.stringify({
+      messages: [
+        { role: 'user', content: 'hi' },
+        { role: 'assistant', content: 'hello' },
+      ],
+    });
+    expect(extractMessages(raw)).toEqual([
+      { role: 'user', text: 'hi' },
+      { role: 'assistant', text: 'hello' },
+    ]);
+  });
+
+  it('infers roles from LangChain constructor ids and flattens block content', () => {
+    const raw = JSON.stringify({
+      messages: [
+        {
+          lc: 1,
+          type: 'constructor',
+          id: ['langchain_core', 'messages', 'HumanMessage'],
+          kwargs: { content: [{ type: 'text', text: 'What is 17 x 23?' }] },
+        },
+        {
+          lc: 1,
+          type: 'constructor',
+          id: ['langchain_core', 'messages', 'AIMessageChunk'],
+          kwargs: { content: '17 multiplied by 23 is **391**.' },
+        },
+      ],
+    });
+    expect(extractMessages(raw)).toEqual([
+      { role: 'user', text: 'What is 17 x 23?' },
+      { role: 'assistant', text: '17 multiplied by 23 is **391**.' },
+    ]);
+  });
+
+  it('accepts a bare array and a single message object', () => {
+    expect(extractMessages(JSON.stringify([{ role: 'system', content: 'sys' }]))).toEqual([
+      { role: 'system', text: 'sys' },
+    ]);
+    expect(extractMessages(JSON.stringify({ role: 'tool', content: 'out' }))).toEqual([
+      { role: 'tool', text: 'out' },
+    ]);
+  });
+
+  it('drops empty messages and returns [] for non-JSON or empty input', () => {
+    expect(extractMessages('')).toEqual([]);
+    expect(extractMessages('not json')).toEqual([]);
+    expect(
+      extractMessages(JSON.stringify({ messages: [{ role: 'user', content: '  ' }] })),
+    ).toEqual([]);
+  });
+});
+
+describe('deriveConversation', () => {
+  it('uses the first source that yields messages', () => {
+    const good = JSON.stringify({ messages: [{ role: 'user', content: 'hi' }] });
+    expect(deriveConversation(['', 'not json', good])).toEqual([{ role: 'user', text: 'hi' }]);
+  });
+
+  it('returns [] when no source has messages', () => {
+    expect(deriveConversation(['', '{}', '[]'])).toEqual([]);
   });
 });
