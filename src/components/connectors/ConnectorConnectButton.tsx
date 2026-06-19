@@ -3,6 +3,7 @@ import { Button } from '@clickhouse/click-ui';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getConnectorOAuthStatusFn, getConnectorOAuthTicketFn } from '@/server';
 import { useLocalize } from '@/hooks';
+import { StatusBadge } from './StatusBadge';
 
 const POLL_INTERVAL_MS = 2_000;
 const POLL_TIMEOUT_MS = 60_000;
@@ -68,17 +69,13 @@ export function ConnectorConnectButton({ id, source }: ConnectorConnectButtonPro
   useEffect(() => clearPollTimeout, []);
 
   if (connected) {
-    return (
-      <span className="inline-flex items-center text-sm text-green-600">
-        {localize('com_connectors_connected')}
-      </span>
-    );
+    return <StatusBadge variant="success" label={localize('com_connectors_connected')} />;
   }
 
   return (
     <div className="inline-flex flex-col items-end gap-1">
       <Button
-        type="secondary"
+        type="primary"
         iconLeft="key"
         label={
           polling ? localize('com_connectors_connecting') : localize('com_connectors_connect')
@@ -87,7 +84,9 @@ export function ConnectorConnectButton({ id, source }: ConnectorConnectButtonPro
         onClick={() => ticketMutation.mutate()}
       />
       {failed ? (
-        <span className="text-xs text-red-500">{localize('com_connectors_connect_failed')}</span>
+        <span className="text-xs text-(--cui-color-feedback-danger-fg)">
+          {localize('com_connectors_connect_failed')}
+        </span>
       ) : null}
     </div>
   );

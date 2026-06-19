@@ -10,9 +10,11 @@ import {
   setConnectorCredentialsFn,
   triggerConnectorSyncFn,
 } from '@/server';
-import { isOAuthConnectable } from '@/constants';
+import { getStatusVariant, isOAuthConnectable } from '@/constants';
 import { useLocalize } from '@/hooks';
 import { ConnectorConnectButton } from './ConnectorConnectButton';
+import { SourceIdentity } from './SourceIdentity';
+import { StatusBadge } from './StatusBadge';
 
 const EMPTY_CREATE: t.CreateConnectorInput = { source: '', name: '', tenantId: '' };
 const EMPTY_CREDS = { tenantId: '', clientId: '', clientSecret: '' };
@@ -84,11 +86,22 @@ export function ConnectorsPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-2 pr-1">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">{localize('com_connectors_title')}</h2>
+    <div
+      role="region"
+      aria-label={localize('com_connectors_title')}
+      className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto py-2 pr-1"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h2 className="text-lg font-semibold text-(--cui-color-text-default)">
+            {localize('com_connectors_title')}
+          </h2>
+          <p className="text-sm text-(--cui-color-text-muted)">
+            {localize('com_connectors_subtitle')}
+          </p>
+        </div>
         <Button
-          type="secondary"
+          type="primary"
           iconLeft="plus"
           label={localize('com_connectors_add')}
           onClick={() => setCreateOpen(true)}
@@ -98,47 +111,54 @@ export function ConnectorsPage() {
       {connectors.length === 0 ? (
         <EmptyState message={localize('com_connectors_empty')} />
       ) : (
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="py-2 pr-3">{localize('com_connectors_name')}</th>
-              <th className="py-2 pr-3">{localize('com_connectors_source')}</th>
-              <th className="py-2 pr-3">{localize('com_connectors_tenant')}</th>
-              <th className="py-2 pr-3">{localize('com_connectors_status')}</th>
-              <th className="py-2 pr-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {connectors.map((connector) => (
-              <tr key={connector.id} className="border-b">
-                <td className="py-2 pr-3">{connector.name}</td>
-                <td className="py-2 pr-3">{connector.source}</td>
-                <td className="py-2 pr-3">{connector.tenantId ?? '—'}</td>
-                <td className="py-2 pr-3">{connector.status}</td>
-                <td className="flex justify-end gap-2 py-2">
-                  {isOAuthConnectable(connector.source) ? (
-                    <ConnectorConnectButton id={connector.id} source={connector.source} />
-                  ) : null}
-                  <Button
-                    type="secondary"
-                    label={localize('com_connectors_credentials')}
-                    onClick={() => setCredsTarget(connector)}
-                  />
-                  <Button
-                    type="secondary"
-                    iconLeft="refresh"
-                    label={localize('com_connectors_sync')}
-                    onClick={() => syncMutation.mutate(connector.id)}
-                  />
-                  <TrashButton
-                    ariaLabel={localize('com_connectors_delete')}
-                    onClick={() => setDeleteTarget(connector)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ul className="flex flex-col gap-3">
+          {connectors.map((connector) => (
+            <li
+              key={connector.id}
+              className="flex flex-wrap items-center gap-4 rounded-xl border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) px-4 py-3.5 transition-colors hover:bg-(--cui-color-background-hover)"
+            >
+              <div className="min-w-[12rem] flex-1">
+                <SourceIdentity source={connector.source} name={connector.name} />
+              </div>
+
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-medium tracking-wide text-(--cui-color-text-muted) uppercase">
+                  {localize('com_connectors_tenant')}
+                </span>
+                <span className="text-sm text-(--cui-color-text-default)">
+                  {connector.tenantId || localize('com_connectors_tenant_none')}
+                </span>
+              </div>
+
+              <StatusBadge
+                variant={getStatusVariant(connector.status)}
+                label={connector.status}
+              />
+
+              <div className="ml-auto flex items-center gap-2">
+                {isOAuthConnectable(connector.source) ? (
+                  <ConnectorConnectButton id={connector.id} source={connector.source} />
+                ) : null}
+                <Button
+                  type="secondary"
+                  iconLeft="key"
+                  label={localize('com_connectors_credentials')}
+                  onClick={() => setCredsTarget(connector)}
+                />
+                <Button
+                  type="secondary"
+                  iconLeft="refresh"
+                  label={localize('com_connectors_sync')}
+                  onClick={() => syncMutation.mutate(connector.id)}
+                />
+                <TrashButton
+                  ariaLabel={localize('com_connectors_delete_named', { name: connector.name })}
+                  onClick={() => setDeleteTarget(connector)}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
 
       <FormDialog
@@ -153,7 +173,7 @@ export function ConnectorsPage() {
       >
         <TextField
           label={localize('com_connectors_source')}
-          placeholder="sharepoint | gmail | outlook | teams | google_drive | github"
+          placeholder={localize('com_connectors_source_placeholder')}
           value={createForm.source}
           onChange={(value) => setCreateForm((prev) => ({ ...prev, source: value }))}
         />
@@ -167,7 +187,7 @@ export function ConnectorsPage() {
           value={createForm.tenantId ?? ''}
           onChange={(value) => setCreateForm((prev) => ({ ...prev, tenantId: value }))}
         />
-        {error ? <p className="text-sm text-red-500">{error}</p> : null}
+        {error ? <p className="text-sm text-(--cui-color-feedback-danger-fg)">{error}</p> : null}
       </FormDialog>
 
       <FormDialog
@@ -196,7 +216,7 @@ export function ConnectorsPage() {
           value={creds.clientSecret}
           onChange={(value) => setCreds((prev) => ({ ...prev, clientSecret: value }))}
         />
-        {error ? <p className="text-sm text-red-500">{error}</p> : null}
+        {error ? <p className="text-sm text-(--cui-color-feedback-danger-fg)">{error}</p> : null}
       </FormDialog>
 
       <FormDialog
