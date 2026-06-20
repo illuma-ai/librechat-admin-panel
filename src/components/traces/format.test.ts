@@ -4,6 +4,8 @@ import {
   formatIntervalSeconds,
   formatLatency,
   formatTime,
+  formatTimestamp,
+  formatTimestampLong,
   formatTokenCounts,
   formatTokens,
   observationBadgeState,
@@ -25,6 +27,32 @@ describe('formatTime', () => {
 
   it('echoes the raw value when unparseable', () => {
     expect(formatTime('not-a-date')).toBe('not-a-date');
+  });
+});
+
+describe('formatTimestamp (Langfuse table date)', () => {
+  it('renders local `YYYY-MM-DD HH:mm:ss` with no milliseconds', () => {
+    expect(formatTimestamp('2026-06-19 04:37:35.123')).toMatch(
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
+    );
+  });
+
+  it('returns an em dash for empty and echoes unparseable input', () => {
+    expect(formatTimestamp('')).toBe('—');
+    expect(formatTimestamp('not-a-date')).toBe('not-a-date');
+  });
+});
+
+describe('formatTimestampLong (Langfuse detail date)', () => {
+  it('renders local `YYYY-MM-DD HH:mm:ss.SSS` with millisecond precision', () => {
+    expect(formatTimestampLong('2026-06-19 04:37:35.007')).toMatch(
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$/,
+    );
+    expect(formatTimestampLong('2026-06-19 04:37:35.007')).toMatch(/\.007$/);
+  });
+
+  it('returns an em dash for empty input', () => {
+    expect(formatTimestampLong('')).toBe('—');
   });
 });
 

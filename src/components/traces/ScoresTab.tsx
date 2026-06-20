@@ -1,5 +1,5 @@
 import { useLocalize } from '@/hooks';
-import { formatTime } from './format';
+import { formatTimestamp } from './format';
 
 /**
  * A feedback/eval score attached to a trace.
@@ -78,7 +78,7 @@ export function ScoresTab({ scores }: ScoresTabProps) {
               {score.comment ?? ''}
             </span>
             <span className="w-1/5 truncate text-right text-(--cui-color-text-muted)">
-              {formatTime(score.timestamp)}
+              {formatTimestamp(score.timestamp)}
             </span>
           </div>
         ))}

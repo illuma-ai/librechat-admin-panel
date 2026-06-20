@@ -8,7 +8,7 @@ import { TracingShell } from './TracingShell';
 import { SessionDrawer } from './SessionDrawer';
 import { useTracingTenant } from './useTracingTenant';
 import { EnvBadge } from './cells';
-import { formatCost, formatLatency, formatTime, formatTokens } from './format';
+import { formatCost, formatLatency, formatTimestamp, formatTokens } from './format';
 
 interface SessionsPageProps {
   tenant: string;
@@ -65,7 +65,7 @@ export function SessionsPage({
       id: 'timestamp',
       header: localize('com_traces_col_time'),
       width: 160,
-      render: (r) => formatTime(r.timestamp),
+      render: (r) => formatTimestamp(r.timestamp),
     },
     {
       id: 'traces',

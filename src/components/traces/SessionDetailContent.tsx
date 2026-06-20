@@ -8,7 +8,7 @@ import { sessionDetailQueryOptions } from '@/server/sessionDetail';
 import { DataTable } from './DataTable';
 import type { DataTableColumn } from './DataTable';
 import { EnvBadge, IOPreviewCell, TokenBadge } from './cells';
-import { formatCost, formatLatency, formatTime, formatTokens } from './format';
+import { formatCost, formatLatency, formatTimestamp, formatTokens } from './format';
 
 interface SessionDetailContentProps {
   tenant: string;
@@ -52,9 +52,9 @@ export function SessionDetailContent({
   const columns: DataTableColumn<t.TraceListItem>[] = [
     {
       id: 'timestamp',
-      header: localize('com_traces_col_time'),
+      header: localize('com_traces_col_timestamp'),
       width: 160,
-      render: (r) => formatTime(r.timestamp),
+      render: (r) => formatTimestamp(r.timestamp),
     },
     {
       id: 'name',

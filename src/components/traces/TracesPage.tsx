@@ -23,7 +23,7 @@ import {
   TagsCell,
   TokenBadge,
 } from './cells';
-import { formatCost, formatLatency, formatTime, formatTokens } from './format';
+import { formatCost, formatLatency, formatTimestamp, formatTokens } from './format';
 
 interface TracesPageProps {
   tenant: string;
@@ -96,9 +96,9 @@ export function TracesPage({
   const columns: DataTableColumn<t.TraceListItem>[] = [
     {
       id: 'timestamp',
-      header: localize('com_traces_col_time'),
+      header: localize('com_traces_col_timestamp'),
       width: 150,
-      render: (r) => formatTime(r.timestamp),
+      render: (r) => formatTimestamp(r.timestamp),
     },
     {
       id: 'name',

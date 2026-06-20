@@ -1194,6 +1194,8 @@
   "com_traces_output": "Output",
   "com_traces_not_found_desc": "Trace not found for this tenant.",
   "com_traces_col_time": "Time",
+  "com_traces_col_timestamp": "Timestamp",
+  "com_traces_col_start_time": "Start Time",
   "com_traces_col_name": "Name",
   "com_traces_col_user": "User",
   "com_traces_user_id": "User ID",

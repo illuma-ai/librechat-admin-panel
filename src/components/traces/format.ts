@@ -11,16 +11,25 @@ export function formatTime(value: string): string {
   return Number.isNaN(d.getTime()) ? value : d.toLocaleString();
 }
 
+const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+
+/** Langfuse table timestamp — local `YYYY-MM-DD HH:mm:ss` (no milliseconds). */
+export function formatTimestamp(value: string): string {
+  if (!value) return '—';
+  const d = parseChDate(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+    `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  );
+}
+
 /** Langfuse detail timestamp — local `YYYY-MM-DD HH:mm:ss.SSS` with millisecond precision. */
 export function formatTimestampLong(value: string): string {
   if (!value) return '—';
   const d = parseChDate(value);
   if (Number.isNaN(d.getTime())) return value;
-  const p = (n: number, len = 2) => String(n).padStart(len, '0');
-  return (
-    `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ` +
-    `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`
-  );
+  return `${formatTimestamp(value)}.${pad(d.getMilliseconds(), 3)}`;
 }
 
 /** Langfuse `usdFormatter` — USD currency, 2–6 fraction digits. */

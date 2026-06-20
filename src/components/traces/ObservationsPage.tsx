@@ -11,7 +11,7 @@ import { ColumnsMenu } from './ColumnsMenu';
 import { useTracingTenant } from './useTracingTenant';
 import { useColumnVisibility } from './useColumnVisibility';
 import { EnvBadge, MetadataCell, ModelCell, TokenBadge, TypeCell } from './cells';
-import { formatCost, formatLatency, formatTime, formatTokens } from './format';
+import { formatCost, formatLatency, formatTimestamp, formatTokens } from './format';
 
 interface ObservationsPageProps {
   tenant: string;
@@ -59,7 +59,7 @@ export function ObservationsPage({
       id: 'startTime',
       header: localize('com_traces_col_start_time'),
       width: 160,
-      render: (r) => formatTime(r.startTime),
+      render: (r) => formatTimestamp(r.startTime),
     },
     {
       id: 'type',
