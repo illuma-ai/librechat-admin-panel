@@ -14,6 +14,11 @@ interface SessionsSearch {
   /** Facet filters — a session matches if it contains a trace with these. */
   env: string[];
   user: string[];
+  /** Numeric range filters on the session aggregate (summed tokens / cost). */
+  tokMin?: number;
+  tokMax?: number;
+  costMin?: number;
+  costMax?: number;
 }
 
 function parseRange(value: unknown): t.TraceRange {
@@ -26,6 +31,11 @@ function parseStrArray(value: unknown): string[] {
   return [];
 }
 
+function parseNum(value: unknown): number | undefined {
+  const n = Number(value);
+  return Number.isFinite(n) && value !== '' && value !== null ? n : undefined;
+}
+
 export const Route = createFileRoute('/_app/sessions')({
   validateSearch: (search: Record<string, unknown>): SessionsSearch => ({
     tenant: typeof search.tenant === 'string' ? search.tenant : '',
@@ -35,12 +45,17 @@ export const Route = createFileRoute('/_app/sessions')({
     session: typeof search.session === 'string' ? search.session : '',
     env: parseStrArray(search.env),
     user: parseStrArray(search.user),
+    tokMin: parseNum(search.tokMin),
+    tokMax: parseNum(search.tokMax),
+    costMin: parseNum(search.costMin),
+    costMax: parseNum(search.costMax),
   }),
   component: SessionsRoute,
 });
 
 function SessionsRoute() {
-  const { tenant, q, range, page, session, env, user } = Route.useSearch();
+  const { tenant, q, range, page, session, env, user, tokMin, tokMax, costMin, costMax } =
+    Route.useSearch();
   const navigate = useNavigate({ from: '/sessions' });
 
   return (
@@ -51,7 +66,18 @@ function SessionsRoute() {
       page={page}
       pageSize={PAGE_SIZE}
       selectedSessionId={session || null}
-      filters={{ environment: env, userId: user, name: [], type: [], level: [], tags: [] }}
+      filters={{
+        environment: env,
+        userId: user,
+        name: [],
+        type: [],
+        level: [],
+        tags: [],
+        tokensMin: tokMin,
+        tokensMax: tokMax,
+        costMin,
+        costMax,
+      }}
       onTenant={(value) =>
         navigate({
           search: { tenant: value, q: '', range, page: 1, session: '', env: [], user: [] },
@@ -66,6 +92,10 @@ function SessionsRoute() {
             ...prev,
             env: patch.environment ?? prev.env,
             user: patch.userId ?? prev.user,
+            tokMin: 'tokensMin' in patch ? patch.tokensMin : prev.tokMin,
+            tokMax: 'tokensMax' in patch ? patch.tokensMax : prev.tokMax,
+            costMin: 'costMin' in patch ? patch.costMin : prev.costMin,
+            costMax: 'costMax' in patch ? patch.costMax : prev.costMax,
             page: 1,
           }),
         })

@@ -479,8 +479,22 @@ export const getSessionsFn = createServerFn({ method: 'GET' })
       }
       return parts.length > 0 ? `AND ${parts.join(' AND ')}` : '';
     };
-    const countFacets = facetClause('');
     const rowFacets = facetClause('t.');
+
+    // Numeric range filters apply to the session *aggregate* (summed token/cost
+    // across all traces in the session), so they belong in a HAVING clause on the
+    // grouped result — not the per-row WHERE. Bound as params, never interpolated.
+    const havingParts: string[] = [];
+    const addHaving = (value: number | undefined, expr: string, param: string) => {
+      if (value === undefined) return;
+      havingParts.push(expr);
+      params[param] = value;
+    };
+    addHaving(data.tokensMin, 'totalTokens >= {hTokMin:Float64}', 'hTokMin');
+    addHaving(data.tokensMax, 'totalTokens <= {hTokMax:Float64}', 'hTokMax');
+    addHaving(data.costMin, 'totalCost >= {hCostMin:Float64}', 'hCostMin');
+    addHaving(data.costMax, 'totalCost <= {hCostMax:Float64}', 'hCostMax');
+    const having = havingParts.length > 0 ? `HAVING ${havingParts.join(' AND ')}` : '';
 
     // Latest version per trace, then group by session.
     const base = `(
@@ -490,29 +504,34 @@ export const getSessionsFn = createServerFn({ method: 'GET' })
       GROUP BY id HAVING argMax(is_deleted, updated_at) = 0
     )`;
 
+    // Single aggregated subquery shared by the count and the page query so the
+    // HAVING (token/cost) filter is applied identically to both. count() wraps it;
+    // the page query selects + paginates it. timestamp is an ISO string, so the
+    // lexical ORDER BY matches chronological order.
+    const sessionAgg = `
+      SELECT t.session_id AS id, toString(max(t.timestamp)) AS timestamp,
+             count(DISTINCT t.id) AS traceCount, count(DISTINCT t.user_id) AS userCount,
+             any(t.environment) AS environment,
+             dateDiff('millisecond', min(t.timestamp), max(t.timestamp)) AS durationMs,
+             sum(o.cost) AS totalCost, sum(o.tokens) AS totalTokens
+      FROM ${base} AS t
+      LEFT JOIN (
+        SELECT trace_id, sum(total_cost) AS cost, sum(total_tokens) AS tokens
+        FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0
+        GROUP BY trace_id
+      ) AS o ON o.trace_id = t.id
+      WHERE t.session_id != '' ${timeClause} ${searchClause} ${rowFacets}
+      GROUP BY t.session_id
+      ${having}`;
+
     const [countRow] = await chQuery<{ c: string }>(
-      `SELECT count() AS c FROM (
-         SELECT session_id FROM ${base} WHERE session_id != '' ${timeClause} ${searchClause} ${countFacets}
-         GROUP BY session_id
-       )`,
+      `SELECT count() AS c FROM (${sessionAgg})`,
       params,
     );
 
     const rows = await chQuery<Record<string, unknown>>(
-      `SELECT t.session_id AS id, toString(max(t.timestamp)) AS timestamp,
-              count(DISTINCT t.id) AS traceCount, count(DISTINCT t.user_id) AS userCount,
-              any(t.environment) AS environment,
-              dateDiff('millisecond', min(t.timestamp), max(t.timestamp)) AS durationMs,
-              sum(o.cost) AS totalCost, sum(o.tokens) AS totalTokens
-       FROM ${base} AS t
-       LEFT JOIN (
-         SELECT trace_id, sum(total_cost) AS cost, sum(total_tokens) AS tokens
-         FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0
-         GROUP BY trace_id
-       ) AS o ON o.trace_id = t.id
-       WHERE t.session_id != '' ${timeClause} ${searchClause} ${rowFacets}
-       GROUP BY t.session_id
-       ORDER BY max(t.timestamp) DESC
+      `SELECT * FROM (${sessionAgg})
+       ORDER BY timestamp DESC
        LIMIT {limit:UInt32} OFFSET {offset:UInt32}`,
       params,
     );

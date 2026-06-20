@@ -62,6 +62,10 @@ export function SessionsPage({
       pageSize,
       environment: filters.environment,
       userId: filters.userId,
+      tokensMin: filters.tokensMin,
+      tokensMax: filters.tokensMax,
+      costMin: filters.costMin,
+      costMax: filters.costMax,
     }),
   );
 
@@ -143,7 +147,7 @@ export function SessionsPage({
           tenant={effectiveTenant}
           filters={filters}
           onChange={onFilters}
-          facets={['environment', 'user']}
+          facets={['environment', 'user', 'tokens', 'cost']}
         />
       }
       views={
