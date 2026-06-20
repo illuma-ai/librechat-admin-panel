@@ -87,10 +87,18 @@ export function DataTable<T>({
   const isSmall = rowHeight === 's';
   const rowHeightClass = ROW_HEIGHT_CLASS[rowHeight];
 
+  // Langfuse sizes the table to the SUM of explicit per-column pixel widths and
+  // lets it scroll horizontally — columns honor their exact size instead of being
+  // squeezed to fit. `min-w-full` keeps it edge-to-edge when the sum is narrow.
+  const DEFAULT_COL_WIDTH = 150;
+  const totalWidth = columns.reduce((sum, c) => sum + (c.width ?? DEFAULT_COL_WIDTH), 0);
+
   return (
     <div className="flex w-full max-w-full flex-1 flex-col overflow-auto">
       <div className="relative min-h-full w-full overflow-auto border-t border-(--cui-color-stroke-default)">
-        <table className="w-full caption-bottom border-separate border-spacing-0 text-sm">
+        <table
+          style={{ width: totalWidth, minWidth: '100%' }}
+          className="table-fixed caption-bottom border-separate border-spacing-0 text-sm">
           <thead className="sticky top-0 z-20">
             <tr>
               {columns.map((col) => {

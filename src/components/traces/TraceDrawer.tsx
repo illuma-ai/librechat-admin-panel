@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Flyout } from '@clickhouse/click-ui';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowDown, ArrowUp, Expand, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Expand, ExternalLink } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { traceDetailQueryOptions } from '@/server';
@@ -13,37 +13,79 @@ interface TraceDrawerProps {
   tenant: string;
   traceId: string | null;
   onClose: () => void;
-  /** Prev/next navigation across the current page's trace-id list (K/J). Disabled when absent. */
+  /** Prev/next navigation across the current page's trace-id list (K/J). Hidden when absent. */
   onPrev?: () => void;
   onNext?: () => void;
 }
 
-/** Build the `/traces/$traceId?tenant=` path the expand buttons open. */
+/** Build the `/traces/$traceId?tenant=` path the "open in new tab" button opens. */
 function tracePath(tenant: string, traceId: string): string {
   const search = new URLSearchParams({ tenant }).toString();
   return `/traces/${traceId}?${search}`;
 }
 
-interface HeaderButtonProps {
-  icon: typeof Expand;
-  title: string;
-  onClick?: () => void;
-  disabled?: boolean;
+/** Small keyboard-shortcut chip, mirroring Langfuse's `KeyboardShortcut`. */
+function ShortcutKey({ children }: { children: string }) {
+  return (
+    <kbd className="rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-1 font-mono text-[10px] leading-4 text-(--cui-color-text-muted)">
+      {children}
+    </kbd>
+  );
 }
 
-function HeaderButton({ icon: Icon, title, onClick, disabled }: HeaderButtonProps) {
+/** Langfuse `DetailPageNav` button: outline, icon + visible shortcut chip, disabled when at an end. */
+function NavButton({
+  icon: Icon,
+  shortcut,
+  title,
+  onClick,
+}: {
+  icon: typeof ArrowUp;
+  shortcut: string;
+  title: string;
+  onClick?: () => void;
+}) {
   return (
     <button
       type="button"
       title={title}
       aria-label={title}
       onClick={onClick}
-      disabled={disabled}
+      disabled={!onClick}
       className={cn(
-        'flex size-7 shrink-0 items-center justify-center rounded-sm text-(--cui-color-text-muted)',
-        disabled
-          ? 'cursor-not-allowed opacity-40'
-          : 'cursor-pointer hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)',
+        'flex h-7 flex-row items-center gap-1.5 rounded-sm border border-(--cui-color-stroke-default) px-2 text-(--cui-color-text-default) transition-colors',
+        onClick
+          ? 'cursor-pointer hover:bg-(--cui-color-background-hover)'
+          : 'cursor-not-allowed opacity-40',
+      )}
+    >
+      <Icon className="size-4" />
+      <ShortcutKey>{shortcut}</ShortcutKey>
+    </button>
+  );
+}
+
+/** Ghost icon button for the expand/external-link group. */
+function ExpandButton({
+  icon: Icon,
+  title,
+  onClick,
+  className,
+}: {
+  icon: typeof Expand;
+  title: string;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      className={cn(
+        'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)',
+        className,
       )}
     >
       <Icon className="size-4" />
@@ -51,19 +93,15 @@ function HeaderButton({ icon: Icon, title, onClick, disabled }: HeaderButtonProp
   );
 }
 
-/** Langfuse peek-drawer chrome: ItemBadge + "name: id" title, prev/next, expand, fullscreen, close. */
+/** Langfuse peek-drawer chrome: ItemBadge + "name: id" title, prev/next (K/J), open-in-tab. */
 function DrawerHeader({
   tenant,
   traceId,
-  fullscreen,
-  onToggleFullscreen,
   onPrev,
   onNext,
 }: {
   tenant: string;
   traceId: string;
-  fullscreen: boolean;
-  onToggleFullscreen: () => void;
   onPrev?: () => void;
   onNext?: () => void;
 }) {
@@ -74,85 +112,83 @@ function DrawerHeader({
     enabled: tenant.length > 0 && traceId.length > 0,
   });
   const name = data?.trace.name;
-  const shortId = traceId.slice(0, 8);
+  const canNavigate = Boolean(onPrev || onNext);
   const path = tracePath(tenant, traceId);
 
   return (
-    <div className="flex min-h-11 flex-row flex-nowrap items-center justify-between gap-2 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-2 py-1">
+    <div className="flex min-h-11 flex-row flex-nowrap items-center justify-between gap-2 bg-(--cui-color-background-muted) px-2 py-1">
       <div className="flex min-w-0 flex-row items-center gap-2">
         <TypeIcon type="trace" isRoot showLabel />
         <span className="truncate text-sm font-medium text-(--cui-color-text-default)">
-          {name ? `${name}: ${shortId}` : shortId}
+          {name ? `${name}: ${traceId}` : traceId}
         </span>
       </div>
-      <div className="mr-8 flex shrink-0 flex-row items-center gap-1">
-        <HeaderButton
-          icon={ArrowUp}
-          title={`${localize('com_traces_nav_up')} (K)`}
-          onClick={onPrev}
-          disabled={!onPrev}
-        />
-        <HeaderButton
-          icon={ArrowDown}
-          title={`${localize('com_traces_nav_down')} (J)`}
-          onClick={onNext}
-          disabled={!onNext}
-        />
-        <span className="mx-1 h-5 w-px bg-(--cui-color-stroke-default)" />
-        <HeaderButton
-          icon={Expand}
-          title={localize('com_traces_open_current_tab')}
-          onClick={() =>
-            navigate({ to: '/traces/$traceId', params: { traceId }, search: { tenant } })
-          }
-        />
-        <HeaderButton
-          icon={ExternalLink}
-          title={localize('com_traces_open_new_tab')}
-          onClick={() => window.open(path, '_blank', 'noopener,noreferrer')}
-        />
-        <HeaderButton
-          icon={fullscreen ? Minimize2 : Maximize2}
-          title={
-            fullscreen ? localize('com_traces_exit_fullscreen') : localize('com_traces_fullscreen')
-          }
-          onClick={onToggleFullscreen}
-        />
+      <div className="mt-0 mr-8 flex shrink-0 flex-row items-center gap-2">
+        {canNavigate ? (
+          <div className="flex flex-row gap-1">
+            <NavButton
+              icon={ArrowUp}
+              shortcut="K"
+              title={localize('com_traces_nav_up')}
+              onClick={onPrev}
+            />
+            <NavButton
+              icon={ArrowDown}
+              shortcut="J"
+              title={localize('com_traces_nav_down')}
+              onClick={onNext}
+            />
+          </div>
+        ) : null}
+        <div className="flex h-full flex-row items-center gap-1 border-l border-(--cui-color-stroke-default) pl-2">
+          <ExpandButton
+            icon={Expand}
+            title={localize('com_traces_open_current_tab')}
+            onClick={() =>
+              navigate({ to: '/traces/$traceId', params: { traceId }, search: { tenant } })
+            }
+          />
+          <ExpandButton
+            icon={ExternalLink}
+            title={localize('com_traces_open_new_tab')}
+            onClick={() => window.open(path, '_blank', 'noopener,noreferrer')}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-/** Right-side drawer showing a trace's detail + observation tree (Langfuse-style). */
+/** Right-side drawer showing a trace's detail + observation tree (Langfuse peek view). */
 export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceDrawerProps) {
-  const [fullscreen, setFullscreen] = useState(false);
+  // Langfuse DetailPageNav: lowercase k/j navigate prev/next unless typing in a field.
+  useEffect(() => {
+    if (!traceId) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.getAttribute('role') === 'textbox');
+      if (typing || event.metaKey || event.ctrlKey) return;
+      if (event.key === 'k' && onPrev) onPrev();
+      else if (event.key === 'j' && onNext) onNext();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [traceId, onPrev, onNext]);
 
   return (
     <Flyout
       open={Boolean(traceId)}
       onOpenChange={(open) => {
-        if (!open) {
-          setFullscreen(false);
-          onClose();
-        }
+        if (!open) onClose();
       }}
     >
-      <Flyout.Content
-        strategy="fixed"
-        width={fullscreen ? '100vw' : 'min(1180px, 96vw)'}
-        closeOnInteractOutside
-        showOverlay
-      >
+      <Flyout.Content strategy="fixed" width="min(60vw, 96vw)" closeOnInteractOutside showOverlay>
         {traceId ? (
-          <Flyout.Header showClose showSeparator={false}>
-            <DrawerHeader
-              tenant={tenant}
-              traceId={traceId}
-              fullscreen={fullscreen}
-              onToggleFullscreen={() => setFullscreen((v) => !v)}
-              onPrev={onPrev}
-              onNext={onNext}
-            />
+          <Flyout.Header showClose showSeparator>
+            <DrawerHeader tenant={tenant} traceId={traceId} onPrev={onPrev} onNext={onNext} />
           </Flyout.Header>
         ) : null}
         <Flyout.Body>
