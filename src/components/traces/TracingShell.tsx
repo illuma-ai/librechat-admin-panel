@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Select } from '@clickhouse/click-ui';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
+import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
@@ -63,7 +64,18 @@ export function TracingShell({
   drawer,
 }: TracingShellProps) {
   const localize = useLocalize();
+  const queryClient = useQueryClient();
+  const fetching =
+    useIsFetching({ queryKey: ['traces'] }) +
+    useIsFetching({ queryKey: ['observations'] }) +
+    useIsFetching({ queryKey: ['sessions'] });
   const [filtersOpen, setFiltersOpen] = useState(true);
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['traces'] });
+    queryClient.invalidateQueries({ queryKey: ['observations'] });
+    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -114,6 +126,15 @@ export function TracingShell({
             }))}
           />
         </div>
+        <button
+          type="button"
+          onClick={refresh}
+          title={localize('com_traces_refresh')}
+          aria-label={localize('com_traces_refresh')}
+          className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted)"
+        >
+          <RefreshCw className={fetching > 0 ? 'size-4 animate-spin' : 'size-4'} />
+        </button>
         {toolbarExtra}
       </div>
 

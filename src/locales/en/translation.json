@@ -1111,6 +1111,7 @@
   "com_traces_tab_observations": "Observations",
   "com_nav_sessions": "Sessions",
   "com_traces_columns": "Columns",
+  "com_traces_refresh": "Refresh",
   "com_traces_col_levels": "Observation Levels",
   "com_traces_col_input_tokens": "Input Tokens",
   "com_traces_col_output_tokens": "Output Tokens",
