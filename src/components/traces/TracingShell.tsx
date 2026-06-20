@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Select } from '@clickhouse/click-ui';
+import { Select } from '@/components/ui/select';
 import {
   ChevronLeft,
   ChevronRight,
