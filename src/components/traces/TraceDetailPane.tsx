@@ -163,16 +163,19 @@ export function TraceDetailPane({ trace, totals, node, isRoot, scores = [] }: Tr
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* header: title + timestamp + badges */}
-      <div className="flex shrink-0 flex-col gap-2 border-b border-(--cui-color-stroke-default) p-3">
-        <div className="flex items-center gap-1.5">
-          <TypeIcon type={node ? node.type : 'trace'} isRoot={isRoot} />
-          <span className="truncate font-medium text-(--cui-color-text-default)">{title}</span>
+      {/* header: title + timestamp + badges (Langfuse TraceDetailViewHeader: p-2 space-y-2 gap-1) */}
+      <div className="shrink-0 space-y-2 border-b border-(--cui-color-stroke-default) p-2">
+        <div className="flex w-full flex-row items-center gap-1">
+          <TypeIcon type={node ? node.type : 'trace'} isRoot={isRoot} isSmall />
+          <span className="line-clamp-2 min-w-0 font-medium break-all wrap-break-word text-(--cui-color-text-default)">
+            {title}
+          </span>
         </div>
-        <div className="text-sm text-(--cui-color-text-muted)">
-          {formatTimestampLong(trace.timestamp)}
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-col gap-2">
+          <div className="text-sm text-(--cui-color-text-muted)">
+            {formatTimestampLong(trace.timestamp)}
+          </div>
+          <div className="flex flex-wrap items-center gap-1">
           <Badge>
             {localize('com_traces_col_latency')}: {formatLatency(latencyMs)}
           </Badge>
@@ -222,11 +225,12 @@ export function TraceDetailPane({ trace, totals, node, isRoot, scores = [] }: Tr
               </span>
             </Badge>
           ) : null}
+          </div>
         </div>
       </div>
 
       {/* tabs + view toggle */}
-      <div className="flex shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) px-3">
+      <div className="flex shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) px-2">
         <div className="flex items-center gap-3">
           {TAB_IDS.map((id) => (
             <button
