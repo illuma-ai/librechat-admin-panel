@@ -9,7 +9,7 @@ configuration, user/group/role management, and capability grants.
 ## Tech Stack
 
 - **Framework:** TanStack Start (React 19 + TanStack Router + React Query)
-- **UI:** ClickHouse click-ui component library + Tailwind CSS 4
+- **UI:** `@admin/ui` — local Radix-based component library (`packages/ui`) + Tailwind CSS 4. Legacy areas still consume ClickHouse click-ui; new/migrated code uses `@admin/ui`.
 - **Language:** TypeScript (strict mode, `verbatimModuleSyntax`)
 - **Build:** Vite 8
 - **Testing:** Vitest (unit), Playwright (e2e)
@@ -188,7 +188,7 @@ The main barrel (`@librechat/data-schemas`) pulls in Node.js-only modules (`asyn
 - **`useLocalize()` hook** for all user-facing strings (i18n)
 - **Server functions** use TanStack Start `createServerFn` with Zod validation
 - **No formatting concerns:** Prettier/ESLint formatting is handled separately
-- **Use `@clickhouse/click-ui` components** (`Button`, `Icon`, `Dialog`, `TextField`, etc.) wherever possible instead of raw HTML elements. This ensures consistent styling and theming.
+- **Use `@admin/ui` components** for all new and migrated UI. See the Component Library section below. Do **not** add new `@clickhouse/click-ui` imports — that dependency is being removed.
 
 ---
 
@@ -234,6 +234,35 @@ optional — a hardcoded dev secret is used automatically.
 Fix all formatting lint errors (trailing spaces, tabs, newlines, indentation) using auto-fix when available. All TypeScript/ESLint warnings and errors **must** be resolved.
 
 ---
+
+## Component Library (`@admin/ui`)
+
+All shared, primitive UI lives in the **`packages/ui`** workspace package, imported as
+**`@admin/ui`** (mapped in `tsconfig.json` paths + declared `workspace:*` in `package.json`).
+This replaces `@clickhouse/click-ui`; the migration is top-down and ongoing.
+
+**Where things go:**
+
+- **Reusable primitives** (Select, Dropdown, Popover, Checkbox, Tooltip, Drawer, …) → a single-word
+  file in `packages/ui/src/` (e.g. `select.tsx`), re-exported from `packages/ui/src/index.ts`.
+- **Feature-specific composites** stay in their feature dir under `src/components/<feature>/` and
+  compose the `@admin/ui` primitives — never re-implement a primitive locally.
+- Each primitive is **Radix-based**, styled **only** with `--cui-color-*` theme tokens (no hardcoded
+  colors), and exposes a compound API (`X.Trigger` / `X.Content` / `X.Item`) so it is a drop-in for
+  the click-ui shape it replaces.
+
+**Theming — single source of truth:**
+
+- The brand accent is **`--brand-primary`** (derived from the logo) in `src/styles.css`; every accent
+  token (`--cui-color-accent`, `--cui-color-text-link`, `--cui-color-outline`, active-tab underline…)
+  derives from it. Never hardcode an accent/brand color in a component.
+- A component needing a color uses a `--cui-color-*` token. A literal hex is allowed **only** as a
+  `var(--token, #fallback)` fallback, or where a `<canvas>` (e.g. vis-network) genuinely cannot read
+  CSS vars — and then it lives in **one** JS module (e.g. `observationPalette.ts`), never duplicated.
+
+**Adding a new primitive:** create `packages/ui/src/<name>.tsx`, export from `index.ts`, match the
+existing compound-API style, declare any new `@radix-ui/*` dep in the **root** `package.json`
+(workspace hoisting means transitive deps must be explicit), then reinstall.
 
 ## Key Patterns
 
