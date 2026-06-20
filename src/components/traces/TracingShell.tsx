@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Select } from '@/components/ui/select';
+import { Select } from '@admin/ui';
 import {
   ChevronLeft,
   ChevronRight,

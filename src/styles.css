@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+/* Scan the shared UI workspace package so its Tailwind classes are always
+   generated, even before a given component is imported by the app. */
+@source '../packages/ui/src';
+
 @theme {
   --z-sticky: 10; /* sticky table/section headers (in-tree) */
   --z-floating: 20; /* sidebar, content toolbars (in-tree) */

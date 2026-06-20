@@ -7,7 +7,8 @@
     "module": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@admin/ui": ["./packages/ui/src/index.ts"]
     },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],

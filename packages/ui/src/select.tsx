@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
-import { cn } from '@/utils';
+import { cn } from './cn';
 
 /**
  * Radix-based Select — a drop-in replacement for the click-ui `Select` (same

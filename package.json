@@ -2,6 +2,9 @@
   "name": "librechat-admin-panel",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "imports": {
     "#/*": "./src/*"
   },
@@ -21,10 +24,13 @@
     "format:check": "prettier --check 'src/**/*.{ts,tsx,css,json}'"
   },
   "dependencies": {
+    "@admin/ui": "workspace:*",
     "@clickhouse/click-ui": "0.2.0-rc.4",
     "@clickhouse/client": "^1.12.0",
     "@librechat/data-schemas": "^0.0.51",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.3.1",
+    "@radix-ui/react-visually-hidden": "^1.2.6",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "0.10.0",
     "@tanstack/react-query": "5.95.2",
