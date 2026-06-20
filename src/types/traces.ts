@@ -80,6 +80,39 @@ export interface SessionsPage {
   total: number;
 }
 
+/** A row in the Scores list — one feedback/eval score record (reference Scores page). */
+export interface ScoreListItem {
+  id: string;
+  timestamp: string;
+  source: string;
+  name: string;
+  dataType: string;
+  value: number | null;
+  stringValue: string | null;
+  comment: string | null;
+  traceId: string;
+  traceName: string;
+  observationId: string;
+  sessionId: string;
+  userId: string;
+  environment: string;
+}
+
+/** Server-side paginated result for the scores list. */
+export interface ScoresListPage {
+  rows: ScoreListItem[];
+  total: number;
+}
+
+/** Query input for the paginated scores list. */
+export interface ScoresListQuery {
+  tenantId: string;
+  search: string;
+  range: TraceRange;
+  page: number;
+  pageSize: number;
+}
+
 /** A row in the users list (an LLM end-user, aggregated from their traces). */
 export interface TraceUserListItem {
   userId: string;

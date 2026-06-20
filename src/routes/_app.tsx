@@ -20,6 +20,7 @@ const ROUTE_TITLE_KEYS: Record<string, string> = {
   '/observations': 'com_traces_page_title',
   '/sessions': 'com_nav_sessions',
   '/trace-users': 'com_nav_trace_users',
+  '/scores': 'com_nav_scores',
   '/help': 'com_help_title',
 };
 

@@ -34,6 +34,7 @@ const navItems: t.NavItem[] = [
   { labelKey: 'com_nav_traces', path: '/traces', icon: 'metrics' },
   { labelKey: 'com_nav_sessions', path: '/sessions', icon: 'chat' },
   { labelKey: 'com_nav_trace_users', path: '/trace-users', icon: 'users' },
+  { labelKey: 'com_nav_scores', path: '/scores', icon: 'star' },
   { labelKey: 'com_nav_help', path: '/help', icon: 'question' },
 ];
 

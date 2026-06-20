@@ -11,4 +11,5 @@ export { TraceSequence } from './TraceSequence';
 export { TraceDetailPane } from './TraceDetailPane';
 export { TraceGraph } from './TraceGraph';
 export { useTracingTenant } from './useTracingTenant';
-export { formatCost, formatTokens, formatTimestamp, parseChDate } from './format';
+export { formatCost, formatTokens, formatTimestamp, parseChDate, scoreDisplayValue } from './format';
+export { ScoresPage } from './ScoresPage';

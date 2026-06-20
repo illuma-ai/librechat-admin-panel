@@ -28,6 +28,7 @@ import {
   TriangleAlert,
   CircleHelp,
   LogOut,
+  Star,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from './cn';
@@ -73,6 +74,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   metrics: ChartColumn,
   warning: TriangleAlert,
   question: CircleHelp,
+  star: Star,
 };
 
 interface IconProps {

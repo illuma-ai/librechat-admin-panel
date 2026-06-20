@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as AppTraceUsersRouteImport } from './routes/_app/trace-users'
 import { Route as AppSessionsRouteImport } from './routes/_app/sessions'
+import { Route as AppScoresRouteImport } from './routes/_app/scores'
 import { Route as AppObservationsRouteImport } from './routes/_app/observations'
 import { Route as AppHelpRouteImport } from './routes/_app/help'
 import { Route as AppGrantsRouteImport } from './routes/_app/grants'
@@ -52,6 +53,11 @@ const AppTraceUsersRoute = AppTraceUsersRouteImport.update({
 const AppSessionsRoute = AppSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScoresRoute = AppScoresRouteImport.update({
+  id: '/scores',
+  path: '/scores',
   getParentRoute: () => AppRoute,
 } as any)
 const AppObservationsRoute = AppObservationsRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/grants': typeof AppGrantsRoute
   '/help': typeof AppHelpRoute
   '/observations': typeof AppObservationsRoute
+  '/scores': typeof AppScoresRoute
   '/sessions': typeof AppSessionsRouteWithChildren
   '/trace-users': typeof AppTraceUsersRoute
   '/users': typeof AppUsersRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/grants': typeof AppGrantsRoute
   '/help': typeof AppHelpRoute
   '/observations': typeof AppObservationsRoute
+  '/scores': typeof AppScoresRoute
   '/sessions': typeof AppSessionsRouteWithChildren
   '/trace-users': typeof AppTraceUsersRoute
   '/users': typeof AppUsersRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/_app/grants': typeof AppGrantsRoute
   '/_app/help': typeof AppHelpRoute
   '/_app/observations': typeof AppObservationsRoute
+  '/_app/scores': typeof AppScoresRoute
   '/_app/sessions': typeof AppSessionsRouteWithChildren
   '/_app/trace-users': typeof AppTraceUsersRoute
   '/_app/users': typeof AppUsersRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/grants'
     | '/help'
     | '/observations'
+    | '/scores'
     | '/sessions'
     | '/trace-users'
     | '/users'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/grants'
     | '/help'
     | '/observations'
+    | '/scores'
     | '/sessions'
     | '/trace-users'
     | '/users'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/_app/grants'
     | '/_app/help'
     | '/_app/observations'
+    | '/_app/scores'
     | '/_app/sessions'
     | '/_app/trace-users'
     | '/_app/users'
@@ -250,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/sessions'
       fullPath: '/sessions'
       preLoaderRoute: typeof AppSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/scores': {
+      id: '/_app/scores'
+      path: '/scores'
+      fullPath: '/scores'
+      preLoaderRoute: typeof AppScoresRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/observations': {
@@ -335,6 +354,7 @@ interface AppRouteChildren {
   AppGrantsRoute: typeof AppGrantsRoute
   AppHelpRoute: typeof AppHelpRoute
   AppObservationsRoute: typeof AppObservationsRoute
+  AppScoresRoute: typeof AppScoresRoute
   AppSessionsRoute: typeof AppSessionsRouteWithChildren
   AppTraceUsersRoute: typeof AppTraceUsersRoute
   AppUsersRoute: typeof AppUsersRoute
@@ -349,6 +369,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGrantsRoute: AppGrantsRoute,
   AppHelpRoute: AppHelpRoute,
   AppObservationsRoute: AppObservationsRoute,
+  AppScoresRoute: AppScoresRoute,
   AppSessionsRoute: AppSessionsRouteWithChildren,
   AppTraceUsersRoute: AppTraceUsersRoute,
   AppUsersRoute: AppUsersRoute,
