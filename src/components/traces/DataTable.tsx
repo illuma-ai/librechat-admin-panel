@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { Info } from 'lucide-react';
-import type { RowHeight } from './RowHeightSwitch';
 import { cn } from '@/utils';
+
+/** Row density: `s` single-line, `m` taller, `l` tallest. */
+export type RowHeight = 's' | 'm' | 'l';
 
 export type SortDirection = 'asc' | 'desc';
 
