@@ -50,7 +50,7 @@ export function TracingTabs({ active }: { active: TracingTab }) {
             className={cn(
               'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium transition-colors',
               active === tab.value
-                ? 'border-(--cui-color-stroke-intense) text-(--cui-color-text-default)'
+                ? 'border-(--cui-color-accent) text-(--cui-color-text-default)'
                 : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
             )}
           >

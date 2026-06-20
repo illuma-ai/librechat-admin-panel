@@ -133,13 +133,13 @@
       --cui-color-text-default: #ffffff;
       --cui-color-text-muted: #b3b6bd;
       --cui-color-text-disabled: #808080;
-      --cui-color-text-primary: #faff69;
-      --cui-color-text-link: #faff69;
+      --cui-color-text-primary: var(--brand-primary);
+      --cui-color-text-link: var(--brand-primary);
       --cui-color-text-danger: #ffbaba;
       --cui-color-title-default: rgb(97.5% 97.5% 97.5%);
       --cui-color-title-muted: #b3b6bd;
-      --cui-color-accent: #faff69;
-      --cui-color-outline: #faff69;
+      --cui-color-accent: var(--brand-primary);
+      --cui-color-outline: var(--brand-primary);
       --cui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
       --cui-color-accent-success: #4ade80;
       --cui-color-accent-warning: #fbbf24;
