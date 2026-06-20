@@ -5,7 +5,7 @@ import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { tracesQueryOptions, usersQueryOptions } from '@/server';
 import { DataTable } from './DataTable';
-import type { DataTableColumn } from './DataTable';
+import type { DataTableColumn, OrderBy } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
 import { TraceFilterSidebar } from './TraceFilterSidebar';
@@ -33,6 +33,8 @@ interface TracesPageProps {
   pageSize: number;
   selectedTraceId: string | null;
   filters: t.TraceFacetFilters;
+  orderBy: OrderBy | null;
+  onSort: (key: string) => void;
   onTenant: (tenant: string) => void;
   onSearch: (search: string) => void;
   onRange: (range: t.TraceRange) => void;
@@ -51,6 +53,8 @@ export function TracesPage({
   pageSize,
   selectedTraceId,
   filters,
+  orderBy,
+  onSort,
   onTenant,
   onSearch,
   onRange,
@@ -73,6 +77,7 @@ export function TracesPage({
       name: filters.name,
       userId: filters.userId,
       tags: filters.tags,
+      orderBy: orderBy ? { column: orderBy.id, dir: orderBy.dir } : undefined,
     }),
   );
   const usersQuery = useQuery(usersQueryOptions);
@@ -100,12 +105,14 @@ export function TracesPage({
       id: 'timestamp',
       header: localize('com_traces_col_timestamp'),
       width: 150,
+      sortable: true,
       render: (r) => formatTimestamp(r.timestamp),
     },
     {
       id: 'name',
       header: localize('com_traces_col_name'),
       width: 150,
+      sortable: true,
       render: (r) => r.name || '—',
     },
     {
@@ -130,18 +137,21 @@ export function TracesPage({
       id: 'latency',
       header: localize('com_traces_col_latency'),
       width: 100,
+      sortable: true,
       render: (r) => formatLatency(r.latencyMs),
     },
     {
       id: 'tokens',
       header: localize('com_traces_col_tokens'),
       width: 180,
+      sortable: true,
       render: (r) => <TokenBadge input={r.inputTokens} output={r.outputTokens} total={r.tokens} />,
     },
     {
       id: 'cost',
       header: localize('com_traces_col_cost'),
       width: 130,
+      sortable: true,
       render: (r) => formatCost(r.cost),
     },
     {
@@ -304,6 +314,8 @@ export function TracesPage({
         selectedId={selectedTraceId}
         loading={tracesQuery.isLoading}
         emptyMessage={localize('com_traces_none')}
+        orderBy={orderBy}
+        onSort={onSort}
       />
     </TracingShell>
   );

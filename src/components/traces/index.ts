@@ -1,4 +1,5 @@
 export { TracesPage } from './TracesPage';
+export type { OrderBy, SortDirection } from './DataTable';
 export { ObservationsPage } from './ObservationsPage';
 export { SessionsPage } from './SessionsPage';
 export { TraceDetailPage } from './TraceDetailPage';

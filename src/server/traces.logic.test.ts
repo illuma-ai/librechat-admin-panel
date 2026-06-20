@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type * as t from '@/types';
 import {
   buildAgentGraph,
+  buildOrderByClause,
   buildTraceFilters,
   buildTree,
   deriveConversation,
@@ -242,6 +243,34 @@ describe('buildTraceFilters', () => {
     const out = buildTraceFilters({ ...empty, tags: ['spam'], tagOperator: 'none of' });
     expect(out.clause).toBe('AND NOT hasAny(tags, {fTags:Array(String)})');
     expect(out.params).toEqual({ fTags: ['spam'] });
+  });
+});
+
+describe('buildOrderByClause', () => {
+  const allowed = {
+    timestamp: 't.timestamp',
+    name: 't.name',
+    cost: 'o.cost',
+  };
+  const fallback = 't.timestamp DESC';
+
+  it('falls back to the default when orderBy is undefined', () => {
+    expect(buildOrderByClause(undefined, allowed, fallback)).toBe('ORDER BY t.timestamp DESC');
+  });
+
+  it('maps a whitelisted column for asc and desc to its trusted expression', () => {
+    expect(buildOrderByClause({ column: 'name', dir: 'asc' }, allowed, fallback)).toBe(
+      'ORDER BY t.name ASC',
+    );
+    expect(buildOrderByClause({ column: 'cost', dir: 'desc' }, allowed, fallback)).toBe(
+      'ORDER BY o.cost DESC',
+    );
+  });
+
+  it('ignores an un-whitelisted column (injection string) and uses the fallback', () => {
+    expect(
+      buildOrderByClause({ column: 't.timestamp; DROP TABLE traces', dir: 'asc' }, allowed, fallback),
+    ).toBe('ORDER BY t.timestamp DESC');
   });
 });
 

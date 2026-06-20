@@ -12,6 +12,7 @@ import { createServerFn } from '@tanstack/react-start';
 import type * as t from '@/types';
 import {
   buildAgentGraph,
+  buildOrderByClause,
   buildTraceFilters,
   buildTree,
   deriveConversation,
@@ -26,6 +27,13 @@ const MAX_PAGE_SIZE = 100;
 
 const rangeSchema = z.enum(['24h', '7d', '30d', 'all']).default('all');
 
+const orderBySchema = z
+  .object({
+    column: z.string().min(1),
+    dir: z.enum(['asc', 'desc']),
+  })
+  .optional();
+
 const tracesQuerySchema = z.object({
   tenantId: z.string().min(1),
   search: z.string().default(''),
@@ -36,7 +44,24 @@ const tracesQuerySchema = z.object({
   name: z.array(z.string()).default([]),
   userId: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  orderBy: orderBySchema,
 });
+
+/**
+ * Whitelist of sortable trace columns → trusted ClickHouse expressions in the
+ * outer SELECT of `getTracesFn`. Client sort keys are looked up here only; the
+ * raw string is never interpolated into SQL.
+ */
+const TRACES_ORDER_BY: Record<string, string> = {
+  timestamp: 't.timestamp',
+  name: 't.name',
+  latency: 'o.latency',
+  cost: 'o.cost',
+  totalCost: 'o.cost',
+  tokens: 'o.tokens',
+};
+
+const TRACES_ORDER_BY_FALLBACK = 't.timestamp DESC';
 
 const traceDetailSchema = z.object({
   tenantId: z.string().min(1),
@@ -153,7 +178,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
          WHERE tenant_id = {t:String} AND is_deleted = 0
          GROUP BY trace_id
        ) AS o ON o.trace_id = t.id
-       ORDER BY t.timestamp DESC`,
+       ${buildOrderByClause(data.orderBy, TRACES_ORDER_BY, TRACES_ORDER_BY_FALLBACK)}`,
       params,
     );
 

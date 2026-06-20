@@ -191,6 +191,15 @@ export interface TraceFacetFilters {
   tags: string[];
 }
 
+/** Direction for a sortable column (Langfuse: ▼ desc / ▲ asc). */
+export type SortDir = 'asc' | 'desc';
+
+/** A requested sort: which logical column and which direction. */
+export interface TracesOrderBy {
+  column: string;
+  dir: SortDir;
+}
+
 /** Query input for the paginated traces list. */
 export interface TracesQuery {
   tenantId: string;
@@ -202,6 +211,8 @@ export interface TracesQuery {
   name?: string[];
   userId?: string[];
   tags?: string[];
+  /** Optional server-side sort; defaults to timestamp desc when omitted. */
+  orderBy?: TracesOrderBy;
 }
 
 /** A facet value with its occurrence count (Langfuse shows counts per option). */

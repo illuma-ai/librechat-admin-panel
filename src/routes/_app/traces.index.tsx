@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type * as t from '@/types';
+import type { OrderBy, SortDirection } from '@/components/traces';
 import { TracesPage } from '@/components/traces';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50];
@@ -18,6 +19,21 @@ interface TracesSearch {
   name: string[];
   user: string[];
   tags: string[];
+  /** Sort encoded as "<column>.<dir>" (e.g. "timestamp.desc"); optional. */
+  sort?: string;
+}
+
+const SORT_DIRS: SortDirection[] = ['asc', 'desc'];
+const DEFAULT_ORDER_BY: OrderBy = { id: 'timestamp', dir: 'desc' };
+
+/** Parse a "<column>.<dir>" sort param into an OrderBy, or the default when absent/invalid. */
+function parseSort(value: unknown): OrderBy {
+  if (typeof value !== 'string' || !value.includes('.')) return DEFAULT_ORDER_BY;
+  const lastDot = value.lastIndexOf('.');
+  const id = value.slice(0, lastDot);
+  const dir = value.slice(lastDot + 1);
+  if (!id || !SORT_DIRS.includes(dir as SortDirection)) return DEFAULT_ORDER_BY;
+  return { id, dir: dir as SortDirection };
 }
 
 function parseRange(value: unknown): t.TraceRange {
@@ -47,13 +63,15 @@ export const Route = createFileRoute('/_app/traces/')({
     name: parseStrArray(search.name),
     user: parseStrArray(search.user),
     tags: parseStrArray(search.tags),
+    sort: typeof search.sort === 'string' ? search.sort : undefined,
   }),
   component: TracesRoute,
 });
 
 function TracesRoute() {
-  const { tenant, q, range, page, size, trace, env, name, user, tags } = Route.useSearch();
+  const { tenant, q, range, page, size, trace, env, name, user, tags, sort } = Route.useSearch();
   const navigate = useNavigate({ from: '/traces/' });
+  const orderBy = parseSort(sort);
 
   return (
     <TracesPage
@@ -64,6 +82,12 @@ function TracesRoute() {
       pageSize={size ?? DEFAULT_PAGE_SIZE}
       selectedTraceId={trace || null}
       filters={{ environment: env, name, userId: user, tags }}
+      orderBy={orderBy}
+      onSort={(key) => {
+        const dir: SortDirection =
+          orderBy.id === key && orderBy.dir === 'desc' ? 'asc' : 'desc';
+        navigate({ search: (prev) => ({ ...prev, sort: `${key}.${dir}`, page: 1 }) });
+      }}
       onTenant={(value) =>
         navigate({
           search: {
