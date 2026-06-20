@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Icon, Switch } from '@clickhouse/click-ui';
+import { Switch } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import type { BaseSystemCapability } from '@librechat/data-schemas';
 import type * as t from '@/types';
 import { CapabilityImplications, CAPABILITY_CATEGORIES } from '@/constants';

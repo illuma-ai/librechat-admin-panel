@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { PrincipalType } from 'librechat-data-provider';
 import { getRouteApi, useBlocker, useNavigate } from '@tanstack/react-router';
 import { useState, useMemo, useRef, useCallback, useEffect, startTransition } from 'react';

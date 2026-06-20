@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import type { AdminUserSearchResult } from '@librechat/data-schemas';

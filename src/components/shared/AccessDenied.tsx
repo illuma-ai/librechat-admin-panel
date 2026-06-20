@@ -1,4 +1,4 @@
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { Link } from '@tanstack/react-router';
 import { useLocalize } from '@/hooks';
 

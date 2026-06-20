@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Icon, Dropdown } from '@clickhouse/click-ui';
+import { Dropdown } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { Link, useRouter } from '@tanstack/react-router';
 import type * as t from '@/types';
 import { useStripAriaExpanded, useCapabilities, useLocalize } from '@/hooks';

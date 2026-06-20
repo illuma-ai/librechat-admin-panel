@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { PrincipalType } from 'librechat-data-provider';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Icon, Dialog } from '@clickhouse/click-ui';
-import { Button, Tabs  } from '@admin/ui';
+import { Dialog } from '@clickhouse/click-ui';
+import { Icon, Button, Tabs   } from '@admin/ui';
 import type * as t from '@/types';
 import { availableScopesOptions, createGroupFn, createRoleFn, parseImportedYaml } from '@/server';
 import { getScopeTypeConfig } from '@/constants';

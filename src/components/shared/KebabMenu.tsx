@@ -1,4 +1,5 @@
-import { Icon, Dropdown } from '@clickhouse/click-ui';
+import { Dropdown } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import type * as t from '@/types';
 import { useStripAriaExpanded, useLocalize } from '@/hooks';
 

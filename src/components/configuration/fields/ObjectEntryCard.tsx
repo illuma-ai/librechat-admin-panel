@@ -1,4 +1,4 @@
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type * as t from '@/types';
 import { TrashButton } from '@/components/shared';

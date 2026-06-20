@@ -1,4 +1,4 @@
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import type * as t from '@/types';

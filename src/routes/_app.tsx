@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { createFileRoute, Outlet, useRouter, Link, redirect } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { useCapabilities, useCommandMenu, useLocalize } from '@/hooks';

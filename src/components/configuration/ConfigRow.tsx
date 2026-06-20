@@ -1,4 +1,4 @@
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import type * as t from '@/types';
 import { SectionControls } from './SectionControls';
 import { SectionHeader } from './SectionHeader';

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Icon, Dialog } from '@clickhouse/click-ui';
+import { Dialog } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { PrincipalType } from 'librechat-data-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type * as t from '@/types';

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { PrincipalType, SystemRoles } from 'librechat-data-provider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { TUser } from 'librechat-data-provider';

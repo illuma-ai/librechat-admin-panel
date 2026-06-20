@@ -1,5 +1,5 @@
 import { Command } from 'cmdk';
-import { Icon } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import { useRouter } from '@tanstack/react-router';
 import { useCallback, useRef, useState } from 'react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';

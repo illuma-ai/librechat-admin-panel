@@ -15,7 +15,8 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Icon, MultiAccordion } from '@clickhouse/click-ui';
+import { MultiAccordion } from '@clickhouse/click-ui';
+import { Icon } from '@admin/ui';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { FieldRenderer, NestedGroup, renderInlineField } from '../FieldRenderer';
