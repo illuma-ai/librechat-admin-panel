@@ -39,6 +39,44 @@ function computeBounds(nodes: t.ObservationNode[]): TimeBounds {
 
 const clampPct = (n: number) => Math.min(100, Math.max(0, n));
 
+/** Rolled-up token/cost totals for a node's whole subtree (node + all descendants). */
+interface NodeAgg {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  totalCost: number;
+}
+
+/**
+ * Aggregate token/cost up the tree so a parent span shows the ∑ of everything
+ * beneath it (matching the reference, where e.g. a chain node displays the summed
+ * tokens + cost of its generation descendants). Leaves keep their own values.
+ */
+function aggregateSubtrees(
+  nodes: t.ObservationNode[],
+  map = new Map<string, NodeAgg>(),
+): Map<string, NodeAgg> {
+  for (const node of nodes) {
+    aggregateSubtrees(node.children, map);
+    const agg: NodeAgg = {
+      inputTokens: node.inputTokens,
+      outputTokens: node.outputTokens,
+      totalTokens: node.totalTokens,
+      totalCost: node.totalCost,
+    };
+    for (const child of node.children) {
+      const c = map.get(child.id);
+      if (!c) continue;
+      agg.inputTokens += c.inputTokens;
+      agg.outputTokens += c.outputTokens;
+      agg.totalTokens += c.totalTokens;
+      agg.totalCost += c.totalCost;
+    }
+    map.set(node.id, agg);
+  }
+  return map;
+}
+
 interface FlatNode {
   node: t.ObservationNode;
   depth: number;
@@ -158,6 +196,7 @@ export function TraceSequence({
   const needle = filter.trim().toLowerCase();
   const visible = useMemo(() => filterTree(observations, needle), [observations, needle]);
   const rows = useMemo(() => flatten(visible, collapsed), [visible, collapsed]);
+  const aggById = useMemo(() => aggregateSubtrees(observations), [observations]);
 
   const toggleCollapse = (id: string) =>
     setCollapsed((prev) => {
@@ -180,9 +219,15 @@ export function TraceSequence({
       {rows.map(({ node, depth, hasChildren, isRoot, isLast, ancestorLines }) => {
         const isCollapsed = collapsed.has(node.id);
         const selected = node.id === selectedId;
-        const tokenText = formatTokenCounts(node.inputTokens, node.outputTokens, node.totalTokens);
+        // Show subtree-aggregated tokens/cost (∑) on parents; own values on leaves.
+        const agg = aggById.get(node.id);
+        const inTok = agg?.inputTokens ?? node.inputTokens;
+        const outTok = agg?.outputTokens ?? node.outputTokens;
+        const totTok = agg?.totalTokens ?? node.totalTokens;
+        const cost = agg?.totalCost ?? node.totalCost;
+        const tokenText = formatTokenCounts(inTok, outTok, totTok);
         const showCostPrefix = isRoot || hasChildren;
-        const showMetrics = node.latencyMs > 0 || tokenText || node.totalCost > 0;
+        const showMetrics = node.latencyMs > 0 || tokenText || cost > 0;
         return (
           <div
             key={node.id}
@@ -249,10 +294,10 @@ export function TraceSequence({
                 <div className="flex flex-wrap gap-x-2 text-xs text-(--cui-color-text-muted)">
                   {node.latencyMs > 0 ? <span>{formatLatency(node.latencyMs)}</span> : null}
                   {tokenText ? <span>{tokenText}</span> : null}
-                  {node.totalCost > 0 ? (
+                  {cost > 0 ? (
                     <span>
                       {showCostPrefix ? '∑ ' : ''}
-                      {usdFormatter(node.totalCost)}
+                      {usdFormatter(cost)}
                     </span>
                   ) : null}
                 </div>
