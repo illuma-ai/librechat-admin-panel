@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Pencil, X } from 'lucide-react';
 import { Select } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { useTracingTenant } from '@/components/traces';
 import { useDashboards } from './useDashboards';
 import { useDashboardData, WIDGET_CATALOG, WIDGET_BY_ID, CatalogWidget } from './widgetCatalog';
+import { EditWidgetDialog } from './EditWidgetDialog';
 
 interface DashboardViewPageProps {
   dashboardId: string;
@@ -39,6 +41,7 @@ export function DashboardViewPage({
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const { dashboards, update } = useDashboards();
   const data = useDashboardData(effectiveTenant, range);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const dashboard = dashboards.find((d) => d.id === dashboardId);
 
@@ -111,24 +114,46 @@ export function DashboardViewPage({
                 data={data}
                 title={localize(WIDGET_BY_ID.get(id)!.titleKey)}
                 action={
-                  <button
-                    type="button"
-                    aria-label={localize('com_dash_remove_widget')}
-                    className="ml-auto text-(--ui-color-text-muted) hover:text-(--ui-color-text-danger)"
-                    onClick={() =>
-                      update(dashboard.id, {
-                        widgetIds: dashboard.widgetIds.filter((w) => w !== id),
-                      })
-                    }
-                  >
-                    ×
-                  </button>
+                  <div className="ml-auto flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={localize('com_dash_edit_widget')}
+                      className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
+                      onClick={() => setEditingId(id)}
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={localize('com_dash_remove_widget')}
+                      className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-danger)"
+                      onClick={() =>
+                        update(dashboard.id, {
+                          widgetIds: dashboard.widgetIds.filter((w) => w !== id),
+                        })
+                      }
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
                 }
               />
               </div>
             ))}
         </div>
       )}
+
+      <EditWidgetDialog
+        widgetId={editingId}
+        present={dashboard.widgetIds}
+        onClose={() => setEditingId(null)}
+        onSave={(nextId) => {
+          update(dashboard.id, {
+            widgetIds: dashboard.widgetIds.map((w) => (w === editingId ? nextId : w)),
+          });
+          setEditingId(null);
+        }}
+      />
     </div>
   );
 }

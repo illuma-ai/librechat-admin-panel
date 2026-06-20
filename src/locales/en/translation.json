@@ -1084,6 +1084,8 @@
   "com_dash_show_all": "Show all",
   "com_dash_coming_soon": "Coming soon",
   "com_dash_pick_widgets": "Widgets to include",
+  "com_dash_edit_widget": "Edit widget",
+  "com_dash_widget_metric": "Metric / chart",
   "com_nav_dashboards": "Dashboards",
   "com_dash_widgets": "Widgets",
   "com_dash_new": "New dashboard",
