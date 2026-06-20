@@ -50,7 +50,17 @@ function SessionsRoute() {
       onOpenSession={(sessionId) =>
         navigate({
           to: '/traces',
-          search: { tenant, q: sessionId, range, page: 1, trace: '' },
+          search: {
+            tenant,
+            q: sessionId,
+            range,
+            page: 1,
+            trace: '',
+            env: [],
+            name: [],
+            user: [],
+            tags: [],
+          },
         })
       }
     />

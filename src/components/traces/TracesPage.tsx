@@ -8,6 +8,7 @@ import { DataTable } from './DataTable';
 import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
+import { TracesFilters } from './TracesFilters';
 import { TraceDrawer } from './TraceDrawer';
 import { UserCell } from './UserCell';
 import { useTracingTenant } from './useTracingTenant';
@@ -21,12 +22,14 @@ interface TracesPageProps {
   page: number;
   pageSize: number;
   selectedTraceId: string | null;
+  filters: t.TraceFacetFilters;
   onTenant: (tenant: string) => void;
   onSearch: (search: string) => void;
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
   onOpenTrace: (traceId: string) => void;
   onCloseTrace: () => void;
+  onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
 }
 
 export function TracesPage({
@@ -36,17 +39,29 @@ export function TracesPage({
   page,
   pageSize,
   selectedTraceId,
+  filters,
   onTenant,
   onSearch,
   onRange,
   onPage,
   onOpenTrace,
   onCloseTrace,
+  onFilters,
 }: TracesPageProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const tracesQuery = useQuery(
-    tracesQueryOptions({ tenantId: effectiveTenant, search, range, page, pageSize }),
+    tracesQueryOptions({
+      tenantId: effectiveTenant,
+      search,
+      range,
+      page,
+      pageSize,
+      environment: filters.environment,
+      name: filters.name,
+      userId: filters.userId,
+      tags: filters.tags,
+    }),
   );
   const usersQuery = useQuery(usersQueryOptions);
 
@@ -130,6 +145,9 @@ export function TracesPage({
       totalPages={totalPages}
       onPage={onPage}
       searchPlaceholder={localize('com_traces_search_placeholder')}
+      toolbarExtra={
+        <TracesFilters tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+      }
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />
       }

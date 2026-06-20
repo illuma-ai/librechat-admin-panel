@@ -20,7 +20,17 @@ export function TraceDetailPage({ tenant, traceId }: TraceDetailPageProps) {
       <div className="px-6 pt-5 pb-3">
         <Link
           to="/traces"
-          search={{ tenant, q: '', range: 'all', page: 1, trace: '' }}
+          search={{
+            tenant,
+            q: '',
+            range: 'all',
+            page: 1,
+            trace: '',
+            env: [],
+            name: [],
+            user: [],
+            tags: [],
+          }}
           className="inline-flex w-fit items-center gap-1 text-sm text-(--cui-color-text-muted) no-underline hover:text-(--cui-color-text-default)"
         >
           <Icon name="chevron-left" size="sm" />

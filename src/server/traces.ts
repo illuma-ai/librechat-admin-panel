@@ -12,6 +12,7 @@ import { createServerFn } from '@tanstack/react-start';
 import type * as t from '@/types';
 import {
   buildAgentGraph,
+  buildTraceFilters,
   buildTree,
   deriveConversation,
   extractMessages,
@@ -31,6 +32,10 @@ const tracesQuerySchema = z.object({
   range: rangeSchema,
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
+  environment: z.array(z.string()).default([]),
+  name: z.array(z.string()).default([]),
+  userId: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([]),
 });
 
 const traceDetailSchema = z.object({
@@ -97,15 +102,23 @@ export const getTracesFn = createServerFn({ method: 'GET' })
       ? 'AND (name ILIKE {s:String} OR user_id ILIKE {s:String} OR id ILIKE {s:String})'
       : '';
     const timeClause = rangeClause(data.range, 'timestamp');
+    const filters = buildTraceFilters({
+      environment: data.environment,
+      name: data.name,
+      userId: data.userId,
+      tags: data.tags,
+    });
     const params: Record<string, unknown> = {
       t: data.tenantId,
       limit: data.pageSize,
       offset,
       ...(hasSearch ? { s: `%${data.search.trim()}%` } : {}),
+      ...filters.params,
     };
+    const where = `tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause} ${filters.clause}`;
 
     const [countRow] = await chQuery<{ c: string }>(
-      `SELECT count() AS c FROM traces FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause}`,
+      `SELECT count() AS c FROM traces FINAL WHERE ${where}`,
       params,
     );
 
@@ -118,7 +131,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
        FROM (
          SELECT id, name, user_id, session_id, environment, timestamp
          FROM traces FINAL
-         WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause}
+         WHERE ${where}
          ORDER BY timestamp DESC
          LIMIT {limit:UInt32} OFFSET {offset:UInt32}
        ) AS t
@@ -165,6 +178,39 @@ export const tracesQueryOptions = (query: t.TracesQuery) =>
     queryFn: () => getTracesFn({ data: query }),
     staleTime: 10_000,
     enabled: query.tenantId.length > 0,
+  });
+
+// ── Filter options (distinct facet values) ───────────────────────────
+
+export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
+  .inputValidator(tenantScopeSchema)
+  .handler(async ({ data }): Promise<t.TraceFilterOptions> => {
+    const [row] = await chQuery<Record<string, unknown>>(
+      `SELECT
+         arrayFilter(x -> x != '', groupUniqArray(200)(environment)) AS environments,
+         arrayFilter(x -> x != '', groupUniqArray(200)(name)) AS names,
+         arrayFilter(x -> x != '', groupUniqArray(200)(user_id)) AS userIds,
+         arrayFilter(x -> x != '', arrayDistinct(arrayFlatten(groupUniqArray(200)(tags)))) AS tags
+       FROM traces FINAL
+       WHERE tenant_id = {t:String} AND is_deleted = 0`,
+      { t: data.tenantId },
+    );
+    const arr = (v: unknown): string[] =>
+      Array.isArray(v) ? v.map(String).filter(Boolean).sort() : [];
+    return {
+      environments: arr(row?.environments),
+      names: arr(row?.names),
+      userIds: arr(row?.userIds),
+      tags: arr(row?.tags),
+    };
+  });
+
+export const traceFilterOptionsQueryOptions = (tenantId: string) =>
+  queryOptions({
+    queryKey: ['traces', 'filter-options', tenantId],
+    queryFn: () => getTraceFilterOptionsFn({ data: { tenantId } }),
+    staleTime: 60_000,
+    enabled: tenantId.length > 0,
   });
 
 // ── Paginated observations list ──────────────────────────────────────

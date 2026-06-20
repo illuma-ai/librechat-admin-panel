@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type * as t from '@/types';
 import {
   buildAgentGraph,
+  buildTraceFilters,
   buildTree,
   deriveConversation,
   extractMessages,
@@ -169,6 +170,38 @@ describe('extractMessages', () => {
     expect(
       extractMessages(JSON.stringify({ messages: [{ role: 'user', content: '  ' }] })),
     ).toEqual([]);
+  });
+});
+
+describe('buildTraceFilters', () => {
+  const empty = { environment: [], name: [], userId: [], tags: [] };
+
+  it('returns an empty clause when no facet is set', () => {
+    expect(buildTraceFilters(empty)).toEqual({ clause: '', params: {} });
+  });
+
+  it('builds parameterized IN/hasAny clauses for set facets', () => {
+    const out = buildTraceFilters({
+      environment: ['default'],
+      name: ['AgentRun', 'TitleRun'],
+      userId: ['u1'],
+      tags: ['agent'],
+    });
+    expect(out.clause).toBe(
+      'AND environment IN {fEnv:Array(String)} AND name IN {fName:Array(String)} AND user_id IN {fUser:Array(String)} AND hasAny(tags, {fTags:Array(String)})',
+    );
+    expect(out.params).toEqual({
+      fEnv: ['default'],
+      fName: ['AgentRun', 'TitleRun'],
+      fUser: ['u1'],
+      fTags: ['agent'],
+    });
+  });
+
+  it('omits facets that are empty', () => {
+    const out = buildTraceFilters({ ...empty, environment: ['prod'] });
+    expect(out.clause).toBe('AND environment IN {fEnv:Array(String)}');
+    expect(out.params).toEqual({ fEnv: ['prod'] });
   });
 });
 

@@ -173,6 +173,14 @@ export interface TraceMetricsSummary {
 /** Supported time-range filters. */
 export type TraceRange = '24h' | '7d' | '30d' | 'all';
 
+/** Categorical facet filters for the traces/observations list. */
+export interface TraceFacetFilters {
+  environment: string[];
+  name: string[];
+  userId: string[];
+  tags: string[];
+}
+
 /** Query input for the paginated traces list. */
 export interface TracesQuery {
   tenantId: string;
@@ -180,4 +188,16 @@ export interface TracesQuery {
   range: TraceRange;
   page: number;
   pageSize: number;
+  environment?: string[];
+  name?: string[];
+  userId?: string[];
+  tags?: string[];
+}
+
+/** Distinct facet values available for the filter controls. */
+export interface TraceFilterOptions {
+  environments: string[];
+  names: string[];
+  userIds: string[];
+  tags: string[];
 }
