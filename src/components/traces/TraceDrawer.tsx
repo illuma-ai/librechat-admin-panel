@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Flyout } from '@clickhouse/click-ui';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowDown, ArrowUp, Expand, ExternalLink } from 'lucide-react';
+import { ArrowDown, ArrowUp, Expand, ExternalLink, X } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { traceDetailQueryOptions } from '@/server';
@@ -93,15 +93,21 @@ function ExpandButton({
   );
 }
 
-/** Langfuse peek-drawer chrome: ItemBadge + "name: id" title, prev/next (K/J), open-in-tab. */
+/**
+ * Langfuse peek-drawer header (TablePeekView SheetHeader): a full-width thin bar —
+ * ItemBadge + "name: id" title on the left; prev/next (K/J), open-in-tab, and close
+ * on the right. Rendered edge-to-edge (not via Flyout.Header, which insets 24px).
+ */
 function DrawerHeader({
   tenant,
   traceId,
+  onClose,
   onPrev,
   onNext,
 }: {
   tenant: string;
   traceId: string;
+  onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
 }) {
@@ -116,14 +122,14 @@ function DrawerHeader({
   const path = tracePath(tenant, traceId);
 
   return (
-    <div className="flex min-h-11 flex-row flex-nowrap items-center justify-between gap-2 bg-(--cui-color-background-muted) px-2 py-1">
+    <div className="flex min-h-11 shrink-0 flex-row flex-nowrap items-center justify-between gap-2 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-2 py-1">
       <div className="flex min-w-0 flex-row items-center gap-2">
         <TypeIcon type="trace" isRoot showLabel />
         <span className="truncate text-sm font-medium text-(--cui-color-text-default)">
           {name ? `${name}: ${traceId}` : traceId}
         </span>
       </div>
-      <div className="mt-0 mr-8 flex shrink-0 flex-row items-center gap-2">
+      <div className="flex shrink-0 flex-row items-center gap-2">
         {canNavigate ? (
           <div className="flex flex-row gap-1">
             <NavButton
@@ -154,6 +160,7 @@ function DrawerHeader({
             onClick={() => window.open(path, '_blank', 'noopener,noreferrer')}
           />
         </div>
+        <ExpandButton icon={X} title={localize('com_traces_close')} onClick={onClose} />
       </div>
     </div>
   );
@@ -194,14 +201,25 @@ export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceD
         closeOnInteractOutside={false}
         showOverlay
       >
-        {traceId ? (
-          <Flyout.Header showClose showSeparator>
-            <DrawerHeader tenant={tenant} traceId={traceId} onPrev={onPrev} onNext={onNext} />
-          </Flyout.Header>
-        ) : null}
+        {/* Header lives INSIDE Flyout.Body (which has no horizontal padding and keeps
+            the 60vw width), not Flyout.Header (which insets 24px). Langfuse's peek
+            header is an edge-to-edge bar. */}
         <Flyout.Body>
-          <div className="flex h-full min-h-0 flex-col">
-            {traceId ? <TraceDetailContent tenant={tenant} traceId={traceId} /> : null}
+          <div className="flex h-full min-h-0 w-full flex-col">
+            {traceId ? (
+              <>
+                <DrawerHeader
+                  tenant={tenant}
+                  traceId={traceId}
+                  onClose={onClose}
+                  onPrev={onPrev}
+                  onNext={onNext}
+                />
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <TraceDetailContent tenant={tenant} traceId={traceId} />
+                </div>
+              </>
+            ) : null}
           </div>
         </Flyout.Body>
       </Flyout.Content>

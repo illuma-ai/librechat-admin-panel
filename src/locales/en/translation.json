@@ -1195,6 +1195,7 @@
   "com_traces_metadata": "Metadata",
   "com_traces_path": "Path",
   "com_traces_value": "Value",
+  "com_traces_close": "Close",
   "com_traces_no_graph": "No graph data available",
   "com_traces_zoom_in": "Zoom in",
   "com_traces_zoom_out": "Zoom out",
