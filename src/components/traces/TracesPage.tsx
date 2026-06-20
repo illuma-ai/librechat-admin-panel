@@ -11,6 +11,7 @@ import { TracingTabs } from './TracingTabs';
 import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { TraceDrawer } from './TraceDrawer';
 import { ColumnsMenu } from './ColumnsMenu';
+import { ViewsMenu } from './ViewsMenu';
 import { UserCell } from './UserCell';
 import { useTracingTenant } from './useTracingTenant';
 import { useColumnVisibility } from './useColumnVisibility';
@@ -47,6 +48,8 @@ interface TracesPageProps {
   onOpenTrace: (traceId: string) => void;
   onCloseTrace: () => void;
   onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
+  /** Apply a saved view's persisted search slice back onto the route. */
+  onApplyView: (state: Record<string, unknown>) => void;
 }
 
 export function TracesPage({
@@ -69,6 +72,7 @@ export function TracesPage({
   onOpenTrace,
   onCloseTrace,
   onFilters,
+  onApplyView,
 }: TracesPageProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
@@ -313,6 +317,30 @@ export function TracesPage({
       }
       filterSidebar={
         <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+      }
+      views={
+        <ViewsMenu
+          tableKey="traces"
+          current={{
+            q: search,
+            range,
+            env: filters.environment,
+            type: filters.type,
+            level: filters.level,
+            name: filters.name,
+            user: filters.userId,
+            tags: filters.tags,
+            latencyMin: filters.latencyMin,
+            latencyMax: filters.latencyMax,
+            costMin: filters.costMin,
+            costMax: filters.costMax,
+            tokensMin: filters.tokensMin,
+            tokensMax: filters.tokensMax,
+            sort: orderBy ? `${orderBy.id}.${orderBy.dir}` : undefined,
+            searchType,
+          }}
+          onApply={onApplyView}
+        />
       }
       toolbarExtra={
         <ColumnsMenu

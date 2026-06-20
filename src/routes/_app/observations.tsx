@@ -93,6 +93,9 @@ function ObservationsRoute() {
           }),
         })
       }
+      onApplyView={(state) =>
+        navigate({ search: (prev) => ({ ...prev, ...state, page: 1, trace: '' }) })
+      }
       onOpenTrace={(value) => navigate({ search: (prev) => ({ ...prev, trace: value }) })}
       onCloseTrace={() => navigate({ search: (prev) => ({ ...prev, trace: '' }) })}
     />

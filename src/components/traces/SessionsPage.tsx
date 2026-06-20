@@ -8,6 +8,7 @@ import { TracingShell } from './TracingShell';
 import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { SessionDrawer } from './SessionDrawer';
 import { ColumnsMenu } from './ColumnsMenu';
+import { ViewsMenu } from './ViewsMenu';
 import { useTracingTenant } from './useTracingTenant';
 import { useColumnVisibility } from './useColumnVisibility';
 import { EnvBadge } from './cells';
@@ -26,6 +27,7 @@ interface SessionsPageProps {
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
   onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
+  onApplyView: (state: Record<string, unknown>) => void;
   onOpenSession: (sessionId: string) => void;
   onCloseSession: () => void;
   onOpenTrace: (traceId: string) => void;
@@ -44,6 +46,7 @@ export function SessionsPage({
   onRange,
   onPage,
   onFilters,
+  onApplyView,
   onOpenSession,
   onCloseSession,
   onOpenTrace,
@@ -137,6 +140,13 @@ export function SessionsPage({
       searchPlaceholder={localize('com_traces_session_search_placeholder')}
       filterSidebar={
         <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+      }
+      views={
+        <ViewsMenu
+          tableKey="sessions"
+          current={{ q: search, range, env: filters.environment, user: filters.userId }}
+          onApply={onApplyView}
+        />
       }
       toolbarExtra={
         <ColumnsMenu

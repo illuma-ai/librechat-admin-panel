@@ -9,6 +9,7 @@ import { TracingTabs } from './TracingTabs';
 import { TraceDrawer } from './TraceDrawer';
 import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { ColumnsMenu } from './ColumnsMenu';
+import { ViewsMenu } from './ViewsMenu';
 import { useTracingTenant } from './useTracingTenant';
 import { useColumnVisibility } from './useColumnVisibility';
 import { EnvBadge, MetadataCell, ModelCell, TokenBadge, TypeCell } from './cells';
@@ -27,6 +28,7 @@ interface ObservationsPageProps {
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
   onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
+  onApplyView: (state: Record<string, unknown>) => void;
   onOpenTrace: (traceId: string) => void;
   onCloseTrace: () => void;
 }
@@ -44,6 +46,7 @@ export function ObservationsPage({
   onRange,
   onPage,
   onFilters,
+  onApplyView,
   onOpenTrace,
   onCloseTrace,
 }: ObservationsPageProps) {
@@ -198,6 +201,20 @@ export function ObservationsPage({
       totalPages={totalPages}
       onPage={onPage}
       searchPlaceholder={localize('com_traces_obs_search_placeholder')}
+      views={
+        <ViewsMenu
+          tableKey="observations"
+          current={{
+            q: search,
+            range,
+            env: filters.environment,
+            type: filters.type,
+            level: filters.level,
+            name: filters.name,
+          }}
+          onApply={onApplyView}
+        />
+      }
       toolbarExtra={
         <ColumnsMenu
           columns={columns}

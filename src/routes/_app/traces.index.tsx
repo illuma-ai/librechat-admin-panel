@@ -199,6 +199,9 @@ function TracesRoute() {
           }),
         })
       }
+      onApplyView={(state) =>
+        navigate({ search: (prev) => ({ ...prev, ...state, page: 1, trace: '' }) })
+      }
     />
   );
 }

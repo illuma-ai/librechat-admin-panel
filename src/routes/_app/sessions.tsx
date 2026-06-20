@@ -70,6 +70,9 @@ function SessionsRoute() {
           }),
         })
       }
+      onApplyView={(state) =>
+        navigate({ search: (prev) => ({ ...prev, ...state, page: 1, session: '' }) })
+      }
       onOpenSession={(sessionId) =>
         navigate({ search: (prev) => ({ ...prev, session: sessionId }) })
       }

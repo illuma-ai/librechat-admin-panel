@@ -57,6 +57,8 @@ interface TracingShellProps {
   tabs?: ReactNode;
   /** Extra toolbar controls (columns menu, …). */
   toolbarExtra?: ReactNode;
+  /** Saved-views control slot (rendered next to the columns menu). */
+  views?: ReactNode;
   /** Left filter sidebar (the reference UI facet panel); a "Hide filters" toggle is shown when set. */
   filterSidebar?: ReactNode;
   /** Number of active filters, shown on the toggle. */
@@ -89,6 +91,7 @@ export function TracingShell({
   onSearchType,
   tabs,
   toolbarExtra,
+  views,
   filterSidebar,
   activeFilterCount = 0,
   children,
@@ -175,6 +178,7 @@ export function TracingShell({
           interval={refreshInterval}
           onInterval={setRefreshInterval}
         />
+        {views}
         {toolbarExtra}
       </div>
 
