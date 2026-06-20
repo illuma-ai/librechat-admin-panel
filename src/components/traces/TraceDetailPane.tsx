@@ -4,6 +4,7 @@ import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { Markdown } from '@/components/shared';
+import { TraceGraph } from './TraceGraph';
 import { TypeIcon } from './traceIcons';
 import { formatCost, formatLatency, formatTime, formatTokenCounts } from './format';
 
@@ -20,6 +21,7 @@ interface TraceDetailPaneProps {
   totals: TraceTotals;
   node: t.ObservationNode | null;
   isRoot: boolean;
+  graph: t.TraceGraph;
 }
 
 type ViewMode = 'pretty' | 'json';
@@ -120,9 +122,12 @@ function metadataRows(
 }
 
 /** Langfuse trace/observation detail pane: badges → Preview (Tags, Input, Output, Metadata). */
-export function TraceDetailPane({ trace, totals, node, isRoot }: TraceDetailPaneProps) {
+export function TraceDetailPane({ trace, totals, node, isRoot, graph }: TraceDetailPaneProps) {
   const localize = useLocalize();
   const [view, setView] = useState<ViewMode>('pretty');
+  const [tab, setTab] = useState<'preview' | 'graph'>('preview');
+  const showGraph = isRoot && graph.nodes.length > 0;
+  const activeTab = tab === 'graph' && showGraph ? 'graph' : 'preview';
 
   const { inputMessages, outputMessages } = useMemo(() => {
     if (!node) return { inputMessages: [], outputMessages: [] };
@@ -197,89 +202,113 @@ export function TraceDetailPane({ trace, totals, node, isRoot }: TraceDetailPane
       {/* tabs + view toggle */}
       <div className="flex shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) px-3">
         <div className="flex items-center gap-3">
-          <span className="border-b-2 border-(--cui-color-stroke-intense) py-2 text-sm font-medium text-(--cui-color-text-default)">
-            {localize('com_traces_tab_preview')}
-          </span>
+          {(['preview', 'graph'] as const)
+            .filter((id) => id === 'preview' || showGraph)
+            .map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                className={cn(
+                  'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium',
+                  activeTab === id
+                    ? 'border-(--cui-color-stroke-intense) text-(--cui-color-text-default)'
+                    : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+                )}
+              >
+                {id === 'preview'
+                  ? localize('com_traces_tab_preview')
+                  : localize('com_traces_tab_graph')}
+              </button>
+            ))}
         </div>
-        <div className="flex items-center gap-0.5 rounded-md bg-(--cui-color-background-muted) p-0.5 text-xs">
-          {(['pretty', 'json'] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setView(mode)}
-              className={cn(
-                'cursor-pointer rounded px-2 py-0.5',
-                view === mode
-                  ? 'bg-(--cui-color-background-default) text-(--cui-color-text-default)'
-                  : 'text-(--cui-color-text-muted)',
-              )}
-            >
-              {mode === 'pretty' ? localize('com_traces_formatted') : localize('com_traces_json')}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* preview body */}
-      <div className="min-h-0 flex-1 overflow-auto pb-4">
-        {isRoot && trace.tags.length > 0 ? (
-          <div className="flex flex-col gap-1 px-2 pt-2">
-            <div className="text-sm font-medium text-(--cui-color-text-default)">
-              {localize('com_traces_tags')}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {trace.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-sm bg-(--cui-color-background-muted) px-1.5 py-0.5 text-xs text-(--cui-color-text-muted)"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+        {activeTab === 'preview' ? (
+          <div className="flex items-center gap-0.5 rounded-md bg-(--cui-color-background-muted) p-0.5 text-xs">
+            {(['pretty', 'json'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setView(mode)}
+                className={cn(
+                  'cursor-pointer rounded px-2 py-0.5',
+                  view === mode
+                    ? 'bg-(--cui-color-background-default) text-(--cui-color-text-default)'
+                    : 'text-(--cui-color-text-muted)',
+                )}
+              >
+                {mode === 'pretty' ? localize('com_traces_formatted') : localize('com_traces_json')}
+              </button>
+            ))}
           </div>
         ) : null}
+      </div>
 
-        <IOPanel
-          title={localize('com_traces_input')}
-          messages={inputMessages}
-          raw={node?.input ?? ''}
-          view={view}
-          variant="input"
-        />
-        <IOPanel
-          title={localize('com_traces_output')}
-          messages={outputMessages}
-          raw={node?.output ?? ''}
-          view={view}
-          variant="output"
-        />
-
-        {rows.length > 0 ? (
-          <div className="flex flex-col gap-1 px-2 pt-3">
-            <div className="text-sm font-medium text-(--cui-color-text-default)">
-              {localize('com_traces_metadata')}
-            </div>
-            <div className="overflow-hidden rounded-sm border border-(--cui-color-stroke-default)">
-              <div className="flex border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1.5 text-xs font-medium text-(--cui-color-text-muted)">
-                <span className="w-1/3">{localize('com_traces_path')}</span>
-                <span className="flex-1">{localize('com_traces_value')}</span>
+      {activeTab === 'graph' ? (
+        <div className="min-h-0 flex-1 overflow-auto">
+          <TraceGraph graph={graph} />
+        </div>
+      ) : (
+        /* preview body */
+        <div className="min-h-0 flex-1 overflow-auto pb-4">
+          {isRoot && trace.tags.length > 0 ? (
+            <div className="flex flex-col gap-1 px-2 pt-2">
+              <div className="text-sm font-medium text-(--cui-color-text-default)">
+                {localize('com_traces_tags')}
               </div>
-              {rows.map((r) => (
-                <div
-                  key={r.path}
-                  className="flex border-b border-(--cui-color-stroke-default) px-3 py-1 text-xs last:border-0"
-                >
-                  <span className="w-1/3 truncate text-(--cui-color-text-muted)">{r.path}</span>
-                  <span className="flex-1 break-all text-(--cui-color-text-default)">
-                    {r.value}
+              <div className="flex flex-wrap gap-1">
+                {trace.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-sm bg-(--cui-color-background-muted) px-1.5 py-0.5 text-xs text-(--cui-color-text-muted)"
+                  >
+                    {tag}
                   </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ) : null}
-      </div>
+          ) : null}
+
+          <IOPanel
+            title={localize('com_traces_input')}
+            messages={inputMessages}
+            raw={node?.input ?? ''}
+            view={view}
+            variant="input"
+          />
+          <IOPanel
+            title={localize('com_traces_output')}
+            messages={outputMessages}
+            raw={node?.output ?? ''}
+            view={view}
+            variant="output"
+          />
+
+          {rows.length > 0 ? (
+            <div className="flex flex-col gap-1 px-2 pt-3">
+              <div className="text-sm font-medium text-(--cui-color-text-default)">
+                {localize('com_traces_metadata')}
+              </div>
+              <div className="overflow-hidden rounded-sm border border-(--cui-color-stroke-default)">
+                <div className="flex border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1.5 text-xs font-medium text-(--cui-color-text-muted)">
+                  <span className="w-1/3">{localize('com_traces_path')}</span>
+                  <span className="flex-1">{localize('com_traces_value')}</span>
+                </div>
+                {rows.map((r) => (
+                  <div
+                    key={r.path}
+                    className="flex border-b border-(--cui-color-stroke-default) px-3 py-1 text-xs last:border-0"
+                  >
+                    <span className="w-1/3 truncate text-(--cui-color-text-muted)">{r.path}</span>
+                    <span className="flex-1 break-all text-(--cui-color-text-default)">
+                      {r.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

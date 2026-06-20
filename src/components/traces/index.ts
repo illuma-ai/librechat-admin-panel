@@ -4,3 +4,4 @@ export { TraceDetailContent } from './TraceDetailContent';
 export { TraceDrawer } from './TraceDrawer';
 export { TraceSequence } from './TraceSequence';
 export { TraceDetailPane } from './TraceDetailPane';
+export { TraceGraph } from './TraceGraph';

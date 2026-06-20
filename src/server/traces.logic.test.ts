@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type * as t from '@/types';
 import {
+  buildAgentGraph,
   buildTree,
   deriveConversation,
   extractMessages,
@@ -8,6 +9,10 @@ import {
   rangeClause,
   toNumber,
 } from './traces.logic';
+
+function lgNode(id: string, lgName: string, step: string, type = 'span'): t.ObservationNode {
+  return { ...node(id), type, metadata: { langgraph_node: lgName, langgraph_step: step } };
+}
 
 function node(id: string, parentId = ''): t.ObservationNode {
   return {
@@ -164,6 +169,35 @@ describe('extractMessages', () => {
     expect(
       extractMessages(JSON.stringify({ messages: [{ role: 'user', content: '  ' }] })),
     ).toEqual([]);
+  });
+});
+
+describe('buildAgentGraph', () => {
+  it('returns an empty graph when there is no LangGraph metadata', () => {
+    expect(buildAgentGraph([node('a'), node('b')])).toEqual({ nodes: [], edges: [] });
+  });
+
+  it('maps __start__ to Start, adds End, and links steps in order', () => {
+    const graph = buildAgentGraph([lgNode('o0', '__start__', '0'), lgNode('o1', 'agent', '1')]);
+    expect(graph.nodes.map((n) => n.id).sort()).toEqual(['Start', 'agent', 'End'].sort());
+    expect(graph.edges).toEqual([
+      { from: 'Start', to: 'agent' },
+      { from: 'agent', to: 'End' },
+    ]);
+  });
+
+  it('fans out parallel nodes that share a step', () => {
+    const graph = buildAgentGraph([
+      lgNode('o0', '__start__', '0'),
+      lgNode('o1', 'a', '1'),
+      lgNode('o2', 'b', '1'),
+    ]);
+    expect(graph.edges).toEqual([
+      { from: 'Start', to: 'a' },
+      { from: 'Start', to: 'b' },
+      { from: 'a', to: 'End' },
+      { from: 'b', to: 'End' },
+    ]);
   });
 });
 

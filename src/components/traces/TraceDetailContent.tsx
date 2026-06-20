@@ -74,7 +74,13 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
         </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">
-        <TraceDetailPane trace={data.trace} totals={totals} node={selectedNode} isRoot={isRoot} />
+        <TraceDetailPane
+          trace={data.trace}
+          totals={totals}
+          node={selectedNode}
+          isRoot={isRoot}
+          graph={data.graph}
+        />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { queryOptions } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import type * as t from '@/types';
 import {
+  buildAgentGraph,
   buildTree,
   deriveConversation,
   extractMessages,
@@ -255,6 +256,7 @@ export const getTraceFn = createServerFn({ method: 'GET' })
         metadata: (trace.metadata as Record<string, string>) ?? {},
       },
       observations: roots,
+      graph: buildAgentGraph(flat),
       conversation,
       model: generation?.model ?? '',
       latencyMs: root?.latencyMs ?? 0,

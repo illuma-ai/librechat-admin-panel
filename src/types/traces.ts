@@ -73,10 +73,32 @@ export interface TraceHeader {
   metadata: Record<string, string>;
 }
 
+/** A node in the agent (LangGraph) execution graph. */
+export interface TraceGraphNode {
+  id: string;
+  label: string;
+  type: string;
+  step: number;
+}
+
+/** A directed edge between two agent-graph nodes. */
+export interface TraceGraphEdge {
+  from: string;
+  to: string;
+}
+
+/** The agent graph derived from LangGraph node/step metadata. */
+export interface TraceGraph {
+  nodes: TraceGraphNode[];
+  edges: TraceGraphEdge[];
+}
+
 /** Full trace detail: header + observation tree + rolled-up totals. */
 export interface TraceDetail {
   trace: TraceHeader;
   observations: ObservationNode[];
+  /** Agent execution graph (empty when the trace isn't a LangGraph run). */
+  graph: TraceGraph;
   /** Request → response conversation derived from the root observation's I/O. */
   conversation: TraceMessage[];
   /** Primary model used in the trace (from its generation observations). */
