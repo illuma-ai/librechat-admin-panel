@@ -67,6 +67,14 @@ const TRACES_ORDER_BY: Record<string, string> = {
 
 const TRACES_ORDER_BY_FALLBACK = 't.timestamp DESC';
 
+/** ClickHouse returns Map(String, String) values as strings; coerce a details map to numbers. */
+function numberizeMap(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object') return {};
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = toNumber(v);
+  return out;
+}
+
 const traceDetailSchema = z.object({
   tenantId: z.string().min(1),
   traceId: z.string().min(1),
@@ -521,8 +529,8 @@ export const getTraceFn = createServerFn({ method: 'GET' })
         inputMessages: extractMessages(input),
         outputMessages: extractMessages(output),
         metadata: (r.metadata as Record<string, string>) ?? {},
-        usageDetails: (r.usageDetails as Record<string, number>) ?? {},
-        costDetails: (r.costDetails as Record<string, number>) ?? {},
+        usageDetails: numberizeMap(r.usageDetails),
+        costDetails: numberizeMap(r.costDetails),
         scores: scoresByObservation.get(id) ?? [],
         children: [],
       };

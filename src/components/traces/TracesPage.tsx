@@ -22,6 +22,7 @@ import {
   ModelCell,
   TagsCell,
   TokenBadge,
+  TypeCell,
 } from './cells';
 import { formatCost, formatLatency, formatTimestamp, formatTokens } from './format';
 
@@ -113,6 +114,12 @@ export function TracesPage({
       width: 150,
       sortable: true,
       render: (r) => formatTimestamp(r.timestamp),
+    },
+    {
+      id: 'type',
+      header: localize('com_traces_col_type'),
+      width: 110,
+      render: (r) => <TypeCell type={r.type} />,
     },
     {
       id: 'name',

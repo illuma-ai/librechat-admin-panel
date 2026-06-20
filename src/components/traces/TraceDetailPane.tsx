@@ -5,6 +5,7 @@ import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { ScoresTab } from './ScoresTab';
 import { LogViewTab, MessageList } from './LogViewTab';
+import { MetricBreakdown } from './MetricBreakdown';
 import { TypeIcon } from './traceIcons';
 import { formatCost, formatLatency, formatTimestampLong, formatTokenCounts } from './format';
 
@@ -107,6 +108,38 @@ function metadataRows(
   return rows;
 }
 
+/**
+ * A cost/usage metric badge. When the producer supplies a per-key breakdown
+ * (`costDetails`/`usageDetails`) the badge gains an info icon and a click-to-open
+ * breakdown popover; with no breakdown (today's LibreChat cost data) it renders a
+ * plain badge — so the popover lights up automatically once richer data arrives.
+ */
+function MetricBadge({
+  label,
+  details,
+  isCost,
+}: {
+  label: string;
+  details: Record<string, number>;
+  isCost: boolean;
+}) {
+  const hasDetails = Object.keys(details).length > 0;
+  const badge = (
+    <Badge>
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {hasDetails ? <Info className="size-3 shrink-0" /> : null}
+      </span>
+    </Badge>
+  );
+  if (!hasDetails) return badge;
+  return (
+    <MetricBreakdown details={details} isCost={isCost}>
+      {badge}
+    </MetricBreakdown>
+  );
+}
+
 /** reference trace/observation detail pane: badges → Preview (Tags, Input, Output, Metadata). */
 type TabId = 'preview' | 'scores' | 'log';
 
@@ -143,6 +176,23 @@ export function TraceDetailPane({
       outputMessages: out.length > 0 ? out : node.outputMessages,
     };
   }, [node]);
+
+  // Per-key cost/usage details for the breakdown popovers: a selected observation
+  // uses its own; the root aggregates across the whole observation tree.
+  const { costDetails, usageDetails } = useMemo(() => {
+    if (!isRoot && node) return { costDetails: node.costDetails, usageDetails: node.usageDetails };
+    const cost: Record<string, number> = {};
+    const usage: Record<string, number> = {};
+    const walk = (ns: t.ObservationNode[]) => {
+      for (const n of ns) {
+        for (const [k, v] of Object.entries(n.costDetails ?? {})) cost[k] = (cost[k] ?? 0) + v;
+        for (const [k, v] of Object.entries(n.usageDetails ?? {})) usage[k] = (usage[k] ?? 0) + v;
+        walk(n.children);
+      }
+    };
+    walk(observations);
+    return { costDetails: cost, usageDetails: usage };
+  }, [isRoot, node, observations]);
 
   const latencyMs = isRoot ? totals.latencyMs : (node?.latencyMs ?? 0);
   const cost = isRoot ? totals.totalCost : (node?.totalCost ?? 0);
@@ -218,19 +268,9 @@ export function TraceDetailPane({
             </Badge>
           ) : null}
           {node?.model ? <Badge>{node.model}</Badge> : null}
-          {cost > 0 ? (
-            <Badge>
-              <span className="inline-flex items-center gap-1">
-                {formatCost(cost)} <Info className="size-3 shrink-0" />
-              </span>
-            </Badge>
-          ) : null}
+          {cost > 0 ? <MetricBadge label={formatCost(cost)} details={costDetails} isCost /> : null}
           {tokenText ? (
-            <Badge>
-              <span className="inline-flex items-center gap-1">
-                {tokenText} <Info className="size-3 shrink-0" />
-              </span>
-            </Badge>
+            <MetricBadge label={tokenText} details={usageDetails} isCost={false} />
           ) : null}
           </div>
         </div>
