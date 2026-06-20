@@ -1,4 +1,4 @@
-import { Container } from '@clickhouse/click-ui';
+import { Container } from '@admin/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import ThemeSelector from '@/components/ThemeSelector';
 import { AuthCard } from '@/components/AuthCard';

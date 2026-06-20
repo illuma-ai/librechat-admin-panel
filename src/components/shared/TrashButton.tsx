@@ -1,4 +1,4 @@
-import { IconButton } from '@clickhouse/click-ui';
+import { IconButton } from '@admin/ui';
 import type * as t from '@/types';
 
 export function TrashButton({ onClick, ariaLabel, size = 'sm', disabled }: t.TrashButtonProps) {

@@ -1,5 +1,4 @@
 import '../locales/i18n';
-import { ClickUIProvider } from '@clickhouse/click-ui';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
@@ -12,7 +11,7 @@ import {
   createRootRoute,
 } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
-import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import appCss from '../styles.css?url';
 import { useLocalize } from '@/hooks';
 
@@ -60,19 +59,10 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <ThemeProvider>
-      <ThemedApp />
-    </ThemeProvider>
-  );
-}
-
-function ThemedApp() {
-  const { resolvedTheme } = useTheme();
-  return (
-    <ClickUIProvider theme={resolvedTheme}>
       <div className="isolate">
         <Outlet />
       </div>
-    </ClickUIProvider>
+    </ThemeProvider>
   );
 }
 

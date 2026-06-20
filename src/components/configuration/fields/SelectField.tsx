@@ -1,4 +1,4 @@
-import { Select } from '@clickhouse/click-ui';
+import { Select } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 

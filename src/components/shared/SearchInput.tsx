@@ -1,4 +1,4 @@
-import { SearchField } from '@clickhouse/click-ui';
+import { SearchField } from '@admin/ui';
 import type * as t from '@/types';
 
 export function SearchInput({ value, onChange, placeholder, className }: t.SearchInputProps) {

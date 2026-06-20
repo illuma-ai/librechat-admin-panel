@@ -1,4 +1,4 @@
-import { Avatar as CUIAvatar } from '@clickhouse/click-ui';
+import { Avatar as CUIAvatar } from '@admin/ui';
 import type * as t from '@/types';
 import { getInitials } from '@/utils';
 

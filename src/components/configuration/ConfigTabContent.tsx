@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MultiAccordion } from '@clickhouse/click-ui';
+import { MultiAccordion } from '@admin/ui';
 import type * as t from '@/types';
 import { SECTION_RENDERERS, SELF_CONTAINED_SECTION_RENDERERS } from './sections';
 import { FieldRenderer, SingleFieldRenderer } from './FieldRenderer';

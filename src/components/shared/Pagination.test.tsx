@@ -1,19 +1,6 @@
-import { render } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { getPageNumbers, Pagination } from './Pagination';
-
-vi.mock('@clickhouse/click-ui', () => ({
-  Pagination: ({ currentPage, totalPages, onChange }: {
-    currentPage: number;
-    totalPages: number;
-    onChange: (page: number) => void;
-  }) => (
-    <nav data-testid="cui-pagination" data-current={currentPage} data-total={totalPages}>
-      <button onClick={() => onChange(currentPage - 1)}>prev</button>
-      <button onClick={() => onChange(currentPage + 1)}>next</button>
-    </nav>
-  ),
-}));
 
 const TRANSLATIONS: Record<string, string> = {
   com_a11y_pagination: 'Pagination',
@@ -77,12 +64,14 @@ describe('Pagination', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('renders CUI Pagination when totalPages > 1', () => {
-    const { getByTestId } = render(
-      <Pagination currentPage={2} totalPages={5} onPageChange={() => {}} />,
-    );
-    const nav = getByTestId('cui-pagination');
-    expect(nav).toHaveAttribute('data-current', '2');
-    expect(nav).toHaveAttribute('data-total', '5');
+  it('renders a pagination nav with the active page when totalPages > 1', () => {
+    const onPageChange = vi.fn();
+    render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChange} />);
+
+    expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { current: 'page' })).toHaveTextContent('2');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(onPageChange).toHaveBeenCalledWith(3);
   });
 });

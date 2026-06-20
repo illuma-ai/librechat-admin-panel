@@ -1,4 +1,4 @@
-import { Select } from '@clickhouse/click-ui';
+import { Select } from '@admin/ui';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import type * as t from '@/types';

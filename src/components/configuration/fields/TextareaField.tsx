@@ -1,4 +1,4 @@
-import { TextAreaField } from '@clickhouse/click-ui';
+import { TextAreaField } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 

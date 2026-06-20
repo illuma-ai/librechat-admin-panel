@@ -1,4 +1,4 @@
-import { ConfirmationDialog } from '@clickhouse/click-ui';
+import { Dialog, Button } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 
@@ -16,24 +16,38 @@ export function ConfirmDialog({
   const localize = useLocalize();
 
   return (
-    <ConfirmationDialog
+    <Dialog
       open={open}
-      title={title}
-      message={description}
-      primaryActionLabel={confirmLabel}
-      primaryActionType={confirmType}
-      secondaryActionLabel={localize('com_ui_cancel')}
-      loading={saving}
-      onConfirm={onConfirm}
-      onCancel={onCancel}
-      showClose
-      className="modal-frost"
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onCancel();
+      }}
     >
-      {error && (
-        <p role="alert" className="text-sm text-(--cui-color-text-danger)">
-          {error}
-        </p>
-      )}
-    </ConfirmationDialog>
+      <Dialog.Content title={title} showClose onClose={onCancel} className="modal-frost max-w-md!">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-(--cui-color-text-muted)">{description}</p>
+
+          {error && (
+            <p role="alert" className="text-sm text-(--cui-color-text-danger)">
+              {error}
+            </p>
+          )}
+
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              type="secondary"
+              label={localize('com_ui_cancel')}
+              onClick={onCancel}
+              disabled={saving}
+            />
+            <Button
+              type={confirmType}
+              label={saving ? localize('com_ui_loading') : confirmLabel}
+              onClick={onConfirm}
+              disabled={saving}
+            />
+          </div>
+        </div>
+      </Dialog.Content>
+    </Dialog>
   );
 }

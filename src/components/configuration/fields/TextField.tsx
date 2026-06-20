@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { TextField as CUITextField } from '@clickhouse/click-ui';
+import { TextField as CUITextField } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 

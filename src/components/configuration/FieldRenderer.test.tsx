@@ -92,6 +92,27 @@ vi.mock('@clickhouse/click-ui', () => ({
   ),
 }));
 
+// Override only @admin/ui Select: the real Radix Select keeps its options in a
+// portal that isn't rendered until opened, so render them inline here so the
+// enum-field tests can assert the option list. All other primitives stay real.
+vi.mock('@admin/ui', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@admin/ui')>();
+  const SelectItem = ({ children, value }: MockSelectItemProps) => (
+    <div data-testid="select-item" data-value={value}>
+      {children}
+    </div>
+  );
+  const Select = Object.assign(
+    ({ children, value, 'aria-label': ariaLabel }: MockSelectProps) => (
+      <div data-testid="select" data-value={value} aria-label={ariaLabel}>
+        {children}
+      </div>
+    ),
+    { Item: SelectItem },
+  );
+  return { ...actual, Select };
+});
+
 const noop = () => {};
 const getValue = (_path: string, fallback: t.ConfigValue) => fallback;
 

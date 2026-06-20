@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { NumberField as CUINumberField } from '@clickhouse/click-ui';
+import { NumberField as CUINumberField } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 
@@ -48,8 +48,6 @@ export function NumberField({
         min={min}
         max={max}
         step={step}
-        loading={false}
-        hideControls
         {...ariaProps}
       />
     </div>
