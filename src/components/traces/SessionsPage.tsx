@@ -7,7 +7,9 @@ import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { SessionDrawer } from './SessionDrawer';
+import { ColumnsMenu } from './ColumnsMenu';
 import { useTracingTenant } from './useTracingTenant';
+import { useColumnVisibility } from './useColumnVisibility';
 import { EnvBadge } from './cells';
 import { formatCost, formatLatency, formatTimestamp, formatTokens } from './format';
 
@@ -118,6 +120,8 @@ export function SessionsPage({
     },
   ];
 
+  const columnVisibility = useColumnVisibility('sessions', columns);
+
   return (
     <TracingShell
       tenant={effectiveTenant}
@@ -134,6 +138,15 @@ export function SessionsPage({
       filterSidebar={
         <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
       }
+      toolbarExtra={
+        <ColumnsMenu
+          columns={columns}
+          hidden={columnVisibility.hidden}
+          onToggle={columnVisibility.toggle}
+          visibleCount={columnVisibility.visibleCount}
+          total={columnVisibility.total}
+        />
+      }
       drawer={
         <SessionDrawer
           tenant={effectiveTenant}
@@ -145,6 +158,7 @@ export function SessionsPage({
     >
       <DataTable
         columns={columns}
+        hiddenColumnIds={columnVisibility.hidden}
         rows={query.data?.rows ?? []}
         rowKey={(r) => r.id}
         onRowClick={(r) => onOpenSession(r.id)}
