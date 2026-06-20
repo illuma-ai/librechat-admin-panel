@@ -21,6 +21,7 @@ const ROUTE_TITLE_KEYS: Record<string, string> = {
   '/sessions': 'com_nav_sessions',
   '/trace-users': 'com_nav_trace_users',
   '/scores': 'com_nav_scores',
+  '/dashboards': 'com_nav_dashboards',
   '/help': 'com_help_title',
 };
 

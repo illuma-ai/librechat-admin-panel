@@ -1,17 +1,9 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Select } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
-import {
-  dashboardBreakdownsQueryOptions,
-  dashboardSummaryQueryOptions,
-  dashboardTimeseriesQueryOptions,
-} from '@/server';
-import { formatCost, formatTokens, parseChDate, useTracingTenant } from '@/components/traces';
-import { Widget, StatCard } from './cards';
-import { TimeSeriesChart } from './charts/TimeSeriesChart';
-import { BarList } from './charts/BarList';
+import { formatCost, formatTokens, useTracingTenant } from '@/components/traces';
+import { StatCard } from './cards';
+import { useDashboardData, WIDGET_CATALOG, CatalogWidget } from './widgetCatalog';
 
 interface DashboardMetricsProps {
   tenant: string;
@@ -27,55 +19,17 @@ const RANGE_KEYS: { value: t.TraceRange; labelKey: string }[] = [
   { value: 'all', labelKey: 'com_traces_range_all' },
 ];
 
-/** Compact bucket-axis label: time-of-day for the 24h range, else month/day. */
-function bucketLabel(bucket: string, range: t.TraceRange): string {
-  const d = parseChDate(bucket);
-  if (Number.isNaN(d.getTime())) return bucket;
-  if (range === '24h') {
-    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  }
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
 /**
- * Observability dashboard (reference Home parity): tenant + time-range controls,
- * a KPI row, time-series charts (traces / cost / tokens / observations) and
- * breakdown widgets (model usage, scores). All metrics derive from the existing
- * telemetry via tenant-scoped server aggregates.
+ * Observability dashboard (reference Home parity): tenant + time-range controls, a
+ * KPI row, and the full widget catalog (time-series + breakdowns). Both the KPIs and
+ * widgets derive from the existing telemetry via tenant-scoped aggregates; custom
+ * dashboards reuse the same catalog.
  */
 export function DashboardMetrics({ tenant, range, onTenant, onRange }: DashboardMetricsProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
-
-  const summary = useQuery(dashboardSummaryQueryOptions(effectiveTenant, range));
-  const series = useQuery(dashboardTimeseriesQueryOptions(effectiveTenant, range));
-  const breakdowns = useQuery(dashboardBreakdownsQueryOptions(effectiveTenant, range));
-
-  const buckets = useMemo(() => series.data ?? [], [series.data]);
-  const points = useMemo(
-    () =>
-      buckets.map((b) => ({ label: bucketLabel(b.bucket, range), ...b })),
-    [buckets, range],
-  );
-  const s = summary.data;
-
-  const modelRows: t.BarRow[] = (breakdowns.data?.modelUsage ?? []).map((m) => ({
-    label: m.model,
-    value: m.cost,
-    display: formatCost(m.cost),
-  }));
-  const scoreRows: t.BarRow[] = (breakdowns.data?.scoreDistribution ?? []).map((sc) => ({
-    label: sc.average === null ? sc.name : `${sc.name} (avg ${sc.average.toFixed(2)})`,
-    value: sc.count,
-    display: sc.count.toLocaleString(),
-  }));
-  const userRows: t.BarRow[] = (breakdowns.data?.userConsumption ?? []).map((u) => ({
-    label: u.userId,
-    value: u.cost,
-    display: formatCost(u.cost),
-  }));
-  const latency = breakdowns.data?.latency;
-  const formatSeconds = (n: number) => `${n.toFixed(2)}s`;
+  const data = useDashboardData(effectiveTenant, range);
+  const s = data.summary;
 
   return (
     <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-4">
@@ -109,40 +63,9 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Widget title={localize('com_dash_w_traces')}>
-          <TimeSeriesChart points={points.map((p) => ({ label: p.label, value: p.traces }))} />
-        </Widget>
-        <Widget title={localize('com_dash_w_cost')}>
-          <TimeSeriesChart
-            points={points.map((p) => ({ label: p.label, value: p.cost }))}
-            formatValue={formatCost}
-          />
-        </Widget>
-        <Widget title={localize('com_dash_w_tokens')}>
-          <TimeSeriesChart
-            points={points.map((p) => ({ label: p.label, value: p.tokens }))}
-            formatValue={formatTokens}
-          />
-        </Widget>
-        <Widget title={localize('com_dash_w_observations')}>
-          <TimeSeriesChart points={points.map((p) => ({ label: p.label, value: p.observations }))} />
-        </Widget>
-        <Widget title={localize('com_dash_w_model_usage')}>
-          <BarList rows={modelRows} />
-        </Widget>
-        <Widget title={localize('com_dash_w_scores')}>
-          <BarList rows={scoreRows} />
-        </Widget>
-        <Widget title={localize('com_dash_w_user_consumption')}>
-          <BarList rows={userRows} />
-        </Widget>
-        <Widget title={localize('com_dash_w_latency')}>
-          <div className="grid grid-cols-3 gap-3">
-            <StatCard label="p50" value={formatSeconds(latency?.p50 ?? 0)} />
-            <StatCard label="p95" value={formatSeconds(latency?.p95 ?? 0)} />
-            <StatCard label="p99" value={formatSeconds(latency?.p99 ?? 0)} />
-          </div>
-        </Widget>
+        {WIDGET_CATALOG.map((w) => (
+          <CatalogWidget key={w.id} id={w.id} data={data} title={localize(w.titleKey)} />
+        ))}
       </div>
     </section>
   );

@@ -77,3 +77,17 @@ export interface BarRow {
   /** Pre-formatted value display; falls back to value.toLocaleString(). */
   display?: string;
 }
+
+/**
+ * A user-saved custom dashboard — a named, ordered selection of catalog widgets.
+ * Persisted client-side (localStorage), mirroring the Saved Views pattern.
+ */
+export interface SavedDashboard {
+  id: string;
+  name: string;
+  description: string;
+  /** Catalog widget ids, in display order. */
+  widgetIds: string[];
+  createdAt: number;
+  updatedAt: number;
+}

@@ -11,6 +11,7 @@ import { adminLogoutFn } from '@/server';
 
 const navItems: t.NavItem[] = [
   { labelKey: 'com_nav_dashboard', path: '/', icon: 'home' },
+  { labelKey: 'com_nav_dashboards', path: '/dashboards', icon: 'metrics' },
   {
     labelKey: 'com_nav_configuration',
     path: '/configuration',

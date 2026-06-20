@@ -21,10 +21,12 @@ import { Route as AppHelpRouteImport } from './routes/_app/help'
 import { Route as AppGrantsRouteImport } from './routes/_app/grants'
 import { Route as AppAccessRouteImport } from './routes/_app/access'
 import { Route as AppTracesIndexRouteImport } from './routes/_app/traces.index'
+import { Route as AppDashboardsIndexRouteImport } from './routes/_app/dashboards.index'
 import { Route as AppConfigurationIndexRouteImport } from './routes/_app/configuration/index'
 import { Route as AuthOpenidCallbackRouteImport } from './routes/auth/openid/callback'
 import { Route as AppTracesTraceIdRouteImport } from './routes/_app/traces.$traceId'
 import { Route as AppSessionsSessionIdRouteImport } from './routes/_app/sessions.$sessionId'
+import { Route as AppDashboardsIdRouteImport } from './routes/_app/dashboards.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -85,6 +87,11 @@ const AppTracesIndexRoute = AppTracesIndexRouteImport.update({
   path: '/traces/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardsIndexRoute = AppDashboardsIndexRouteImport.update({
+  id: '/dashboards/',
+  path: '/dashboards/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppConfigurationIndexRoute = AppConfigurationIndexRouteImport.update({
   id: '/configuration/',
   path: '/configuration/',
@@ -105,6 +112,11 @@ const AppSessionsSessionIdRoute = AppSessionsSessionIdRouteImport.update({
   path: '/$sessionId',
   getParentRoute: () => AppSessionsRoute,
 } as any)
+const AppDashboardsIdRoute = AppDashboardsIdRouteImport.update({
+  id: '/dashboards/$id',
+  path: '/dashboards/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -117,10 +129,12 @@ export interface FileRoutesByFullPath {
   '/sessions': typeof AppSessionsRouteWithChildren
   '/trace-users': typeof AppTraceUsersRoute
   '/users': typeof AppUsersRoute
+  '/dashboards/$id': typeof AppDashboardsIdRoute
   '/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/configuration/': typeof AppConfigurationIndexRoute
+  '/dashboards/': typeof AppDashboardsIndexRoute
   '/traces/': typeof AppTracesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -134,10 +148,12 @@ export interface FileRoutesByTo {
   '/trace-users': typeof AppTraceUsersRoute
   '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
+  '/dashboards/$id': typeof AppDashboardsIdRoute
   '/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/configuration': typeof AppConfigurationIndexRoute
+  '/dashboards': typeof AppDashboardsIndexRoute
   '/traces': typeof AppTracesIndexRoute
 }
 export interface FileRoutesById {
@@ -153,10 +169,12 @@ export interface FileRoutesById {
   '/_app/trace-users': typeof AppTraceUsersRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/dashboards/$id': typeof AppDashboardsIdRoute
   '/_app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/_app/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/_app/configuration/': typeof AppConfigurationIndexRoute
+  '/_app/dashboards/': typeof AppDashboardsIndexRoute
   '/_app/traces/': typeof AppTracesIndexRoute
 }
 export interface FileRouteTypes {
@@ -172,10 +190,12 @@ export interface FileRouteTypes {
     | '/sessions'
     | '/trace-users'
     | '/users'
+    | '/dashboards/$id'
     | '/sessions/$sessionId'
     | '/traces/$traceId'
     | '/auth/openid/callback'
     | '/configuration/'
+    | '/dashboards/'
     | '/traces/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -189,10 +209,12 @@ export interface FileRouteTypes {
     | '/trace-users'
     | '/users'
     | '/'
+    | '/dashboards/$id'
     | '/sessions/$sessionId'
     | '/traces/$traceId'
     | '/auth/openid/callback'
     | '/configuration'
+    | '/dashboards'
     | '/traces'
   id:
     | '__root__'
@@ -207,10 +229,12 @@ export interface FileRouteTypes {
     | '/_app/trace-users'
     | '/_app/users'
     | '/_app/'
+    | '/_app/dashboards/$id'
     | '/_app/sessions/$sessionId'
     | '/_app/traces/$traceId'
     | '/auth/openid/callback'
     | '/_app/configuration/'
+    | '/_app/dashboards/'
     | '/_app/traces/'
   fileRoutesById: FileRoutesById
 }
@@ -306,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTracesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboards/': {
+      id: '/_app/dashboards/'
+      path: '/dashboards'
+      fullPath: '/dashboards/'
+      preLoaderRoute: typeof AppDashboardsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/configuration/': {
       id: '/_app/configuration/'
       path: '/configuration'
@@ -334,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSessionsSessionIdRouteImport
       parentRoute: typeof AppSessionsRoute
     }
+    '/_app/dashboards/$id': {
+      id: '/_app/dashboards/$id'
+      path: '/dashboards/$id'
+      fullPath: '/dashboards/$id'
+      preLoaderRoute: typeof AppDashboardsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -359,8 +397,10 @@ interface AppRouteChildren {
   AppTraceUsersRoute: typeof AppTraceUsersRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppDashboardsIdRoute: typeof AppDashboardsIdRoute
   AppTracesTraceIdRoute: typeof AppTracesTraceIdRoute
   AppConfigurationIndexRoute: typeof AppConfigurationIndexRoute
+  AppDashboardsIndexRoute: typeof AppDashboardsIndexRoute
   AppTracesIndexRoute: typeof AppTracesIndexRoute
 }
 
@@ -374,8 +414,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppTraceUsersRoute: AppTraceUsersRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
+  AppDashboardsIdRoute: AppDashboardsIdRoute,
   AppTracesTraceIdRoute: AppTracesTraceIdRoute,
   AppConfigurationIndexRoute: AppConfigurationIndexRoute,
+  AppDashboardsIndexRoute: AppDashboardsIndexRoute,
   AppTracesIndexRoute: AppTracesIndexRoute,
 }
 
