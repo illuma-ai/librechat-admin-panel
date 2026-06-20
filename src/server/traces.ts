@@ -461,6 +461,27 @@ export const getSessionsFn = createServerFn({ method: 'GET' })
       ...(hasSearch ? { s: `%${data.search.trim()}%` } : {}),
     };
 
+    // Session facet filters (mirrors the reference): a session matches if it
+    // contains a trace with the chosen environment / user. Applied to the
+    // trace-level columns; bound as params, never interpolated. The two queries
+    // alias the base differently (unprefixed vs `t.`), so we build both forms.
+    const sessionFacets: { col: string; param: string; values?: string[] }[] = [
+      { col: 'environment', param: 'fEnv', values: data.environment },
+      { col: 'user_id', param: 'fUser', values: data.userId },
+    ];
+    const facetClause = (prefix: string) => {
+      const parts: string[] = [];
+      for (const f of sessionFacets) {
+        if (f.values && f.values.length > 0) {
+          parts.push(`${prefix}${f.col} IN {${f.param}:Array(String)}`);
+          params[f.param] = f.values;
+        }
+      }
+      return parts.length > 0 ? `AND ${parts.join(' AND ')}` : '';
+    };
+    const countFacets = facetClause('');
+    const rowFacets = facetClause('t.');
+
     // Latest version per trace, then group by session.
     const base = `(
       SELECT argMax(session_id, updated_at) AS session_id, argMax(user_id, updated_at) AS user_id,
@@ -471,7 +492,7 @@ export const getSessionsFn = createServerFn({ method: 'GET' })
 
     const [countRow] = await chQuery<{ c: string }>(
       `SELECT count() AS c FROM (
-         SELECT session_id FROM ${base} WHERE session_id != '' ${timeClause} ${searchClause}
+         SELECT session_id FROM ${base} WHERE session_id != '' ${timeClause} ${searchClause} ${countFacets}
          GROUP BY session_id
        )`,
       params,
@@ -489,7 +510,7 @@ export const getSessionsFn = createServerFn({ method: 'GET' })
          FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0
          GROUP BY trace_id
        ) AS o ON o.trace_id = t.id
-       WHERE t.session_id != '' ${timeClause} ${searchClause}
+       WHERE t.session_id != '' ${timeClause} ${searchClause} ${rowFacets}
        GROUP BY t.session_id
        ORDER BY max(t.timestamp) DESC
        LIMIT {limit:UInt32} OFFSET {offset:UInt32}`,

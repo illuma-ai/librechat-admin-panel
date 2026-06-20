@@ -30,7 +30,7 @@ function SessionDetailRoute() {
       <div className="px-6 pt-5 pb-3">
         <Link
           to="/sessions"
-          search={{ tenant, q: '', range: 'all', page: 1, session: '' }}
+          search={{ tenant, q: '', range: 'all', page: 1, session: '', env: [], user: [] }}
           className="inline-flex w-fit items-center gap-1 text-sm text-(--ui-color-text-muted) no-underline hover:text-(--ui-color-text-default)"
         >
           <Icon name="chevron-left" size="sm" />

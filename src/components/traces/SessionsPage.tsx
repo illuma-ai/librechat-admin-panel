@@ -5,6 +5,7 @@ import { sessionsQueryOptions } from '@/server';
 import { DataTable } from './DataTable';
 import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
+import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { SessionDrawer } from './SessionDrawer';
 import { useTracingTenant } from './useTracingTenant';
 import { EnvBadge } from './cells';
@@ -17,10 +18,12 @@ interface SessionsPageProps {
   page: number;
   pageSize: number;
   selectedSessionId: string | null;
+  filters: t.TraceFacetFilters;
   onTenant: (tenant: string) => void;
   onSearch: (search: string) => void;
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
+  onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
   onOpenSession: (sessionId: string) => void;
   onCloseSession: () => void;
   onOpenTrace: (traceId: string) => void;
@@ -33,10 +36,12 @@ export function SessionsPage({
   page,
   pageSize,
   selectedSessionId,
+  filters,
   onTenant,
   onSearch,
   onRange,
   onPage,
+  onFilters,
   onOpenSession,
   onCloseSession,
   onOpenTrace,
@@ -44,7 +49,15 @@ export function SessionsPage({
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const query = useQuery(
-    sessionsQueryOptions({ tenantId: effectiveTenant, search, range, page, pageSize }),
+    sessionsQueryOptions({
+      tenantId: effectiveTenant,
+      search,
+      range,
+      page,
+      pageSize,
+      environment: filters.environment,
+      userId: filters.userId,
+    }),
   );
 
   const total = query.data?.total ?? 0;
@@ -118,6 +131,9 @@ export function SessionsPage({
       totalPages={totalPages}
       onPage={onPage}
       searchPlaceholder={localize('com_traces_session_search_placeholder')}
+      filterSidebar={
+        <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+      }
       drawer={
         <SessionDrawer
           tenant={effectiveTenant}

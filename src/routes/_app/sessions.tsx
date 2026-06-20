@@ -11,10 +11,19 @@ interface SessionsSearch {
   range: t.TraceRange;
   page: number;
   session: string;
+  /** Facet filters — a session matches if it contains a trace with these. */
+  env: string[];
+  user: string[];
 }
 
 function parseRange(value: unknown): t.TraceRange {
   return RANGES.includes(value as t.TraceRange) ? (value as t.TraceRange) : 'all';
+}
+
+function parseStrArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  if (typeof value === 'string' && value) return value.split(',').filter(Boolean);
+  return [];
 }
 
 export const Route = createFileRoute('/_app/sessions')({
@@ -24,13 +33,15 @@ export const Route = createFileRoute('/_app/sessions')({
     range: parseRange(search.range),
     page: Math.max(1, Number(search.page) || 1),
     session: typeof search.session === 'string' ? search.session : '',
+    env: parseStrArray(search.env),
+    user: parseStrArray(search.user),
   }),
   component: SessionsRoute,
 });
 
 function SessionsRoute() {
-  const { tenant, q, range, page, session } = Route.useSearch();
-  const navigate = useNavigate();
+  const { tenant, q, range, page, session, env, user } = Route.useSearch();
+  const navigate = useNavigate({ from: '/sessions' });
 
   return (
     <SessionsPage
@@ -40,24 +51,29 @@ function SessionsRoute() {
       page={page}
       pageSize={PAGE_SIZE}
       selectedSessionId={session || null}
+      filters={{ environment: env, userId: user, name: [], type: [], level: [], tags: [] }}
       onTenant={(value) =>
-        navigate({ to: '/sessions', search: { tenant: value, q: '', range, page: 1, session: '' } })
+        navigate({
+          search: { tenant: value, q: '', range, page: 1, session: '', env: [], user: [] },
+        })
       }
-      onSearch={(value) =>
-        navigate({ to: '/sessions', search: { tenant, q: value, range, page: 1, session: '' } })
-      }
-      onRange={(value) =>
-        navigate({ to: '/sessions', search: { tenant, q, range: value, page: 1, session: '' } })
-      }
-      onPage={(value) =>
-        navigate({ to: '/sessions', search: { tenant, q, range, page: value, session } })
+      onSearch={(value) => navigate({ search: (prev) => ({ ...prev, q: value, page: 1 }) })}
+      onRange={(value) => navigate({ search: (prev) => ({ ...prev, range: value, page: 1 }) })}
+      onPage={(value) => navigate({ search: (prev) => ({ ...prev, page: value }) })}
+      onFilters={(patch) =>
+        navigate({
+          search: (prev) => ({
+            ...prev,
+            env: patch.environment ?? prev.env,
+            user: patch.userId ?? prev.user,
+            page: 1,
+          }),
+        })
       }
       onOpenSession={(sessionId) =>
-        navigate({ to: '/sessions', search: { tenant, q, range, page, session: sessionId } })
+        navigate({ search: (prev) => ({ ...prev, session: sessionId }) })
       }
-      onCloseSession={() =>
-        navigate({ to: '/sessions', search: { tenant, q, range, page, session: '' } })
-      }
+      onCloseSession={() => navigate({ search: (prev) => ({ ...prev, session: '' }) })}
       onOpenTrace={(traceId) =>
         navigate({
           to: '/traces',
