@@ -516,10 +516,45 @@ function NumericRangeFacet({
   );
 }
 
+/** The facet blocks the sidebar can render; tabs pass the subset they support. */
+export type FacetKey =
+  | 'environment'
+  | 'type'
+  | 'level'
+  | 'latency'
+  | 'cost'
+  | 'tokens'
+  | 'name'
+  | 'user'
+  | 'sessionId'
+  | 'release'
+  | 'version'
+  | 'tags';
+
+/** Full facet set (Traces). Observations/Sessions pass a narrower list. */
+const ALL_FACETS: FacetKey[] = [
+  'environment',
+  'type',
+  'level',
+  'latency',
+  'cost',
+  'tokens',
+  'name',
+  'user',
+  'sessionId',
+  'release',
+  'version',
+  'tags',
+];
+
 interface TraceFilterSidebarProps {
   tenant: string;
   filters: t.TraceFacetFilters;
   onChange: (patch: Partial<t.TraceFacetFilters>) => void;
+  /** Which facets to show; defaults to the full set. Tabs that only filter on a
+   * subset (Observations, Sessions) pass just the facets they actually apply, so
+   * the sidebar never shows a no-op control. */
+  facets?: FacetKey[];
 }
 
 /**
@@ -531,9 +566,15 @@ interface TraceFilterSidebarProps {
  * the tags operator, and TEXT-mode rules are LOCAL state for now — see the report
  * for the `TraceFacetFilters`/route wiring needed to persist them.
  */
-export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSidebarProps) {
+export function TraceFilterSidebar({
+  tenant,
+  filters,
+  onChange,
+  facets = ALL_FACETS,
+}: TraceFilterSidebarProps) {
   const localize = useLocalize();
   const { data } = useQuery(traceFilterOptionsQueryOptions(tenant));
+  const show = (key: FacetKey) => facets.includes(key);
 
   const [sessionId, setSessionId] = useState<string[]>([]);
   const [release, setRelease] = useState<string[]>([]);
@@ -612,101 +653,125 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
           </Tooltip>
         </div>
       </div>
-      <CategoricalFacet
-        label={localize('com_traces_environment')}
-        options={data?.environments ?? []}
-        value={filters.environment}
-        onChange={(v) => onChange({ environment: v })}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_type')}
-        info={<InfoTooltip description={localize('com_traces_filter_type_info')} />}
-        options={data?.type ?? []}
-        value={filters.type}
-        onChange={(v) => onChange({ type: v })}
-        renderOptionLabel={(value) => <TypeOptionLabel value={value} />}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_col_level')}
-        info={<InfoTooltip description={localize('com_traces_filter_level_info')} />}
-        options={data?.level ?? []}
-        value={filters.level}
-        onChange={(v) => onChange({ level: v })}
-        renderOptionLabel={(value) => <LevelOptionLabel value={value} />}
-      />
-      <NumericRangeFacet
-        label={localize('com_traces_col_latency')}
-        info={<InfoTooltip description={localize('com_traces_filter_latency_info')} />}
-        unit={localize('com_traces_unit_seconds')}
-        bound={data?.latencyMax}
-        min={filters.latencyMin}
-        max={filters.latencyMax}
-        onChange={({ min, max }) => onChange({ latencyMin: min, latencyMax: max })}
-      />
-      <NumericRangeFacet
-        label={localize('com_traces_col_cost')}
-        info={<InfoTooltip description={localize('com_traces_filter_cost_info')} />}
-        unit={localize('com_traces_unit_usd')}
-        bound={data?.costMax}
-        min={filters.costMin}
-        max={filters.costMax}
-        onChange={({ min, max }) => onChange({ costMin: min, costMax: max })}
-      />
-      <NumericRangeFacet
-        label={localize('com_traces_col_tokens')}
-        info={<InfoTooltip description={localize('com_traces_filter_tokens_info')} />}
-        bound={data?.tokensMax}
-        min={filters.tokensMin}
-        max={filters.tokensMax}
-        onChange={({ min, max }) => onChange({ tokensMin: min, tokensMax: max })}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_col_name')}
-        options={data?.names ?? []}
-        value={filters.name}
-        onChange={(v) => onChange({ name: v })}
-        enableTextMode
-        textRules={nameTextRules}
-        onTextRulesChange={setNameTextRules}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_col_user')}
-        options={data?.userIds ?? []}
-        value={filters.userId}
-        onChange={(v) => onChange({ userId: v })}
-        enableTextMode
-        textRules={userTextRules}
-        onTextRulesChange={setUserTextRules}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_session_id')}
-        info={<InfoTooltip description={localize('com_traces_filter_session_id_info')} />}
-        options={extraOptions(data, 'sessionIds')}
-        value={sessionId}
-        onChange={setSessionId}
-        emptyHint={localize('com_traces_filter_no_sessions')}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_release')}
-        options={extraOptions(data, 'releases')}
-        value={release}
-        onChange={setRelease}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_version')}
-        options={extraOptions(data, 'versions')}
-        value={version}
-        onChange={setVersion}
-      />
-      <CategoricalFacet
-        label={localize('com_traces_tags')}
-        info={<InfoTooltip description={localize('com_traces_filter_tags_info')} />}
-        options={data?.tags ?? []}
-        value={filters.tags}
-        onChange={(v) => onChange({ tags: v })}
-        operator={tagOperator}
-        onOperatorChange={setTagOperator}
-      />
+      {show('environment') && (
+        <CategoricalFacet
+          label={localize('com_traces_environment')}
+          options={data?.environments ?? []}
+          value={filters.environment}
+          onChange={(v) => onChange({ environment: v })}
+        />
+      )}
+      {show('type') && (
+        <CategoricalFacet
+          label={localize('com_traces_type')}
+          info={<InfoTooltip description={localize('com_traces_filter_type_info')} />}
+          options={data?.type ?? []}
+          value={filters.type}
+          onChange={(v) => onChange({ type: v })}
+          renderOptionLabel={(value) => <TypeOptionLabel value={value} />}
+        />
+      )}
+      {show('level') && (
+        <CategoricalFacet
+          label={localize('com_traces_col_level')}
+          info={<InfoTooltip description={localize('com_traces_filter_level_info')} />}
+          options={data?.level ?? []}
+          value={filters.level}
+          onChange={(v) => onChange({ level: v })}
+          renderOptionLabel={(value) => <LevelOptionLabel value={value} />}
+        />
+      )}
+      {show('latency') && (
+        <NumericRangeFacet
+          label={localize('com_traces_col_latency')}
+          info={<InfoTooltip description={localize('com_traces_filter_latency_info')} />}
+          unit={localize('com_traces_unit_seconds')}
+          bound={data?.latencyMax}
+          min={filters.latencyMin}
+          max={filters.latencyMax}
+          onChange={({ min, max }) => onChange({ latencyMin: min, latencyMax: max })}
+        />
+      )}
+      {show('cost') && (
+        <NumericRangeFacet
+          label={localize('com_traces_col_cost')}
+          info={<InfoTooltip description={localize('com_traces_filter_cost_info')} />}
+          unit={localize('com_traces_unit_usd')}
+          bound={data?.costMax}
+          min={filters.costMin}
+          max={filters.costMax}
+          onChange={({ min, max }) => onChange({ costMin: min, costMax: max })}
+        />
+      )}
+      {show('tokens') && (
+        <NumericRangeFacet
+          label={localize('com_traces_col_tokens')}
+          info={<InfoTooltip description={localize('com_traces_filter_tokens_info')} />}
+          bound={data?.tokensMax}
+          min={filters.tokensMin}
+          max={filters.tokensMax}
+          onChange={({ min, max }) => onChange({ tokensMin: min, tokensMax: max })}
+        />
+      )}
+      {show('name') && (
+        <CategoricalFacet
+          label={localize('com_traces_col_name')}
+          options={data?.names ?? []}
+          value={filters.name}
+          onChange={(v) => onChange({ name: v })}
+          enableTextMode
+          textRules={nameTextRules}
+          onTextRulesChange={setNameTextRules}
+        />
+      )}
+      {show('user') && (
+        <CategoricalFacet
+          label={localize('com_traces_col_user')}
+          options={data?.userIds ?? []}
+          value={filters.userId}
+          onChange={(v) => onChange({ userId: v })}
+          enableTextMode
+          textRules={userTextRules}
+          onTextRulesChange={setUserTextRules}
+        />
+      )}
+      {show('sessionId') && (
+        <CategoricalFacet
+          label={localize('com_traces_session_id')}
+          info={<InfoTooltip description={localize('com_traces_filter_session_id_info')} />}
+          options={extraOptions(data, 'sessionIds')}
+          value={sessionId}
+          onChange={setSessionId}
+          emptyHint={localize('com_traces_filter_no_sessions')}
+        />
+      )}
+      {show('release') && (
+        <CategoricalFacet
+          label={localize('com_traces_release')}
+          options={extraOptions(data, 'releases')}
+          value={release}
+          onChange={setRelease}
+        />
+      )}
+      {show('version') && (
+        <CategoricalFacet
+          label={localize('com_traces_version')}
+          options={extraOptions(data, 'versions')}
+          value={version}
+          onChange={setVersion}
+        />
+      )}
+      {show('tags') && (
+        <CategoricalFacet
+          label={localize('com_traces_tags')}
+          info={<InfoTooltip description={localize('com_traces_filter_tags_info')} />}
+          options={data?.tags ?? []}
+          value={filters.tags}
+          onChange={(v) => onChange({ tags: v })}
+          operator={tagOperator}
+          onOperatorChange={setTagOperator}
+        />
+      )}
     </div>
   );
 }

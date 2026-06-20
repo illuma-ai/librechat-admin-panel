@@ -225,7 +225,12 @@ export function ObservationsPage({
         />
       }
       filterSidebar={
-        <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+        <TraceFilterSidebar
+          tenant={effectiveTenant}
+          filters={filters}
+          onChange={onFilters}
+          facets={['environment', 'type', 'level', 'name']}
+        />
       }
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />

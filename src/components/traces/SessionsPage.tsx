@@ -139,7 +139,12 @@ export function SessionsPage({
       onPage={onPage}
       searchPlaceholder={localize('com_traces_session_search_placeholder')}
       filterSidebar={
-        <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+        <TraceFilterSidebar
+          tenant={effectiveTenant}
+          filters={filters}
+          onChange={onFilters}
+          facets={['environment', 'user']}
+        />
       }
       views={
         <ViewsMenu
