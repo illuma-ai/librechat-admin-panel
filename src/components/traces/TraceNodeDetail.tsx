@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Badge } from '@clickhouse/click-ui';
+import type { ReactNode } from 'react';
+import { Brain, Clock, Coins, Hash } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { MessageList } from './MessageList';
-import { observationBadgeState, formatCost, formatLatency, formatTokens } from './format';
+import { TypeIcon } from './traceIcons';
+import { formatCost, formatLatency, formatTokens } from './format';
 
 interface TraceNodeDetailProps {
   /** The selected observation, or null to show the trace-level conversation. */
@@ -29,7 +31,9 @@ function JsonBlock({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <div className="text-xs font-medium text-(--cui-color-text-muted)">{label}</div>
+      <div className="text-xs font-semibold tracking-wide text-(--cui-color-text-muted) uppercase">
+        {label}
+      </div>
       <pre className="trace-markdown max-h-90 overflow-auto rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) p-3 text-xs whitespace-pre-wrap">
         {prettyJson(value)}
       </pre>
@@ -37,12 +41,13 @@ function JsonBlock({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MetaItem({ label, value }: { label: string; value: string }) {
-  if (!value) return null;
+function Chip({ icon: Icon, children }: { icon: typeof Clock; children: ReactNode }) {
   return (
-    <span className="flex items-center gap-1 text-xs text-(--cui-color-text-muted)">
-      <span>{label}</span>
-      <span className="font-medium text-(--cui-color-text-default)">{value}</span>
+    <span
+      className="flex items-center gap-1 text-xs font-medium"
+      style={{ color: 'var(--trace-slate-muted)' }}
+    >
+      <Icon className="size-3 shrink-0" /> {children}
     </span>
   );
 }
@@ -54,7 +59,6 @@ export function TraceNodeDetail({ node, conversation, traceName }: TraceNodeDeta
 
   const messages = useMemo(() => {
     if (!node) return conversation;
-    // A node's output usually contains the fuller exchange; fall back to input.
     if (node.outputMessages.length > 0) return node.outputMessages;
     return node.inputMessages;
   }, [node, conversation]);
@@ -74,29 +78,19 @@ export function TraceNodeDetail({ node, conversation, traceName }: TraceNodeDeta
   return (
     <div className="flex h-full min-w-0 flex-col">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-(--cui-color-stroke-default) px-4 py-3">
-        {node ? (
-          <Badge text={node.type} state={observationBadgeState(node.type)} size="sm" />
-        ) : null}
+        {node ? <TypeIcon type={node.type} size={6} /> : null}
         <span className="truncate text-sm font-semibold text-(--cui-color-text-default)">
           {title}
         </span>
-        {node?.model ? <MetaItem label="" value={node.model} /> : null}
-        <span className="ml-auto flex items-center gap-3">
+        <span className="ml-auto flex flex-wrap items-center gap-3">
+          {node?.model ? <Chip icon={Brain}>{node.model}</Chip> : null}
           {node && node.totalTokens > 0 ? (
-            <MetaItem
-              label={localize('com_traces_col_tokens')}
-              value={formatTokens(node.totalTokens)}
-            />
+            <Chip icon={Hash}>{formatTokens(node.totalTokens)}</Chip>
           ) : null}
           {node && node.totalCost > 0 ? (
-            <MetaItem label={localize('com_traces_col_cost')} value={formatCost(node.totalCost)} />
+            <Chip icon={Coins}>{formatCost(node.totalCost)}</Chip>
           ) : null}
-          {node ? (
-            <MetaItem
-              label={localize('com_traces_col_latency')}
-              value={formatLatency(node.latencyMs)}
-            />
-          ) : null}
+          {node ? <Chip icon={Clock}>{formatLatency(node.latencyMs)}</Chip> : null}
         </span>
       </div>
 

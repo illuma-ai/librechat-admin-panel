@@ -1,46 +1,60 @@
+import { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import type * as t from '@/types';
-import { useLocalize } from '@/hooks';
+import { cn } from '@/utils';
 import { Markdown } from '@/components/shared';
+import { roleVisual } from './traceIcons';
 
-/** Role → accent color + label key. Mirrors Opik's role-coded message headers. */
-const ROLE_META: Record<t.TraceMessage['role'], { color: string; labelKey: string }> = {
-  user: {
-    color: 'var(--cui-color-feedback-info-foreground, #3b82f6)',
-    labelKey: 'com_traces_role_user',
-  },
-  assistant: {
-    color: 'var(--cui-color-feedback-success-foreground, #10b981)',
-    labelKey: 'com_traces_role_assistant',
-  },
-  system: { color: 'var(--cui-color-text-muted, #6b7280)', labelKey: 'com_traces_role_system' },
-  tool: {
-    color: 'var(--cui-color-feedback-warning-foreground, #f59e0b)',
-    labelKey: 'com_traces_role_tool',
-  },
-  unknown: { color: 'var(--cui-color-text-muted, #6b7280)', labelKey: 'com_traces_role_unknown' },
-};
-
-/** A vertical list of chat messages, each with a role-coded header and markdown body. */
+/**
+ * Opik-style chat messages: each message is a collapsible block with a role icon
+ * badge (color-coded), a role label, and a markdown body. Default expanded.
+ */
 export function MessageList({ messages }: { messages: t.TraceMessage[] }) {
-  const localize = useLocalize();
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+
+  const toggle = (index: number) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {messages.map((message, index) => {
-        const meta = ROLE_META[message.role] ?? ROLE_META.unknown;
+        const visual = roleVisual(message.role);
+        const Icon = visual.icon;
+        const open = !collapsed.has(index);
         return (
-          <div
-            key={`${message.role}-${index}`}
-            className="overflow-hidden rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-default)"
-          >
-            <div
-              className="flex items-center gap-2 border-l-2 px-3 py-1.5 text-xs font-semibold tracking-wide uppercase"
-              style={{ borderLeftColor: meta.color, color: meta.color }}
+          <div key={`${message.role}-${index}`} className="flex flex-col">
+            <button
+              type="button"
+              onClick={() => toggle(index)}
+              aria-expanded={open}
+              className="flex cursor-pointer items-center gap-1 rounded-sm p-1 text-left transition-colors select-none hover:bg-(--cui-color-background-muted)"
             >
-              {localize(meta.labelKey)}
-            </div>
-            <div className="px-3 py-2">
-              <Markdown>{message.text}</Markdown>
-            </div>
+              <ChevronRight
+                className={cn(
+                  'size-3.5 shrink-0 text-(--cui-color-text-muted) transition-transform',
+                  open ? 'rotate-90' : '',
+                )}
+              />
+              <span
+                className="flex size-5 shrink-0 items-center justify-center rounded-sm"
+                style={{ background: visual.bg, color: visual.color }}
+              >
+                <Icon className="size-3" />
+              </span>
+              <span className="text-[13px] font-semibold text-(--cui-color-text-default)">
+                {visual.label}
+              </span>
+            </button>
+            {open ? (
+              <div className="pt-1 pr-1 pb-2 pl-[1.85rem]">
+                <Markdown>{message.text}</Markdown>
+              </div>
+            ) : null}
           </div>
         );
       })}

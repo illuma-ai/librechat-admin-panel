@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@clickhouse/click-ui';
+import { Brain, Calendar, Clock, Coins, Hash, Layers, MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
@@ -14,12 +15,24 @@ interface TraceDetailContentProps {
   traceId: string;
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  icon: Icon,
+  value,
+  title,
+}: {
+  icon: typeof Clock;
+  value: string;
+  title?: string;
+}) {
   if (!value) return null;
   return (
-    <span className="flex items-center gap-1.5 whitespace-nowrap">
-      <span className="text-(--cui-color-text-muted)">{label}</span>
-      <span className="font-medium text-(--cui-color-text-default)">{value}</span>
+    <span
+      title={title}
+      className="flex items-center gap-1.5 font-medium whitespace-nowrap"
+      style={{ color: 'var(--trace-slate-muted)' }}
+    >
+      <Icon className="size-3.5 shrink-0" />
+      <span className="text-(--cui-color-text-default)">{value}</span>
     </span>
   );
 }
@@ -66,22 +79,37 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
-          <Metric label={localize('com_traces_col_time')} value={formatTime(trace.timestamp)} />
           <Metric
-            label={localize('com_traces_col_latency')}
+            icon={Calendar}
+            value={formatTime(trace.timestamp)}
+            title={localize('com_traces_col_time')}
+          />
+          <Metric
+            icon={Clock}
             value={formatLatency(data.latencyMs)}
+            title={localize('com_traces_col_latency')}
           />
           <Metric
-            label={localize('com_traces_col_tokens')}
+            icon={Hash}
             value={formatTokens(data.totalTokens)}
+            title={localize('com_traces_col_tokens')}
           />
-          <Metric label={localize('com_traces_col_cost')} value={formatCost(data.totalCost)} />
           <Metric
-            label={localize('com_traces_metric_observations')}
-            value={formatTokens(data.observationCount)}
+            icon={Coins}
+            value={formatCost(data.totalCost)}
+            title={localize('com_traces_col_cost')}
           />
-          <Metric label={localize('com_traces_col_model')} value={data.model} />
-          <Metric label={localize('com_traces_session')} value={trace.sessionId} />
+          <Metric
+            icon={Layers}
+            value={formatTokens(data.observationCount)}
+            title={localize('com_traces_metric_observations')}
+          />
+          <Metric icon={Brain} value={data.model} title={localize('com_traces_col_model')} />
+          <Metric
+            icon={MessageSquare}
+            value={trace.sessionId}
+            title={localize('com_traces_session')}
+          />
         </div>
       </div>
 

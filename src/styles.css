@@ -1023,3 +1023,61 @@ body > div:has(+ .modal-frost) {
   border-top: 1px solid var(--cui-color-stroke-default);
   margin: 0.75rem 0;
 }
+
+/* Opik trace palette — tag colors + slate text (exact values from Opik's main.scss). */
+:root {
+  --tag-purple-bg: #efe2fd;
+  --tag-purple-text: #491b7e;
+  --tag-burgundy-bg: #fde2f6;
+  --tag-burgundy-text: #72275f;
+  --tag-orange-bg: #fee3d7;
+  --tag-orange-text: #73422b;
+  --tag-yellow-bg: #fef0c8;
+  --tag-yellow-text: #675523;
+  --tag-green-bg: #dafbf0;
+  --tag-green-text: #295747;
+  --tag-turquoise-bg: #cdf5f9;
+  --tag-turquoise-text: #15545b;
+  --tag-blue-bg: #e2effd;
+  --tag-blue-text: #19426b;
+  --trace-slate-muted: #64748b;
+  --trace-slate-light: #94a3b8;
+}
+.dark {
+  --tag-purple-bg: #2e2932;
+  --tag-purple-text: #a06dd9;
+  --tag-burgundy-bg: #2b2229;
+  --tag-burgundy-text: #cf44ad;
+  --tag-orange-bg: #322d29;
+  --tag-orange-text: #ff9847;
+  --tag-yellow-bg: #323029;
+  --tag-yellow-text: #ebad00;
+  --tag-green-bg: #29322f;
+  --tag-green-text: #14bb83;
+  --tag-turquoise-bg: #293232;
+  --tag-turquoise-text: #0fbfd2;
+  --tag-blue-bg: #292e32;
+  --tag-blue-text: #6eabe7;
+  --trace-slate-muted: #a3a3a3;
+  --trace-slate-light: #a3a3a3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --tag-purple-bg: #2e2932;
+    --tag-purple-text: #a06dd9;
+    --tag-burgundy-bg: #2b2229;
+    --tag-burgundy-text: #cf44ad;
+    --tag-orange-bg: #322d29;
+    --tag-orange-text: #ff9847;
+    --tag-yellow-bg: #323029;
+    --tag-yellow-text: #ebad00;
+    --tag-green-bg: #29322f;
+    --tag-green-text: #14bb83;
+    --tag-turquoise-bg: #293232;
+    --tag-turquoise-text: #0fbfd2;
+    --tag-blue-bg: #292e32;
+    --tag-blue-text: #6eabe7;
+    --trace-slate-muted: #a3a3a3;
+    --trace-slate-light: #a3a3a3;
+  }
+}

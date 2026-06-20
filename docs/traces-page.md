@@ -26,6 +26,7 @@ It is brand-neutral: no product names appear in the UI, types, or queries.
 | Sequence pane (span tree)        | `src/components/traces/TraceSequence.tsx`       |
 | Detail pane (Messages/Raw tabs)  | `src/components/traces/TraceNodeDetail.tsx`     |
 | Chat message bubbles             | `src/components/traces/MessageList.tsx`         |
+| Type/role colored icons          | `src/components/traces/traceIcons.tsx`          |
 | Markdown renderer (shared)       | `src/components/shared/Markdown.tsx`            |
 | `isStringMarkdown` heuristic     | `src/utils/markdown.ts`                         |
 | User + circular avatar           | `src/components/traces/UserCell.tsx`            |
@@ -103,8 +104,22 @@ Pure logic is unit-tested without a ClickHouse connection:
 
 Run: `bun run test -- --run src/server/traces.logic.test.ts src/components/traces/format.test.ts`
 
+## Visual design (Opik-aligned)
+
+The detail view replicates Opik's trace layout with our component library + tokens:
+
+- **Colored type icons** per observation (Opik's `BaseTraceDataTypeIcon`): trace =
+  purple, LLM/generation = blue, tool = burgundy, general span = green — exact tag
+  colors ported into `styles.css` (light + dark) and mapped in `traceIcons.tsx`.
+- **Per-row metric chips** with lucide icons (clock/duration, hash/tokens,
+  arrows/prompt-completion, coins/cost, brain/model) and a **duration-timeline
+  bar** showing each span's offset + length in the waterfall.
+- **Role-coded message blocks** (Opik's `PrettyLLMMessage`): User = turquoise,
+  Assistant = yellow, System = blue, Tool = burgundy — collapsible, markdown body.
+- Header inline metric strip with lucide icons (`lucide-react`).
+
 ## Screenshots
 
-| List | Trace drawer (Messages) | Trace drawer (Raw) |
-| ---- | ----------------------- | ------------------ |
-| ![list](./screenshots/traces-list.png) | ![drawer](./screenshots/trace-drawer.png) | ![raw](./screenshots/trace-raw.png) |
+| List | Trace drawer (Messages) | Span detail (waterfall) |
+| ---- | ----------------------- | ----------------------- |
+| ![list](./screenshots/traces-list.png) | ![drawer](./screenshots/trace-drawer.png) | ![span](./screenshots/trace-span-detail.png) |
