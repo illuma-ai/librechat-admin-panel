@@ -170,12 +170,26 @@ export function TraceDetailPane({
 
   const { inputMessages, outputMessages } = useMemo(() => {
     if (!node) return { inputMessages: [], outputMessages: [] };
+    if (isRoot) {
+      // Langfuse-style trace root (mirrors `trace.input`/`trace.output`): lead with
+      // THIS turn's Request — the latest user message — and Response — the final
+      // assistant completion. The full prompt context (all prior turns) stays
+      // available on the child generation observation, so the trace reads as one
+      // turn instead of the whole conversation.
+      const lastUser = [...node.inputMessages].reverse().find((m) => m.role === 'user');
+      const assistants = node.outputMessages.filter((m) => m.role === 'assistant');
+      const lastAssistant = assistants[assistants.length - 1];
+      return {
+        inputMessages: lastUser ? [lastUser] : node.inputMessages.slice(-1),
+        outputMessages: lastAssistant ? [lastAssistant] : node.outputMessages.slice(-1),
+      };
+    }
     const out = node.outputMessages.filter((m) => m.role !== 'user' && m.role !== 'system');
     return {
       inputMessages: node.inputMessages,
       outputMessages: out.length > 0 ? out : node.outputMessages,
     };
-  }, [node]);
+  }, [node, isRoot]);
 
   // Per-key cost/usage details for the breakdown popovers: a selected observation
   // uses its own; the root aggregates across the whole observation tree.
