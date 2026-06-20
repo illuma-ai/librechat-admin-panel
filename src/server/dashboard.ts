@@ -240,6 +240,85 @@ export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
     }));
   });
 
+// ── Traces grouped by name (horizontal bar) ──────────────────────────
+
+export const getDashboardTracesByNameFn = createServerFn({ method: 'GET' })
+  .inputValidator(dashboardSchema)
+  .handler(async ({ data }): Promise<t.NameCountRow[]> => {
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT name AS name, count() AS count
+       FROM traces FINAL
+       WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${rangeClause(data.range, 'timestamp')}
+       GROUP BY name ORDER BY count DESC LIMIT 20`,
+      { t: data.tenantId },
+    );
+    return rows.map((r) => ({ name: String(r.name ?? ''), count: toNumber(r.count) }));
+  });
+
+export const dashboardTracesByNameQueryOptions = (tenantId: string, range: t.TraceRange) =>
+  queryOptions({
+    queryKey: ['dashboard', 'tracesByName', tenantId, range],
+    queryFn: () => getDashboardTracesByNameFn({ data: { tenantId, range } }),
+    ...LIST_QUERY_REFETCH,
+    enabled: tenantId.length > 0,
+  });
+
+// ── Latency-percentile tables (by trace / generation / observation name) ──
+
+export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })
+  .inputValidator(dashboardSchema)
+  .handler(async ({ data }): Promise<t.DashboardLatencyTables> => {
+    const params = { t: data.tenantId };
+    const oClause = rangeClause(data.range, 'start_time');
+    const pct = `quantile(0.5)(lat) AS p50, quantile(0.9)(lat) AS p90, quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99`;
+
+    // Generation/observation: each observation's own latency, grouped by name.
+    const obsByName = (typeFilter: string) =>
+      chQuery<Record<string, unknown>>(
+        `SELECT name AS name, any(type) AS type, ${pct}
+         FROM (SELECT name, type, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
+               FROM observations FINAL
+               WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${typeFilter} ${oClause})
+         GROUP BY name ORDER BY p95 DESC LIMIT 20`,
+        params,
+      );
+
+    // Trace: per-trace span joined to the trace's name, grouped by name.
+    const traceRows = await chQuery<Record<string, unknown>>(
+      `SELECT tr.name AS name, '' AS type, ${pct}
+       FROM (SELECT trace_id, dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
+             FROM observations FINAL
+             WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}
+             GROUP BY trace_id) AS o
+       INNER JOIN (SELECT id, argMax(name, updated_at) AS name FROM traces
+                   WHERE tenant_id = {t:String} GROUP BY id) AS tr ON tr.id = o.trace_id
+       WHERE tr.name != ''
+       GROUP BY tr.name ORDER BY p95 DESC LIMIT 20`,
+      params,
+    );
+    const generationRows = await obsByName("AND type = 'generation'");
+    const observationRows = await obsByName('');
+
+    const map = (rows: Record<string, unknown>[]): t.LatencyTableRow[] =>
+      rows.map((r) => ({
+        name: String(r.name ?? ''),
+        type: String(r.type ?? ''),
+        p50: toNumber(r.p50),
+        p90: toNumber(r.p90),
+        p95: toNumber(r.p95),
+        p99: toNumber(r.p99),
+      }));
+    return { trace: map(traceRows), generation: map(generationRows), observation: map(observationRows) };
+  });
+
+export const dashboardLatencyTablesQueryOptions = (tenantId: string, range: t.TraceRange) =>
+  queryOptions({
+    queryKey: ['dashboard', 'latencyTables', tenantId, range],
+    queryFn: () => getDashboardLatencyTablesFn({ data: { tenantId, range } }),
+    ...LIST_QUERY_REFETCH,
+    enabled: tenantId.length > 0,
+  });
+
 export const dashboardLatencySeriesQueryOptions = (
   tenantId: string,
   range: t.TraceRange,

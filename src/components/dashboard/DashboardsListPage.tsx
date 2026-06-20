@@ -4,6 +4,7 @@ import { Button, Icon } from '@admin/ui';
 import { useLocalize } from '@/hooks';
 import { WIDGET_CATALOG } from './widgetCatalog';
 import { useDashboards } from './useDashboards';
+import { NewDashboardDialog } from './NewDashboardDialog';
 
 type SubTab = 'dashboards' | 'widgets';
 
@@ -18,14 +19,11 @@ export function DashboardsListPage() {
   const navigate = useNavigate();
   const { dashboards, create, remove } = useDashboards();
   const [tab, setTab] = useState<SubTab>('dashboards');
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const onNew = () => {
-    // Start from a full dashboard the user can then trim on the view page.
-    const id = create(
-      localize('com_dash_new_name'),
-      '',
-      WIDGET_CATALOG.map((w) => w.id),
-    );
+  const onCreate = (name: string, description: string, widgetIds: string[]) => {
+    const id = create(name, description, widgetIds);
+    setDialogOpen(false);
     navigate({ to: '/dashboards/$id', params: { id }, search: { tenant: '', range: '7d' } });
   };
 
@@ -48,7 +46,7 @@ export function DashboardsListPage() {
           </button>
         </div>
         {tab === 'dashboards' && (
-          <Button onClick={onNew} iconLeft="plus" label={localize('com_dash_new')} />
+          <Button onClick={() => setDialogOpen(true)} iconLeft="plus" label={localize('com_dash_new')} />
         )}
       </div>
 
@@ -116,6 +114,8 @@ export function DashboardsListPage() {
           ))}
         </div>
       )}
+
+      <NewDashboardDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreate={onCreate} />
     </div>
   );
 }

@@ -6,40 +6,38 @@ import { useLocalize } from '@/hooks';
 import {
   dashboardBreakdownsQueryOptions,
   dashboardLatencySeriesQueryOptions,
+  dashboardLatencyTablesQueryOptions,
   dashboardSummaryQueryOptions,
   dashboardTimeseriesQueryOptions,
+  dashboardTracesByNameQueryOptions,
 } from '@/server';
 import { formatCost, formatTokens, parseChDate } from '@/components/traces';
-import { Widget } from './cards';
-import { BarTimeChart, LatencyLineChart } from './charts/recharts';
+import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
+import { HorizontalBarChart, LineTimeChart, LatencyLineChart } from './charts/recharts';
 import { MetricTable } from './charts/MetricTable';
 
 /** Resolved data bundle shared by every dashboard widget for a tenant + range. */
 export interface DashboardData {
   summary?: t.DashboardSummary;
   breakdowns?: t.DashboardBreakdowns;
+  tracesByName: t.NameCountRow[];
+  latencyTables?: t.DashboardLatencyTables;
   points: (t.MetricBucket & { label: string })[];
-  traceLatency: (t.LatencyBucket & { label: string })[];
-  generationLatency: (t.LatencyBucket & { label: string })[];
-  observationLatency: (t.LatencyBucket & { label: string })[];
+  modelLatency: (t.LatencyBucket & { label: string })[];
   isLoading: boolean;
 }
 
-/** A reusable dashboard widget. `showAllTo` adds a header link; `placeholder` marks WIP. */
+/** A reusable dashboard widget rendered as a self-contained card. */
 export interface WidgetDef {
   id: string;
   titleKey: string;
-  render: (d: DashboardData) => ReactNode;
-  showAllTo?: string;
-  placeholder?: boolean;
+  Component: (props: { data: DashboardData; title: string; action?: ReactNode }) => ReactNode;
 }
 
 function bucketLabel(bucket: string, range: t.TraceRange): string {
   const d = parseChDate(bucket);
   if (Number.isNaN(d.getTime())) return bucket;
-  if (range === '24h') {
-    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  }
+  if (range === '24h') return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
@@ -48,86 +46,55 @@ export function useDashboardData(tenant: string, range: t.TraceRange): Dashboard
   const summary = useQuery(dashboardSummaryQueryOptions(tenant, range));
   const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range));
   const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range));
-  const traceLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'trace'));
-  const genLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation'));
-  const obsLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'observation'));
+  const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range));
+  const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range));
+  const modelLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation'));
 
-  const label = (b: { bucket: string }) => bucketLabel(b.bucket, range);
   const points = useMemo(
-    () => (series.data ?? []).map((b) => ({ ...b, label: label(b) })),
+    () => (series.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
     [series.data, range],
   );
-  const withLabel = (rows?: t.LatencyBucket[]) => (rows ?? []).map((b) => ({ ...b, label: label(b) }));
+  const modelLatency = useMemo(
+    () => (modelLat.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
+    [modelLat.data, range],
+  );
 
   return {
     summary: summary.data,
     breakdowns: breakdowns.data,
+    tracesByName: tracesByName.data ?? [],
+    latencyTables: latencyTables.data,
     points,
-    traceLatency: useMemo(() => withLabel(traceLat.data), [traceLat.data, range]),
-    generationLatency: useMemo(() => withLabel(genLat.data), [genLat.data, range]),
-    observationLatency: useMemo(() => withLabel(obsLat.data), [obsLat.data, range]),
+    modelLatency,
     isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading,
   };
 }
 
-const barPoints = (d: DashboardData, key: 'traces' | 'cost' | 'tokens' | 'observations') =>
-  d.points.map((p) => ({ label: p.label, value: p[key] }));
+const num = (n?: number) => (n ?? 0).toLocaleString();
+const compact = (n: number) => formatTokens(n); // K/M compact formatter
 
-/** Model Usage widget with Cost / Usage (tokens) tabs over time (reference parity). */
-function ModelUsageWidget({ data }: { data: DashboardData }) {
+// ── Individual widgets (each a self-contained DashboardCard) ─────────
+
+function TracesWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
-  const [tab, setTab] = useState<'cost' | 'tokens'>('cost');
-  const tabBtn = (active: boolean) =>
-    `rounded px-2 py-0.5 text-xs ${active ? 'bg-(--ui-color-background-muted) text-(--ui-color-text-default)' : 'text-(--ui-color-text-muted)'}`;
+  const [expanded, setExpanded] = useState(false);
+  const rows = expanded ? data.tracesByName.slice(0, 20) : data.tracesByName.slice(0, 5);
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-1">
-        <button type="button" className={tabBtn(tab === 'cost')} onClick={() => setTab('cost')}>
-          {localize('com_dash_tab_cost')}
-        </button>
-        <button type="button" className={tabBtn(tab === 'tokens')} onClick={() => setTab('tokens')}>
-          {localize('com_dash_tab_usage')}
-        </button>
-      </div>
-      {tab === 'cost' ? (
-        <BarTimeChart points={barPoints(data, 'cost')} valueName="Cost" formatValue={formatCost} />
-      ) : (
-        <BarTimeChart points={barPoints(data, 'tokens')} valueName="Tokens" formatValue={formatTokens} />
-      )}
-    </div>
+    <DashboardCard title={title} headerRight={action}>
+      <TotalMetric metric={compact(data.summary?.traces ?? 0)} description={localize('com_dash_total_traces')} />
+      <HorizontalBarChart points={rows.map((r) => ({ name: r.name, value: r.count }))} />
+      <ExpandButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} totalLength={data.tracesByName.length} maxLength={5} />
+    </DashboardCard>
   );
 }
 
-function PlaceholderBody() {
+function ModelCostsWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
   return (
-    <div className="flex h-40 items-center justify-center rounded-md border border-dashed border-(--ui-color-stroke-default) text-sm text-(--ui-color-text-muted)">
-      {localize('com_dash_coming_soon')}
-    </div>
-  );
-}
-
-/**
- * Widget catalog mirroring the reference dashboard 1:1 (Traces, Model costs, Scores,
- * Observations by time, Model Usage [tabbed], User consumption, Trace/Generation/
- * Observation latency percentiles, Model latencies, Scores Analytics). Each renders
- * from the shared `DashboardData`; computable widgets are live, the rest are
- * labelled placeholders.
- */
-export const WIDGET_CATALOG: WidgetDef[] = [
-  {
-    id: 'traces',
-    titleKey: 'com_dash_w_traces',
-    showAllTo: '/traces',
-    render: (d) => <BarTimeChart points={barPoints(d, 'traces')} valueName="Traces" />,
-  },
-  {
-    id: 'model_costs',
-    titleKey: 'com_dash_w_model_costs',
-    showAllTo: '/observations',
-    render: (d) => (
+    <DashboardCard title={title} headerRight={action}>
+      <TotalMetric metric={formatCost(data.summary?.cost ?? 0)} description={localize('com_dash_total_cost')} />
       <MetricTable
-        rows={d.breakdowns?.modelUsage ?? []}
+        rows={data.breakdowns?.modelUsage ?? []}
         rowKey={(r) => r.model}
         columns={[
           { key: 'model', header: 'Model', render: (r) => r.model },
@@ -135,83 +102,194 @@ export const WIDGET_CATALOG: WidgetDef[] = [
           { key: 'cost', header: 'USD', align: 'right', render: (r) => formatCost(r.cost) },
         ]}
       />
-    ),
-  },
-  {
-    id: 'scores',
-    titleKey: 'com_dash_w_scores',
-    showAllTo: '/scores',
-    render: (d) => (
+    </DashboardCard>
+  );
+}
+
+function ScoresWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+  const localize = useLocalize();
+  const [expanded, setExpanded] = useState(false);
+  const all = data.breakdowns?.scoreDistribution ?? [];
+  const total = all.reduce((s, r) => s + r.count, 0);
+  const rows = expanded ? all : all.slice(0, 5);
+  return (
+    <DashboardCard title={title} headerRight={action}>
+      <TotalMetric metric={num(total)} description={localize('com_dash_total_scores')} />
       <MetricTable
-        rows={d.breakdowns?.scoreDistribution ?? []}
+        rows={rows}
         rowKey={(r) => r.name}
         columns={[
           { key: 'name', header: 'Name', render: (r) => r.name },
-          { key: 'count', header: 'Count', align: 'right', render: (r) => r.count.toLocaleString() },
+          { key: 'count', header: '#', align: 'right', render: (r) => r.count.toLocaleString() },
           { key: 'avg', header: 'Avg', align: 'right', render: (r) => (r.average === null ? '—' : r.average.toFixed(2)) },
         ]}
       />
-    ),
-  },
-  {
-    id: 'observations',
-    titleKey: 'com_dash_w_observations',
-    render: (d) => <BarTimeChart points={barPoints(d, 'observations')} valueName="Observations" />,
-  },
-  {
-    id: 'model_usage',
-    titleKey: 'com_dash_w_model_usage',
-    render: (d) => <ModelUsageWidget data={d} />,
-  },
-  {
-    id: 'user_consumption',
-    titleKey: 'com_dash_w_user_consumption',
-    showAllTo: '/trace-users',
-    render: (d) => (
-      <MetricTable
-        rows={d.breakdowns?.userConsumption ?? []}
-        rowKey={(r) => r.userId}
-        columns={[
-          { key: 'user', header: 'User', render: (r) => r.userId },
-          { key: 'traces', header: 'Traces', align: 'right', render: (r) => r.traces.toLocaleString() },
-          { key: 'cost', header: 'Token cost', align: 'right', render: (r) => formatCost(r.cost) },
-        ]}
+      <ExpandButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} totalLength={all.length} maxLength={5} />
+    </DashboardCard>
+  );
+}
+
+function ObservationsWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+  const localize = useLocalize();
+  return (
+    <DashboardCard title={title} headerRight={action}>
+      <TotalMetric metric={num(data.summary?.observations)} description={localize('com_dash_total_observations')} />
+      <LineTimeChart points={data.points.map((p) => ({ label: p.label, value: p.observations }))} valueName="Observations" />
+    </DashboardCard>
+  );
+}
+
+function ModelUsageWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+  const localize = useLocalize();
+  const [tab, setTab] = useState<'cost' | 'tokens'>('cost');
+  const isCost = tab === 'cost';
+  return (
+    <DashboardCard
+      title={title}
+      headerRight={action}
+      headerChildren={
+        <CardTabs
+          active={tab}
+          onSelect={setTab}
+          tabs={[
+            { value: 'cost', label: localize('com_dash_tab_cost') },
+            { value: 'tokens', label: localize('com_dash_tab_usage') },
+          ]}
+        />
+      }
+    >
+      <TotalMetric
+        metric={isCost ? formatCost(data.summary?.cost ?? 0) : formatTokens(data.summary?.tokens ?? 0)}
+        description={isCost ? localize('com_dash_total_cost') : localize('com_dash_total_tokens')}
       />
-    ),
+      <LineTimeChart
+        points={data.points.map((p) => ({ label: p.label, value: isCost ? p.cost : p.tokens }))}
+        valueName={isCost ? 'Cost' : 'Tokens'}
+        formatValue={isCost ? formatCost : formatTokens}
+      />
+    </DashboardCard>
+  );
+}
+
+function UserConsumptionWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+  const localize = useLocalize();
+  const [tab, setTab] = useState<'cost' | 'traces'>('cost');
+  const [expanded, setExpanded] = useState(false);
+  const all = data.breakdowns?.userConsumption ?? [];
+  const rows = expanded ? all : all.slice(0, 5);
+  const isCost = tab === 'cost';
+  return (
+    <DashboardCard
+      title={title}
+      headerRight={action}
+      headerChildren={
+        <CardTabs
+          active={tab}
+          onSelect={setTab}
+          tabs={[
+            { value: 'cost', label: localize('com_dash_tab_token_cost') },
+            { value: 'traces', label: localize('com_dash_tab_trace_count') },
+          ]}
+        />
+      }
+    >
+      <TotalMetric metric={formatCost(data.summary?.cost ?? 0)} description={localize('com_dash_total_cost')} />
+      <HorizontalBarChart
+        points={rows.map((r) => ({ name: r.userId, value: isCost ? r.cost : r.traces }))}
+        formatValue={isCost ? formatCost : (n) => n.toLocaleString()}
+      />
+      <ExpandButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} totalLength={all.length} maxLength={5} />
+    </DashboardCard>
+  );
+}
+
+function latencyColumns(withType: boolean) {
+  const cols = [
+    {
+      key: 'name',
+      header: 'Name',
+      render: (r: t.LatencyTableRow) =>
+        withType && r.type ? (
+          <span>
+            <span className="mr-1 rounded-sm bg-(--ui-color-background-muted) px-1 text-[10px] uppercase">{r.type}</span>
+            {r.name}
+          </span>
+        ) : (
+          r.name
+        ),
+    },
+    { key: 'p50', header: 'p50', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p50.toFixed(2)}s` },
+    { key: 'p90', header: 'p90', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p90.toFixed(2)}s` },
+    { key: 'p95', header: 'p95', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p95.toFixed(2)}s` },
+    { key: 'p99', header: 'p99', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p99.toFixed(2)}s` },
+  ];
+  return cols;
+}
+
+function makeLatencyTableWidget(pick: (t: t.DashboardLatencyTables) => t.LatencyTableRow[], withType: boolean) {
+  return function LatencyTableWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+    const rows = data.latencyTables ? pick(data.latencyTables) : [];
+    return (
+      <DashboardCard title={title} headerRight={action}>
+        <MetricTable rows={rows} rowKey={(r) => r.name} columns={latencyColumns(withType)} />
+      </DashboardCard>
+    );
+  };
+}
+
+function ModelLatenciesWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+  const localize = useLocalize();
+  return (
+    <DashboardCard title={title} description={localize('com_dash_model_lat_sub')} headerRight={action}>
+      <LatencyLineChart points={data.modelLatency} />
+    </DashboardCard>
+  );
+}
+
+function PlaceholderWidget({ title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
+  const localize = useLocalize();
+  return (
+    <DashboardCard title={title} description={localize('com_dash_scores_analytics_sub')} headerRight={action}>
+      <div className="flex h-40 items-center justify-center rounded-md border border-dashed border-(--ui-color-stroke-default) text-sm text-(--ui-color-text-muted)">
+        {localize('com_dash_coming_soon')}
+      </div>
+    </DashboardCard>
+  );
+}
+
+/** Catalog mirroring the reference dashboard 1:1, with each widget's `xl` column span. */
+export const WIDGET_CATALOG: (WidgetDef & { span: string })[] = [
+  { id: 'traces', titleKey: 'com_dash_w_traces', span: 'xl:col-span-2', Component: TracesWidget },
+  { id: 'model_costs', titleKey: 'com_dash_w_model_costs', span: 'xl:col-span-2', Component: ModelCostsWidget },
+  { id: 'scores', titleKey: 'com_dash_w_scores', span: 'xl:col-span-2', Component: ScoresWidget },
+  { id: 'observations', titleKey: 'com_dash_w_observations', span: 'xl:col-span-3', Component: ObservationsWidget },
+  { id: 'model_usage', titleKey: 'com_dash_w_model_usage', span: 'xl:col-span-3', Component: ModelUsageWidget },
+  { id: 'user_consumption', titleKey: 'com_dash_w_user_consumption', span: 'xl:col-span-3', Component: UserConsumptionWidget },
+  {
+    id: 'trace_latency',
+    titleKey: 'com_dash_w_latency',
+    span: 'xl:col-span-2',
+    Component: makeLatencyTableWidget((t) => t.trace, false),
   },
-  { id: 'trace_latency', titleKey: 'com_dash_w_latency', render: (d) => <LatencyLineChart points={d.traceLatency} /> },
   {
     id: 'generation_latency',
     titleKey: 'com_dash_w_gen_latency',
-    render: (d) => <LatencyLineChart points={d.generationLatency} />,
+    span: 'xl:col-span-2',
+    Component: makeLatencyTableWidget((t) => t.generation, false),
   },
   {
     id: 'observation_latency',
     titleKey: 'com_dash_w_obs_latency',
-    render: (d) => <LatencyLineChart points={d.observationLatency} />,
+    span: 'xl:col-span-2',
+    Component: makeLatencyTableWidget((t) => t.observation, true),
   },
-  {
-    id: 'model_latency',
-    titleKey: 'com_dash_w_model_latencies',
-    render: (d) => (
-      <MetricTable
-        rows={d.breakdowns?.modelLatency ?? []}
-        rowKey={(r) => r.model}
-        columns={[
-          { key: 'model', header: 'Model', render: (r) => r.model },
-          { key: 'p50', header: 'p50', align: 'right', render: (r) => `${r.p50.toFixed(2)}s` },
-          { key: 'p95', header: 'p95', align: 'right', render: (r) => `${r.p95.toFixed(2)}s` },
-          { key: 'p99', header: 'p99', align: 'right', render: (r) => `${r.p99.toFixed(2)}s` },
-        ]}
-      />
-    ),
-  },
-  { id: 'scores_analytics', titleKey: 'com_dash_w_scores_analytics', placeholder: true, render: () => <PlaceholderBody /> },
+  { id: 'model_latency', titleKey: 'com_dash_w_model_latencies', span: 'xl:col-span-full', Component: ModelLatenciesWidget },
+  { id: 'scores_analytics', titleKey: 'com_dash_w_scores_analytics', span: 'xl:col-span-full', Component: PlaceholderWidget },
 ];
 
 export const WIDGET_BY_ID = new Map(WIDGET_CATALOG.map((w) => [w.id, w]));
 
-/** Render a single catalog widget (by id) as a titled card; null if unknown id. */
+/** Render a catalog widget (by id) as a self-contained card; null for unknown ids. */
 export function CatalogWidget({
   id,
   data,
@@ -223,21 +301,7 @@ export function CatalogWidget({
   title: string;
   action?: ReactNode;
 }) {
-  const localize = useLocalize();
   const def = WIDGET_BY_ID.get(id);
   if (!def) return null;
-  const showAll =
-    def.showAllTo && !action ? (
-      <a
-        href={def.showAllTo}
-        className="ml-auto text-xs text-(--ui-color-text-link) no-underline hover:underline"
-      >
-        {localize('com_dash_show_all')}
-      </a>
-    ) : undefined;
-  return (
-    <Widget title={title} info={action ?? showAll}>
-      {def.render(data)}
-    </Widget>
-  );
+  return <def.Component data={data} title={title} action={action} />;
 }

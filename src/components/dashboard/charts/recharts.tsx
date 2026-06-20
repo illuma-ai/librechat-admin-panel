@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  LabelList,
 } from 'recharts';
 
 /**
@@ -105,6 +106,78 @@ export function LatencyLineChart({ points }: { points: LatencyPoint[] }) {
             isAnimationActive={false}
           />
         ))}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+export interface HBarPoint {
+  name: string;
+  value: number;
+}
+
+/** Horizontal bar list (reference Traces / User consumption — grouped by name). */
+export function HorizontalBarChart({
+  points,
+  formatValue,
+}: {
+  points: HBarPoint[];
+  formatValue?: (n: number) => string;
+}) {
+  if (points.length === 0) return <EmptyChart />;
+  const height = Math.max(160, points.length * 36 + 32);
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={points} layout="vertical" margin={{ top: 4, right: 48, bottom: 0, left: 8 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID} horizontal={false} />
+        <XAxis type="number" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tick={AXIS_TICK}
+          tickLine={false}
+          axisLine={false}
+          width={110}
+        />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(v) => (formatValue ? formatValue(Number(v)) : Number(v).toLocaleString())}
+        />
+        <Bar dataKey="value" fill={ACCENT} radius={[0, 2, 2, 0]}>
+          <LabelList
+            dataKey="value"
+            position="right"
+            formatter={(v) => (formatValue ? formatValue(Number(v)) : Number(v).toLocaleString())}
+            className="fill-(--ui-color-text-muted) text-[11px]"
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Single smooth line over time (reference Observations by time). */
+export function LineTimeChart({
+  points,
+  valueName,
+  formatValue,
+}: {
+  points: BarTimePoint[];
+  valueName: string;
+  formatValue?: (n: number) => string;
+}) {
+  if (points.length === 0) return <EmptyChart />;
+  return (
+    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+      <LineChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+        <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
+        <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(v) => [formatValue ? formatValue(Number(v)) : Number(v).toLocaleString(), valueName]}
+        />
+        <Line type="monotone" dataKey="value" name={valueName} stroke={ACCENT} strokeWidth={2} dot={false} isAnimationActive={false} />
       </LineChart>
     </ResponsiveContainer>
   );

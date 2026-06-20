@@ -73,6 +73,29 @@ export interface ModelLatencyRow {
   p99: number;
 }
 
+/** A name → count row (reference Traces horizontal bar = traces grouped by name). */
+export interface NameCountRow {
+  name: string;
+  count: number;
+}
+
+/** A latency-percentile table row keyed by name (+ optional observation type badge). */
+export interface LatencyTableRow {
+  name: string;
+  type: string;
+  p50: number;
+  p90: number;
+  p95: number;
+  p99: number;
+}
+
+/** The three latency tables on the dashboard (by trace / generation / observation name). */
+export interface DashboardLatencyTables {
+  trace: LatencyTableRow[];
+  generation: LatencyTableRow[];
+  observation: LatencyTableRow[];
+}
+
 /** Breakdown widgets bundle for the dashboard. */
 export interface DashboardBreakdowns {
   modelUsage: ModelUsageRow[];

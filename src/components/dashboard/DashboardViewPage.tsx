@@ -101,12 +101,12 @@ export function DashboardViewPage({
           {localize('com_dash_no_widgets')}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-6">
           {dashboard.widgetIds
             .filter((id) => WIDGET_BY_ID.has(id))
             .map((id) => (
+              <div key={id} className={`col-span-1 ${WIDGET_BY_ID.get(id)!.span}`}>
               <CatalogWidget
-                key={id}
                 id={id}
                 data={data}
                 title={localize(WIDGET_BY_ID.get(id)!.titleKey)}
@@ -125,6 +125,7 @@ export function DashboardViewPage({
                   </button>
                 }
               />
+              </div>
             ))}
         </div>
       )}

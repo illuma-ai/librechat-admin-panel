@@ -44,9 +44,11 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-6">
         {WIDGET_CATALOG.map((w) => (
-          <CatalogWidget key={w.id} id={w.id} data={data} title={localize(w.titleKey)} />
+          <div key={w.id} className={`col-span-1 ${w.span}`}>
+            <CatalogWidget id={w.id} data={data} title={localize(w.titleKey)} />
+          </div>
         ))}
       </div>
     </section>
