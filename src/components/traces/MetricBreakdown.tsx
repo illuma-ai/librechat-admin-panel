@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Popover } from '@admin/ui';
 import { useLocalize } from '@/hooks';
+import { cn } from '@/utils';
 import { usdFormatter } from './format';
 
 type Details = Record<string, number>;
@@ -15,24 +16,32 @@ function formatValue(value: number, isCost: boolean): string {
   return isCost ? usdFormatter(value) : value.toLocaleString();
 }
 
-/** One labelled section (Input/Output/Other): a bold header total + per-key rows. */
+/** One labelled section (Input/Output/Other): a bold header total + per-key rows.
+ * `titleClass` color-codes the header (Input = info, Output = accent-user) to
+ * match the colored token counts in the table. */
 function Section({
   title,
   entries,
   total,
   isCost,
+  titleClass,
 }: {
   title: string;
   entries: [string, number][];
   total: number;
   isCost: boolean;
+  titleClass?: string;
 }) {
   if (entries.length === 0) return null;
   return (
     <div className="flex flex-col gap-1">
       <div className="flex justify-between border-b border-(--ui-color-stroke-default) pb-1">
-        <span className="text-xs font-semibold text-(--ui-color-text-default)">{title}</span>
-        <span className="font-mono text-xs font-semibold text-(--ui-color-text-default)">
+        <span className={cn('text-xs font-semibold', titleClass ?? 'text-(--ui-color-text-default)')}>
+          {title}
+        </span>
+        <span
+          className={cn('font-mono text-xs font-semibold', titleClass ?? 'text-(--ui-color-text-default)')}
+        >
           {formatValue(total, isCost)}
         </span>
       </div>
@@ -97,12 +106,14 @@ export function MetricBreakdown({
             entries={inputEntries}
             total={inputTotal}
             isCost={isCost}
+            titleClass="text-(--ui-color-accent-info)"
           />
           <Section
             title={localize(isCost ? 'com_traces_output_cost' : 'com_traces_output_usage')}
             entries={outputEntries}
             total={outputTotal}
             isCost={isCost}
+            titleClass="text-(--ui-color-accent-user)"
           />
           <Section
             title={localize(isCost ? 'com_traces_other_cost' : 'com_traces_other_usage')}

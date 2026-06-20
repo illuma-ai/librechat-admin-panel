@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react';
 import { TypeIcon } from './traceIcons';
 import { MetricBreakdown } from './MetricBreakdown';
 import { formatCost, formatTokens } from './format';
@@ -115,11 +116,19 @@ export function EnvBadge({ value }: { value: string }) {
   );
 }
 
+/** Small ⓘ trigger that opens the breakdown popover (reference uses an InfoIcon
+ * next to the value — the value itself stays a normal cell, the icon opens the
+ * breakdown). */
+function BreakdownInfo() {
+  return (
+    <Info className="size-3 shrink-0 text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)" />
+  );
+}
+
 /**
  * Token badge — "in → out (∑ total)" in monospace, with the prompt (input) and
- * completion (output) counts color-coded (info / accent-user, matching the
- * cost/usage breakdown) so the split reads at a glance. Wrapped in the usage
- * breakdown popover when an input/output split is available.
+ * completion (output) counts color-coded (info / accent-user) so the split
+ * reads at a glance. An ⓘ icon (not the value) opens the usage breakdown.
  */
 export function TokenBadge({
   input,
@@ -141,13 +150,16 @@ export function TokenBadge({
   );
   if (!input && !output) return badge;
   return (
-    <MetricBreakdown details={{ input_tokens: input, output_tokens: output }} isCost={false}>
+    <span className="inline-flex items-center gap-1.5">
       {badge}
-    </MetricBreakdown>
+      <MetricBreakdown details={{ input_tokens: input, output_tokens: output }} isCost={false}>
+        <BreakdownInfo />
+      </MetricBreakdown>
+    </span>
   );
 }
 
-/** Cost cell with the click-to-open cost breakdown popover (input/output split). */
+/** Cost cell — the value plus an ⓘ icon that opens the cost breakdown popover. */
 export function CostCell({
   total,
   input,
@@ -161,9 +173,12 @@ export function CostCell({
   const text = <span className="font-mono text-xs whitespace-nowrap">{formatCost(total)}</span>;
   if (!input && !output) return text;
   return (
-    <MetricBreakdown details={{ input, output }} isCost>
+    <span className="inline-flex items-center gap-1.5">
       {text}
-    </MetricBreakdown>
+      <MetricBreakdown details={{ input, output }} isCost>
+        <BreakdownInfo />
+      </MetricBreakdown>
+    </span>
   );
 }
 
