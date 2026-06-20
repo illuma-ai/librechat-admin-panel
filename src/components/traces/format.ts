@@ -11,20 +11,64 @@ export function formatTime(value: string): string {
   return Number.isNaN(d.getTime()) ? value : d.toLocaleString();
 }
 
+/** Langfuse `usdFormatter` — USD currency, 2–6 fraction digits. */
+export function usdFormatter(
+  n: number,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 6,
+): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(n ?? 0);
+}
+
+/** Langfuse `costFormatter` — more precision for sub-$5 amounts. */
 export function formatCost(n: number): string {
-  if (!n) return '$0';
-  if (n < 0.01) return `$${n.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`;
-  return `$${n.toFixed(4)}`;
+  if (!n) return usdFormatter(0, 2, 2);
+  return n < 5 ? usdFormatter(n, 2, 6) : usdFormatter(n, 2, 2);
 }
 
+/** Integer with grouping, no decimals (Langfuse `numberFormatter(n, 0)`). */
 export function formatTokens(n: number): string {
-  return (n || 0).toLocaleString();
+  return new Intl.NumberFormat('en-US', { useGrouping: true, maximumFractionDigits: 0 }).format(
+    n ?? 0,
+  );
 }
 
+/**
+ * Langfuse `formatTokenCounts` — "686 → 148 (∑ 834)" (compact) or
+ * "686 prompt → 148 completion (∑ 834)" (labelled).
+ */
+export function formatTokenCounts(
+  input: number,
+  output: number,
+  total: number,
+  showLabels = false,
+): string {
+  if (!input && !output && !total) return '';
+  return showLabels
+    ? `${formatTokens(input)} prompt → ${formatTokens(output)} completion (∑ ${formatTokens(total)})`
+    : `${formatTokens(input)} → ${formatTokens(output)} (∑ ${formatTokens(total)})`;
+}
+
+/** Langfuse `formatIntervalSeconds` — input is SECONDS (h/m/s or `N.NNs`). */
+export function formatIntervalSeconds(seconds: number, scale = 2): string {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const pad = (n: number) => `00${n}`.slice(2);
+  if (hrs > 0) return `${hrs}h ${pad(mins)}m ${pad(secs)}s`;
+  if (mins > 0) return `${mins}m ${pad(secs)}s`;
+  return `${seconds.toFixed(scale)}s`;
+}
+
+/** Our latency is stored in milliseconds; render Langfuse-style from seconds. */
 export function formatLatency(ms: number): string {
   if (!ms || ms <= 0) return '—';
-  if (ms < 1000) return `${Math.round(ms)} ms`;
-  return `${(ms / 1000).toFixed(2)} s`;
+  return formatIntervalSeconds(ms / 1000);
 }
 
 /** click-ui Badge state per observation type (generation/tool/span/event/...). */

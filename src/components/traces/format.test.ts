@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
   formatCost,
+  formatIntervalSeconds,
   formatLatency,
   formatTime,
+  formatTokenCounts,
   formatTokens,
   observationBadgeState,
   parseChDate,
+  usdFormatter,
 } from './format';
 
 describe('parseChDate', () => {
@@ -25,19 +28,27 @@ describe('formatTime', () => {
   });
 });
 
-describe('formatCost', () => {
-  it('renders $0 for zero/falsy cost', () => {
-    expect(formatCost(0)).toBe('$0');
+describe('usdFormatter', () => {
+  it('formats USD with the given fraction-digit bounds', () => {
+    expect(usdFormatter(0.002338)).toBe('$0.002338');
+    expect(usdFormatter(0, 2, 2)).toBe('$0.00');
+  });
+});
+
+describe('formatCost (Langfuse costFormatter)', () => {
+  it('renders $0.00 for zero/falsy cost', () => {
+    expect(formatCost(0)).toBe('$0.00');
   });
 
-  it('uses 6 decimals (trimmed) for micro-costs below a cent', () => {
+  it('uses up to 6 decimals for sub-$5 amounts', () => {
     expect(formatCost(0.00696)).toBe('$0.00696');
-    expect(formatCost(0.001)).toBe('$0.001');
+    expect(formatCost(0.0159)).toBe('$0.0159');
+    expect(formatCost(1.5)).toBe('$1.50');
   });
 
-  it('uses 4 decimals for costs of a cent or more', () => {
-    expect(formatCost(0.0159)).toBe('$0.0159');
-    expect(formatCost(1.5)).toBe('$1.5000');
+  it('uses 2 decimals for amounts of $5 or more', () => {
+    expect(formatCost(7)).toBe('$7.00');
+    expect(formatCost(12.3456)).toBe('$12.35');
   });
 });
 
@@ -48,15 +59,38 @@ describe('formatTokens', () => {
   });
 });
 
+describe('formatTokenCounts', () => {
+  it('renders the compact "in → out (∑ total)" form', () => {
+    expect(formatTokenCounts(686, 148, 834)).toBe('686 → 148 (∑ 834)');
+  });
+
+  it('renders the labelled form', () => {
+    expect(formatTokenCounts(686, 148, 834, true)).toBe('686 prompt → 148 completion (∑ 834)');
+  });
+
+  it('returns an empty string when there are no tokens', () => {
+    expect(formatTokenCounts(0, 0, 0)).toBe('');
+  });
+});
+
+describe('formatIntervalSeconds', () => {
+  it('renders sub-minute as seconds, and minutes/hours above', () => {
+    expect(formatIntervalSeconds(0.45)).toBe('0.45s');
+    expect(formatIntervalSeconds(3)).toBe('3.00s');
+    expect(formatIntervalSeconds(65)).toBe('1m 5s');
+    expect(formatIntervalSeconds(3661)).toBe('1h 1m 1s');
+  });
+});
+
 describe('formatLatency', () => {
   it('returns an em dash for non-positive latency', () => {
     expect(formatLatency(0)).toBe('—');
     expect(formatLatency(-5)).toBe('—');
   });
 
-  it('renders milliseconds under a second and seconds above', () => {
-    expect(formatLatency(450)).toBe('450 ms');
-    expect(formatLatency(3000)).toBe('3.00 s');
+  it('converts milliseconds to Langfuse second formatting', () => {
+    expect(formatLatency(450)).toBe('0.45s');
+    expect(formatLatency(3000)).toBe('3.00s');
   });
 });
 

@@ -1081,3 +1081,16 @@ body > div:has(+ .modal-frost) {
     --trace-slate-light: #a3a3a3;
   }
 }
+
+/* Langfuse Output panel tint (assistant/output = light green). */
+:root {
+  --trace-output-bg: #f0fdf4;
+}
+.dark {
+  --trace-output-bg: rgba(20, 187, 131, 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --trace-output-bg: rgba(20, 187, 131, 0.08);
+  }
+}

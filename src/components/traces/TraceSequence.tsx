@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
-import { ArrowRightLeft, Brain, ChevronRight, Clock, Coins, Hash } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
-import { formatCost, formatLatency, formatTokens, parseChDate } from './format';
+import { formatLatency, formatTokenCounts, usdFormatter } from './format';
 import { TypeIcon } from './traceIcons';
 
 interface FlatNode {
@@ -12,37 +11,27 @@ interface FlatNode {
   depth: number;
   hasChildren: boolean;
   isRoot: boolean;
+  isLast: boolean;
+  /** For each ancestor column, whether that ancestor has a following sibling (draw guide line). */
+  ancestorLines: boolean[];
 }
 
 function flatten(
   nodes: t.ObservationNode[],
   collapsed: Set<string>,
   depth = 0,
+  ancestorLines: boolean[] = [],
   out: FlatNode[] = [],
 ): FlatNode[] {
-  for (const [i, node] of nodes.entries()) {
+  nodes.forEach((node, i) => {
     const hasChildren = node.children.length > 0;
-    out.push({ node, depth, hasChildren, isRoot: depth === 0 && i === 0 });
-    if (hasChildren && !collapsed.has(node.id)) flatten(node.children, collapsed, depth + 1, out);
-  }
+    const isLast = i === nodes.length - 1;
+    out.push({ node, depth, hasChildren, isRoot: depth === 0 && i === 0, isLast, ancestorLines });
+    if (hasChildren && !collapsed.has(node.id)) {
+      flatten(node.children, collapsed, depth + 1, [...ancestorLines, !isLast], out);
+    }
+  });
   return out;
-}
-
-function startMs(node: t.ObservationNode): number {
-  const ms = parseChDate(node.startTime).getTime();
-  return Number.isNaN(ms) ? 0 : ms;
-}
-
-/** Compute the waterfall extents (earliest start + longest duration) across all rows. */
-function timelineExtents(rows: FlatNode[]): { minStart: number; maxDuration: number } {
-  let minStart = Infinity;
-  let maxDuration = 0;
-  for (const { node } of rows) {
-    const s = startMs(node);
-    if (s > 0 && s < minStart) minStart = s;
-    if (node.latencyMs > maxDuration) maxDuration = node.latencyMs;
-  }
-  return { minStart: Number.isFinite(minStart) ? minStart : 0, maxDuration };
 }
 
 interface TraceSequenceProps {
@@ -51,23 +40,11 @@ interface TraceSequenceProps {
   onSelect: (id: string) => void;
 }
 
-function MetricChip({ icon: Icon, children }: { icon: typeof Clock; children: ReactNode }) {
-  return (
-    <span
-      className="flex items-center gap-1 text-[11px] font-medium"
-      style={{ color: 'var(--trace-slate-muted)' }}
-    >
-      <Icon className="size-3 shrink-0" /> {children}
-    </span>
-  );
-}
-
-/** Left pane: Opik-style span tree — colored type icons, per-row metric chips, duration bars. */
+/** Langfuse observation tree — connector lines, colored type icons, per-node metrics. */
 export function TraceSequence({ observations, selectedId, onSelect }: TraceSequenceProps) {
   const localize = useLocalize();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const rows = useMemo(() => flatten(observations, collapsed), [observations, collapsed]);
-  const { minStart, maxDuration } = useMemo(() => timelineExtents(rows), [rows]);
 
   const toggleCollapse = (id: string) =>
     setCollapsed((prev) => {
@@ -86,15 +63,13 @@ export function TraceSequence({ observations, selectedId, onSelect }: TraceSeque
   }
 
   return (
-    <div role="tree" aria-label={localize('com_traces_sequence')} className="w-full px-3 py-1.5">
-      {rows.map(({ node, depth, hasChildren, isRoot }) => {
+    <div role="tree" aria-label={localize('com_traces_sequence')} className="flex flex-col py-1">
+      {rows.map(({ node, depth, hasChildren, isRoot, isLast, ancestorLines }) => {
         const isCollapsed = collapsed.has(node.id);
         const selected = node.id === selectedId;
-        const widthPct = maxDuration > 0 ? Math.min((node.latencyMs / maxDuration) * 100, 100) : 0;
-        const offsetPct =
-          maxDuration > 0 ? Math.max(((startMs(node) - minStart) / maxDuration) * 100, 0) : 0;
-        const promptTok = node.inputTokens;
-        const completionTok = node.outputTokens;
+        const tokenText = formatTokenCounts(node.inputTokens, node.outputTokens, node.totalTokens);
+        const showCostPrefix = isRoot || hasChildren;
+        const showMetrics = node.latencyMs > 0 || tokenText || node.totalCost > 0;
         return (
           <div
             key={node.id}
@@ -103,81 +78,91 @@ export function TraceSequence({ observations, selectedId, onSelect }: TraceSeque
             aria-expanded={hasChildren ? !isCollapsed : undefined}
             onClick={() => onSelect(node.id)}
             className={cn(
-              'flex cursor-pointer flex-col gap-1.5 rounded-md px-1.5 py-2',
-              'hover:bg-(--cui-color-background-muted)',
-              selected ? 'bg-(--cui-color-background-muted)' : '',
+              'relative flex w-full cursor-pointer pr-1 pl-2',
+              selected
+                ? 'bg-(--cui-color-background-muted)'
+                : 'hover:bg-(--cui-color-background-hover)',
             )}
           >
-            <div className="flex" style={{ paddingLeft: depth * 12 }}>
-              <div className="mr-1 flex h-5 w-4 shrink-0 items-center justify-center">
-                {hasChildren ? (
-                  <button
-                    type="button"
-                    aria-label={
-                      isCollapsed ? localize('com_traces_expand') : localize('com_traces_collapse')
-                    }
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleCollapse(node.id);
-                    }}
-                    className="flex cursor-pointer items-center rounded-sm p-0.5 text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
-                  >
-                    <ChevronRight
-                      className={cn(
-                        'size-3.5 transition-transform',
-                        isCollapsed ? '' : 'rotate-90',
-                      )}
-                    />
-                  </button>
+            {/* ancestor indent guides */}
+            {depth > 0 ? (
+              <div className="flex shrink-0">
+                {Array.from({ length: depth - 1 }, (_, i) => (
+                  <div key={i} className="relative w-5">
+                    {ancestorLines[i] ? (
+                      <div className="absolute top-0 bottom-0 left-3 w-px bg-(--cui-color-stroke-default)" />
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {/* immediate connector (elbow) */}
+            {depth > 0 ? (
+              <div className="relative w-5 shrink-0">
+                <div
+                  className={cn(
+                    'absolute top-0 left-3 w-px bg-(--cui-color-stroke-default)',
+                    isLast ? 'h-3' : 'bottom-3',
+                  )}
+                />
+                {!isLast ? (
+                  <div className="absolute top-3 bottom-0 left-3 w-px bg-(--cui-color-stroke-default)" />
                 ) : null}
+                <div className="absolute top-3 left-3 h-px w-2 bg-(--cui-color-stroke-default)" />
               </div>
-              <div className="flex min-w-1 flex-auto flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <TypeIcon type={node.type} isRoot={isRoot} />
-                  <span
-                    title={node.name || '—'}
-                    className={cn(
-                      'truncate text-[13px] text-(--cui-color-text-default)',
-                      selected ? 'font-semibold' : '',
-                    )}
-                  >
-                    {node.name || '—'}
-                  </span>
-                </div>
-                <div className="flex h-5 items-center gap-3 overflow-hidden">
-                  <MetricChip icon={Clock}>{formatLatency(node.latencyMs)}</MetricChip>
-                  {node.totalTokens > 0 ? (
-                    <MetricChip icon={Hash}>{formatTokens(node.totalTokens)}</MetricChip>
-                  ) : null}
-                  {promptTok > 0 && completionTok > 0 ? (
-                    <MetricChip icon={ArrowRightLeft}>
-                      {formatTokens(promptTok)}/{formatTokens(completionTok)}
-                    </MetricChip>
-                  ) : null}
-                  {node.totalCost > 0 ? (
-                    <MetricChip icon={Coins}>{formatCost(node.totalCost)}</MetricChip>
-                  ) : null}
-                  {node.model ? (
-                    <MetricChip icon={Brain}>
-                      <span className="max-w-45 truncate">{node.model}</span>
-                    </MetricChip>
-                  ) : null}
-                </div>
+            ) : null}
+
+            {/* type icon + downward child connector */}
+            <div className="relative flex w-6 shrink-0 flex-col py-1.5">
+              <div className="relative z-10 flex h-4 items-center justify-center">
+                <TypeIcon type={node.type} isRoot={isRoot} isSmall />
               </div>
+              {hasChildren && !isCollapsed ? (
+                <div className="absolute top-3 bottom-0 left-1/2 w-px bg-(--cui-color-stroke-default)" />
+              ) : null}
             </div>
-            {maxDuration > 0 && node.latencyMs > 0 ? (
-              <div className="w-full pt-1.5 pb-1 pl-4">
-                <div className="relative w-full">
-                  <div className="absolute inset-x-0 top-px h-px bg-(--cui-color-stroke-default)" />
-                  <div
-                    className="absolute top-0 h-0.5 rounded-full transition-[width,left] duration-500"
-                    style={{
-                      background: 'var(--cui-color-text-link, #6366f1)',
-                      width: `${widthPct}%`,
-                      left: `${offsetPct}%`,
-                    }}
-                  />
+
+            {/* content: name + metrics */}
+            <div className="flex min-w-0 flex-1 flex-col py-1 pr-1 pl-1">
+              <span
+                className="truncate text-xs text-(--cui-color-text-default)"
+                title={node.name || node.type}
+              >
+                {node.name || `Unnamed ${node.type}`}
+              </span>
+              {showMetrics ? (
+                <div className="flex flex-wrap gap-x-2 text-xs text-(--cui-color-text-muted)">
+                  {node.latencyMs > 0 ? <span>{formatLatency(node.latencyMs)}</span> : null}
+                  {tokenText ? <span>{tokenText}</span> : null}
+                  {node.totalCost > 0 ? (
+                    <span>
+                      {showCostPrefix ? '∑ ' : ''}
+                      {usdFormatter(node.totalCost)}
+                    </span>
+                  ) : null}
                 </div>
+              ) : null}
+            </div>
+
+            {/* expand/collapse chevron */}
+            {hasChildren ? (
+              <div className="flex items-center justify-end py-1 pr-1">
+                <button
+                  type="button"
+                  aria-label={
+                    isCollapsed ? localize('com_traces_expand') : localize('com_traces_collapse')
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCollapse(node.id);
+                  }}
+                  className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+                >
+                  <ChevronRight
+                    className={cn('size-4 transition-transform', isCollapsed ? '' : 'rotate-90')}
+                  />
+                </button>
               </div>
             ) : null}
           </div>

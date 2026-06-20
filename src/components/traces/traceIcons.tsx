@@ -1,47 +1,24 @@
-import {
-  Bot,
-  Hammer,
-  InspectionPanel,
-  Link,
-  MessageCircle,
-  Settings,
-  User,
-  Wrench,
-} from 'lucide-react';
+import { Bot, CircleDot, Fan, ListTree, MoveHorizontal, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type * as t from '@/types';
 
 interface TypeVisual {
   icon: LucideIcon;
-  bg: string;
   color: string;
   label: string;
 }
 
 /**
- * Observation type → colored icon, mirroring Opik's `BaseTraceDataTypeIcon`
- * (trace=purple, llm/generation=blue, tool=burgundy, general span=green).
+ * Observation type → icon + color, mirroring Langfuse's `ItemBadge` map:
+ * TRACE = ListTree/dark-green, GENERATION = Fan/magenta, SPAN = MoveHorizontal/blue,
+ * EVENT = CircleDot/green, TOOL = Wrench/orange, AGENT = Bot/purple.
  */
 const TYPE_VISUALS: Record<string, TypeVisual> = {
-  trace: {
-    icon: InspectionPanel,
-    bg: 'var(--tag-purple-bg)',
-    color: 'var(--tag-purple-text)',
-    label: 'Trace',
-  },
-  generation: {
-    icon: MessageCircle,
-    bg: 'var(--tag-blue-bg)',
-    color: 'var(--tag-blue-text)',
-    label: 'LLM',
-  },
-  tool: {
-    icon: Hammer,
-    bg: 'var(--tag-burgundy-bg)',
-    color: 'var(--tag-burgundy-text)',
-    label: 'Tool',
-  },
-  span: { icon: Link, bg: 'var(--tag-green-bg)', color: 'var(--tag-green-text)', label: 'Span' },
+  trace: { icon: ListTree, color: '#15803d', label: 'Trace' },
+  generation: { icon: Fan, color: '#be185d', label: 'Generation' },
+  span: { icon: MoveHorizontal, color: '#2563eb', label: 'Span' },
+  event: { icon: CircleDot, color: '#16a34a', label: 'Event' },
+  tool: { icon: Wrench, color: '#ea580c', label: 'Tool' },
+  agent: { icon: Bot, color: '#9333ea', label: 'Agent' },
 };
 
 const DEFAULT_VISUAL = TYPE_VISUALS.span;
@@ -51,70 +28,37 @@ export function typeVisual(type: string, isRoot = false): TypeVisual {
   return TYPE_VISUALS[type] ?? DEFAULT_VISUAL;
 }
 
-/** A small colored rounded-square icon for an observation type (Opik style). */
+/**
+ * Langfuse `ItemBadge` — a bordered box (neutral border, page background) holding
+ * a colored type icon. `isSmall` renders the compact tree variant (icon only).
+ */
 export function TypeIcon({
   type,
   isRoot,
-  size = 5,
+  isSmall,
+  showLabel,
 }: {
   type: string;
   isRoot?: boolean;
-  size?: 5 | 6;
+  isSmall?: boolean;
+  showLabel?: boolean;
 }) {
   const visual = typeVisual(type, isRoot);
   const Icon = visual.icon;
   return (
     <span
       title={visual.label}
-      className={`relative flex ${size === 6 ? 'size-6' : 'size-5'} shrink-0 items-center justify-center rounded-md`}
-      style={{ background: visual.bg, color: visual.color }}
+      className={`flex max-w-fit shrink-0 items-center gap-1 rounded-sm border-2 border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-1 ${
+        isSmall ? 'h-4' : 'h-5'
+      }`}
     >
-      <Icon className="size-3" />
+      <Icon
+        className={isSmall ? 'size-3 shrink-0' : 'size-3.5 shrink-0'}
+        style={{ color: visual.color }}
+      />
+      {showLabel ? (
+        <span className="truncate text-xs text-(--cui-color-text-default)">{visual.label}</span>
+      ) : null}
     </span>
   );
-}
-
-interface RoleVisual {
-  icon: LucideIcon;
-  bg: string;
-  color: string;
-  label: string;
-}
-
-/** Message role → icon + color, mirroring Opik's `ROLE_CONFIG`. */
-const ROLE_VISUALS: Record<t.TraceMessage['role'], RoleVisual> = {
-  user: {
-    icon: User,
-    bg: 'var(--tag-turquoise-bg)',
-    color: 'var(--tag-turquoise-text)',
-    label: 'User',
-  },
-  assistant: {
-    icon: Bot,
-    bg: 'var(--tag-yellow-bg)',
-    color: 'var(--tag-yellow-text)',
-    label: 'Assistant',
-  },
-  system: {
-    icon: Settings,
-    bg: 'var(--tag-blue-bg)',
-    color: 'var(--tag-blue-text)',
-    label: 'System',
-  },
-  tool: {
-    icon: Wrench,
-    bg: 'var(--tag-burgundy-bg)',
-    color: 'var(--tag-burgundy-text)',
-    label: 'Tool',
-  },
-  unknown: {
-    icon: MessageCircle,
-    bg: 'var(--tag-green-bg)',
-    color: 'var(--tag-green-text)',
-    label: 'Message',
-  },
-};
-
-export function roleVisual(role: t.TraceMessage['role']): RoleVisual {
-  return ROLE_VISUALS[role] ?? ROLE_VISUALS.unknown;
 }
