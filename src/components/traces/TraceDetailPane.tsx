@@ -285,10 +285,10 @@ export function TraceDetailPane({
               type="button"
               onClick={() => setTab(id)}
               className={cn(
-                'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium',
+                'cursor-pointer border-b-2 py-2 text-sm font-medium',
                 activeTab === id
                   ? 'border-(--cui-color-accent) text-(--cui-color-text-default)'
-                  : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+                  : 'border-transparent text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
               )}
             >
               {localize(TAB_LABEL_KEYS[id])}
