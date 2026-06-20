@@ -74,6 +74,9 @@ const NETWORK_OPTIONS = {
     borderWidth: 2,
     font: { size: 14, color: '#000000' },
     shadow: { enabled: true, color: 'rgba(0,0,0,0.2)', size: 3, x: 3, y: 3 },
+    // Wrap long labels (e.g. "agent=bedrock__us.anthropic…") so nodes stay narrow
+    // enough to fit the drawer's left panel instead of overflowing horizontally.
+    widthConstraint: { maximum: 180 },
     scaling: { label: { enabled: true, min: 14, max: 16 } },
   },
   edges: {
@@ -144,14 +147,23 @@ export function TraceGraph({ graph }: { graph: t.TraceGraph }) {
     const network = new Network(container, { nodes, edges }, NETWORK_OPTIONS);
     networkRef.current = network;
 
-    const handleResize = () => {
-      network.redraw();
-      network.fit();
+    // Zoom the whole graph into view whenever the container has a real size.
+    // Driving this from the ResizeObserver (rather than a one-shot afterDrawing)
+    // guarantees we fit AFTER layout settles — otherwise long-labelled nodes render
+    // full-size and clip inside the narrow, resizable drawer panel.
+    const refit = () => {
+      if (container.clientWidth > 0 && container.clientHeight > 0) {
+        network.redraw();
+        network.fit();
+      }
     };
-    window.addEventListener('resize', handleResize);
+    const observer = new ResizeObserver(refit);
+    observer.observe(container);
+    window.addEventListener('resize', refit);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', refit);
+      observer.disconnect();
       networkRef.current = null;
       network.destroy();
     };
