@@ -28,9 +28,16 @@ interface DrawerContentProps {
   children: ReactNode;
   width?: string;
   dismissable?: boolean;
+  /** Accessible name for the dialog (visually hidden); required by Radix for a11y. */
+  title?: string;
 }
 
-function DrawerContent({ children, width = 'min(60vw, 96vw)', dismissable = false }: DrawerContentProps) {
+function DrawerContent({
+  children,
+  width = 'min(60vw, 96vw)',
+  dismissable = false,
+  title = 'Details',
+}: DrawerContentProps) {
   const preventWhenLocked = (event: Event) => {
     if (!dismissable) event.preventDefault();
   };
@@ -43,6 +50,7 @@ function DrawerContent({ children, width = 'min(60vw, 96vw)', dismissable = fals
         onInteractOutside={preventWhenLocked}
         className="fixed inset-y-0 right-0 z-50 flex flex-col overflow-hidden border-l border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) shadow-md outline-none"
       >
+        <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
         {children}
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Flyout } from '@clickhouse/click-ui';
+import { Drawer } from '@admin/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { ArrowDown, ArrowUp, Expand, ExternalLink, X } from 'lucide-react';
@@ -188,43 +188,33 @@ export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceD
   }, [traceId, onPrev, onNext]);
 
   return (
-    <Flyout
+    <Drawer
       open={Boolean(traceId)}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
-      {/* reference peek keeps the drawer open during resize/drag: it closes only via
-          the X button or Escape, never on an outside pointer-down (which a panel-resize
-          pointer-capture can otherwise trigger). closeOnInteractOutside={false}. */}
-      <Flyout.Content
-        strategy="fixed"
-        width="min(60vw, 96vw)"
-        closeOnInteractOutside={false}
-        showOverlay
-      >
-        {/* Header lives INSIDE Flyout.Body (which has no horizontal padding and keeps
-            the 60vw width), not Flyout.Header (which insets 24px). the reference's peek
-            header is an edge-to-edge bar. */}
-        <Flyout.Body>
-          <div className="flex h-full min-h-0 w-full flex-col">
-            {traceId ? (
-              <>
-                <DrawerHeader
-                  tenant={tenant}
-                  traceId={traceId}
-                  onClose={onClose}
-                  onPrev={onPrev}
-                  onNext={onNext}
-                />
-                <div className="flex min-h-0 flex-1 flex-col">
-                  <TraceDetailContent tenant={tenant} traceId={traceId} />
-                </div>
-              </>
-            ) : null}
-          </div>
-        </Flyout.Body>
-      </Flyout.Content>
-    </Flyout>
+      {/* dismissable={false}: the peek closes only via the X button or Escape, never on
+          an outside pointer-down (which a panel-resize pointer-capture can otherwise
+          trigger). The edge-to-edge header lives in Drawer.Body (no horizontal padding). */}
+      <Drawer.Content width="min(60vw, 96vw)" dismissable={false} title={traceId ?? 'Trace'}>
+        <Drawer.Body className="h-full">
+          {traceId ? (
+            <>
+              <DrawerHeader
+                tenant={tenant}
+                traceId={traceId}
+                onClose={onClose}
+                onPrev={onPrev}
+                onNext={onNext}
+              />
+              <div className="flex min-h-0 flex-1 flex-col">
+                <TraceDetailContent tenant={tenant} traceId={traceId} />
+              </div>
+            </>
+          ) : null}
+        </Drawer.Body>
+      </Drawer.Content>
+    </Drawer>
   );
 }

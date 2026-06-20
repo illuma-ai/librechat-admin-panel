@@ -1,4 +1,5 @@
-import { Flyout } from '@clickhouse/click-ui';
+import { Drawer } from '@admin/ui';
+import { X } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { SessionDetailContent } from './SessionDetailContent';
 
@@ -18,16 +19,29 @@ export function SessionDrawer({ tenant, sessionId, onClose, onOpenTrace }: Sessi
     : localize('com_traces_session');
 
   return (
-    <Flyout
+    <Drawer
       open={Boolean(sessionId)}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
-      <Flyout.Content strategy="fixed" width="min(1180px, 96vw)" closeOnInteractOutside showOverlay>
-        <Flyout.Header title={title} showClose />
-        <Flyout.Body>
-          <div className="flex h-full min-h-0 flex-col">
+      <Drawer.Content width="min(1180px, 96vw)" dismissable title={title}>
+        <Drawer.Body className="h-full">
+          <div className="flex min-h-11 shrink-0 items-center justify-between gap-2 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1">
+            <span className="truncate text-sm font-medium text-(--cui-color-text-default)">
+              {title}
+            </span>
+            <button
+              type="button"
+              onClick={onClose}
+              title={localize('com_traces_close')}
+              aria-label={localize('com_traces_close')}
+              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col">
             {sessionId ? (
               <SessionDetailContent
                 tenant={tenant}
@@ -36,8 +50,8 @@ export function SessionDrawer({ tenant, sessionId, onClose, onOpenTrace }: Sessi
               />
             ) : null}
           </div>
-        </Flyout.Body>
-      </Flyout.Content>
-    </Flyout>
+        </Drawer.Body>
+      </Drawer.Content>
+    </Drawer>
   );
 }
