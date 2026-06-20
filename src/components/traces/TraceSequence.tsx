@@ -4,7 +4,40 @@ import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { formatLatency, formatTokenCounts, usdFormatter } from './format';
-import { TypeIcon } from './traceIcons';
+import { TypeIcon, typeVisual } from './traceIcons';
+
+/** Parse a CH (`YYYY-MM-DD HH:MM:SS.mmm`) or ISO timestamp to epoch ms (NaN if absent). */
+function epochMs(value: string): number {
+  if (!value) return NaN;
+  const iso = value.includes('T') ? value : value.replace(' ', 'T');
+  const zoned = /[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`;
+  return Date.parse(zoned);
+}
+
+interface TimeBounds {
+  start: number;
+  span: number;
+}
+
+/** Trace time window (earliest start → latest end) for timeline bar positioning. */
+function computeBounds(nodes: t.ObservationNode[]): TimeBounds {
+  let start = Infinity;
+  let end = -Infinity;
+  const walk = (ns: t.ObservationNode[]) => {
+    for (const n of ns) {
+      const s = epochMs(n.startTime);
+      const e = epochMs(n.endTime) || s;
+      if (!Number.isNaN(s)) start = Math.min(start, s);
+      if (!Number.isNaN(e)) end = Math.max(end, e);
+      walk(n.children);
+    }
+  };
+  walk(nodes);
+  if (!Number.isFinite(start)) return { start: 0, span: 0 };
+  return { start, span: Math.max(0, end - start) };
+}
+
+const clampPct = (n: number) => Math.min(100, Math.max(0, n));
 
 interface FlatNode {
   node: t.ObservationNode;
@@ -70,6 +103,34 @@ interface TraceSequenceProps {
   expandAllSignal?: number;
   /** Case-insensitive name filter; non-matching branches are hidden. */
   filter?: string;
+  /** Timeline (waterfall) mode — render a duration bar lane per node (Langfuse `view=timeline`). */
+  timeline?: boolean;
+}
+
+/** A single waterfall bar: positioned by start offset, sized by duration, colored by type. */
+function TimelineBar({ node, bounds }: { node: t.ObservationNode; bounds: TimeBounds }) {
+  const start = epochMs(node.startTime);
+  const span = bounds.span;
+  const offsetPct = span > 0 && !Number.isNaN(start) ? clampPct(((start - bounds.start) / span) * 100) : 0;
+  const durMs = node.latencyMs > 0 ? node.latencyMs : 0;
+  const widthPct = span > 0 ? Math.max(1.5, clampPct((durMs / span) * 100)) : 100;
+  const color = typeVisual(node.type).color;
+  return (
+    <div className="relative mt-1 h-3.5 w-full overflow-hidden rounded-sm bg-(--cui-color-background-muted)">
+      <div
+        className="absolute top-0 bottom-0 rounded-sm opacity-80"
+        style={{ left: `${offsetPct}%`, width: `${Math.min(widthPct, 100 - offsetPct)}%`, backgroundColor: color }}
+      />
+      {node.latencyMs > 0 ? (
+        <span
+          className="absolute top-1/2 -translate-y-1/2 px-1 text-[10px] text-(--cui-color-text-muted)"
+          style={{ left: `${Math.min(offsetPct, 80)}%` }}
+        >
+          {formatLatency(node.latencyMs)}
+        </span>
+      ) : null}
+    </div>
+  );
 }
 
 /** Langfuse observation tree — connector lines, colored type icons, per-node metrics. */
@@ -80,9 +141,11 @@ export function TraceSequence({
   collapseAllSignal = 0,
   expandAllSignal = 0,
   filter = '',
+  timeline = false,
 }: TraceSequenceProps) {
   const localize = useLocalize();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const bounds = useMemo(() => computeBounds(observations), [observations]);
 
   useEffect(() => {
     if (collapseAllSignal > 0) setCollapsed(new Set(collectIds(observations)));
@@ -181,7 +244,8 @@ export function TraceSequence({
               >
                 {node.name || `Unnamed ${node.type}`}
               </span>
-              {showMetrics ? (
+              {timeline ? <TimelineBar node={node} bounds={bounds} /> : null}
+              {!timeline && showMetrics ? (
                 <div className="flex flex-wrap gap-x-2 text-xs text-(--cui-color-text-muted)">
                   {node.latencyMs > 0 ? <span>{formatLatency(node.latencyMs)}</span> : null}
                   {tokenText ? <span>{tokenText}</span> : null}

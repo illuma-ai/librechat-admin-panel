@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Group, Panel, Separator, useDefaultLayout } from 'react-resizable-panels';
 import { Download, FoldVertical, Network, UnfoldVertical } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
@@ -76,6 +77,13 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
     if (data) downloadTraceJson(traceId, data);
   }, [data, traceId]);
 
+  // v4 layout persistence: remember the drawer split width across opens (client-only storage).
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: 'trace-detail-layout',
+    panelIds: ['trace-nav', 'trace-detail'],
+    storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+  });
+
   if (isLoading) return <LoadingState />;
   if (!data) return <EmptyState message={localize('com_traces_not_found_desc')} />;
 
@@ -84,8 +92,22 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
   const graphAvailable = data.graph.nodes.length > 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col md:flex-row">
-      <div className="flex min-h-0 flex-col border-b border-(--cui-color-stroke-default) md:w-[44%] md:max-w-130 md:min-w-75 md:border-r md:border-b-0">
+    <Group
+      orientation="horizontal"
+      id="trace-detail-layout"
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
+      className="h-full min-h-0 w-full"
+    >
+      {/* Left navigation panel — draggable + collapsible, mirroring Langfuse TraceLayoutDesktop. */}
+      <Panel
+        id="trace-nav"
+        collapsible
+        collapsedSize="0px"
+        minSize="260px"
+        defaultSize="450px"
+        className="flex min-h-0 flex-col overflow-hidden"
+      >
         <div className="flex shrink-0 items-center gap-1 border-b border-(--cui-color-stroke-default) px-2 py-1">
           <input
             type="text"
@@ -165,14 +187,18 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             selectedId={selectedId}
             onSelect={setSelectedId}
             filter={filter}
+            timeline={timeline}
             collapseAllSignal={collapseSignal}
             expandAllSignal={expandSignal}
           />
         </div>
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col">
+      </Panel>
+      {/* Draggable resize handle (double-click to collapse), mirroring Langfuse. A wide
+          transparent `after` overlay makes the 1px divider easy to grab. */}
+      <Separator className="relative z-10 w-px shrink-0 cursor-col-resize touch-none bg-(--cui-color-stroke-default) transition-colors select-none after:absolute after:inset-y-0 after:-left-1.5 after:z-10 after:w-4 after:content-[''] hover:bg-(--cui-color-primary-default) data-resize-handle-active:bg-(--cui-color-primary-default)" />
+      <Panel id="trace-detail" minSize="40%" defaultSize="60%" className="flex min-h-0 flex-col">
         <TraceDetailPane trace={data.trace} totals={totals} node={selectedNode} isRoot={isRoot} />
-      </div>
-    </div>
+      </Panel>
+    </Group>
   );
 }
