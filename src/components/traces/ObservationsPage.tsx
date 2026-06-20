@@ -7,6 +7,7 @@ import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
 import { TraceDrawer } from './TraceDrawer';
+import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { ColumnsMenu } from './ColumnsMenu';
 import { useTracingTenant } from './useTracingTenant';
 import { useColumnVisibility } from './useColumnVisibility';
@@ -20,10 +21,12 @@ interface ObservationsPageProps {
   page: number;
   pageSize: number;
   selectedTraceId: string | null;
+  filters: t.TraceFacetFilters;
   onTenant: (tenant: string) => void;
   onSearch: (search: string) => void;
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
+  onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
   onOpenTrace: (traceId: string) => void;
   onCloseTrace: () => void;
 }
@@ -35,17 +38,29 @@ export function ObservationsPage({
   page,
   pageSize,
   selectedTraceId,
+  filters,
   onTenant,
   onSearch,
   onRange,
   onPage,
+  onFilters,
   onOpenTrace,
   onCloseTrace,
 }: ObservationsPageProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const query = useQuery(
-    observationsQueryOptions({ tenantId: effectiveTenant, search, range, page, pageSize }),
+    observationsQueryOptions({
+      tenantId: effectiveTenant,
+      search,
+      range,
+      page,
+      pageSize,
+      environment: filters.environment,
+      type: filters.type,
+      level: filters.level,
+      name: filters.name,
+    }),
   );
 
   const total = query.data?.total ?? 0;
@@ -191,6 +206,9 @@ export function ObservationsPage({
           visibleCount={columnVisibility.visibleCount}
           total={columnVisibility.total}
         />
+      }
+      filterSidebar={
+        <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
       }
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />

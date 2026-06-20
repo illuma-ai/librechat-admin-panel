@@ -44,6 +44,11 @@ export function TracingTabs({ active }: { active: TracingTab }) {
                   range: search.range ?? ('all' as t.TraceRange),
                   page: 1,
                   trace: '',
+                  // Reset the shared facet filters on tab switch (both routes accept these).
+                  env: [],
+                  type: [],
+                  level: [],
+                  name: [],
                 },
               });
             }}

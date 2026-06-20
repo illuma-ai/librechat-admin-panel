@@ -370,8 +370,24 @@ export const getObservationsFn = createServerFn({ method: 'GET' })
       ...(hasSearch ? { s: `%${data.search.trim()}%` } : {}),
     };
 
+    // Facet filters applied directly to the observation row — these columns live
+    // on `observations` (environment / type / level / name). Reuses the same
+    // trace filter sidebar on the Observations tab. Values are bound as params,
+    // never interpolated into SQL.
+    const facetClauses: string[] = [];
+    const addFacet = (values: string[] | undefined, column: string, param: string) => {
+      if (!values || values.length === 0) return;
+      facetClauses.push(`${column} IN {${param}:Array(String)}`);
+      params[param] = values;
+    };
+    addFacet(data.environment, 'environment', 'fEnv');
+    addFacet(data.type, 'type', 'fType');
+    addFacet(data.level, 'level', 'fLevel');
+    addFacet(data.name, 'name', 'fName');
+    const facetClause = facetClauses.length > 0 ? `AND ${facetClauses.join(' AND ')}` : '';
+
     const [countRow] = await chQuery<{ c: string }>(
-      `SELECT count() AS c FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause}`,
+      `SELECT count() AS c FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause} ${facetClause}`,
       params,
     );
 
@@ -381,7 +397,7 @@ export const getObservationsFn = createServerFn({ method: 'GET' })
               input_tokens AS inputTokens, output_tokens AS outputTokens, total_tokens AS totalTokens,
               total_cost AS cost, environment
        FROM observations FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause}
+       WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause} ${facetClause}
        ORDER BY start_time DESC
        LIMIT {limit:UInt32} OFFSET {offset:UInt32}`,
       params,
