@@ -277,26 +277,8 @@ export function buildTree(flat: t.ObservationNode[]): t.ObservationNode[] {
 
 // ── Agent (LangGraph) graph ──────────────────────────────────────────
 
-const LG_START = '__start__';
-const LG_END = '__end__';
 const GRAPH_START = 'Start';
 const GRAPH_END = 'End';
-
-/** Map a raw LangGraph node name to its display name (system nodes → Start/End). */
-function graphNodeName(raw: string): string {
-  if (raw === LG_START) return GRAPH_START;
-  if (raw === LG_END) return GRAPH_END;
-  return raw;
-}
-
-/** True when the trace carries LangGraph step metadata (langgraph_node + langgraph_step). */
-function hasLanggraphSteps(flat: t.ObservationNode[]): boolean {
-  return flat.some((o) => {
-    const node = o.metadata?.['langgraph_node'];
-    const step = o.metadata?.['langgraph_step'];
-    return Boolean(node) && step !== undefined && step !== '' && Number(step) !== 0;
-  });
-}
 
 /**
  * Derive the agent execution graph, mirroring Langfuse v4's two-mode builder:
@@ -309,63 +291,9 @@ function hasLanggraphSteps(flat: t.ObservationNode[]): boolean {
  * branches included) and close with a terminal `End` node.
  */
 export function buildAgentGraph(flat: t.ObservationNode[]): t.TraceGraph {
-  return hasLanggraphSteps(flat) ? buildLanggraphGraph(flat) : buildTimingGraph(flat);
+  return buildTimingGraph(flat);
 }
 
-/** LangGraph-metadata graph: distinct `langgraph_node` values stepped by `langgraph_step`. */
-function buildLanggraphGraph(flat: t.ObservationNode[]): t.TraceGraph {
-  const stepToNodes = new Map<number, Set<string>>();
-  const typeByNode = new Map<string, string>();
-  for (const obs of flat) {
-    const raw = obs.metadata?.['langgraph_node'];
-    const stepStr = obs.metadata?.['langgraph_step'];
-    if (!raw || stepStr === undefined || stepStr === '') continue;
-    const step = Number(stepStr);
-    if (!Number.isFinite(step)) continue;
-    const node = graphNodeName(raw);
-    if (!stepToNodes.has(step)) stepToNodes.set(step, new Set());
-    stepToNodes.get(step)!.add(node);
-    if (!typeByNode.has(node)) typeByNode.set(node, obs.type);
-  }
-  if (stepToNodes.size === 0) return { nodes: [], edges: [] };
-
-  const sortedSteps = [...stepToNodes.entries()].sort((a, b) => a[0] - b[0]);
-  const nodeStep = new Map<string, number>();
-  for (const [step, set] of sortedSteps) {
-    for (const node of set) if (!nodeStep.has(node)) nodeStep.set(node, step);
-  }
-  const hasEnd = nodeStep.has(GRAPH_END);
-  const maxStep = sortedSteps[sortedSteps.length - 1][0];
-  if (!hasEnd) nodeStep.set(GRAPH_END, maxStep + 1);
-
-  const nodes: t.TraceGraphNode[] = [...nodeStep.entries()].map(([id, step]) => ({
-    id,
-    label: id,
-    type: id === GRAPH_START || id === GRAPH_END ? 'system' : (typeByNode.get(id) ?? 'span'),
-    step,
-  }));
-
-  const edges: t.TraceGraphEdge[] = [];
-  const seen = new Set<string>();
-  const addEdge = (from: string, to: string) => {
-    if (from === to) return;
-    const key = `${from} ${to}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    edges.push({ from, to });
-  };
-  for (let i = 0; i < sortedSteps.length; i++) {
-    const current = sortedSteps[i][1];
-    let targets: string[];
-    if (i < sortedSteps.length - 1) targets = [...sortedSteps[i + 1][1]];
-    else targets = hasEnd ? [] : [GRAPH_END];
-    for (const node of current) {
-      if (node === GRAPH_END) continue;
-      for (const target of targets) addEdge(node, target);
-    }
-  }
-  return { nodes, edges };
-}
 
 // ── Generalized (timing-based) agent graph ───────────────────────────
 //

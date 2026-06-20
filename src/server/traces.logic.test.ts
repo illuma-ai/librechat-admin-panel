@@ -13,10 +13,6 @@ import {
   toNumber,
 } from './traces.logic';
 
-function lgNode(id: string, lgName: string, step: string, type = 'span'): t.ObservationNode {
-  return { ...node(id), type, metadata: { langgraph_node: lgName, langgraph_step: step } };
-}
-
 function node(id: string, parentId = ''): t.ObservationNode {
   return {
     id,
@@ -445,26 +441,14 @@ describe('buildAgentGraph', () => {
     expect(graph.nodes.map((n) => n.id)).not.toContain('evt');
   });
 
-  it('maps __start__ to Start, adds End, and links steps in order', () => {
-    const graph = buildAgentGraph([lgNode('o0', '__start__', '0'), lgNode('o1', 'agent', '1')]);
-    expect(graph.nodes.map((n) => n.id).sort()).toEqual(['Start', 'agent', 'End'].sort());
-    expect(graph.edges).toEqual([
-      { from: 'Start', to: 'agent' },
-      { from: 'agent', to: 'End' },
-    ]);
-  });
-
-  it('fans out parallel nodes that share a step', () => {
+  it('brackets the run with Start and End system nodes', () => {
     const graph = buildAgentGraph([
-      lgNode('o0', '__start__', '0'),
-      lgNode('o1', 'a', '1'),
-      lgNode('o2', 'b', '1'),
+      timed('a', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:01.000Z'),
     ]);
+    expect(graph.nodes.map((n) => n.id).sort()).toEqual(['End', 'Start', 'a']);
     expect(graph.edges).toEqual([
       { from: 'Start', to: 'a' },
-      { from: 'Start', to: 'b' },
       { from: 'a', to: 'End' },
-      { from: 'b', to: 'End' },
     ]);
   });
 });

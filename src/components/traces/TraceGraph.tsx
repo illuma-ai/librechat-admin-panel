@@ -58,7 +58,10 @@ const NETWORK_OPTIONS = {
     },
     randomSeed: 1,
   },
-  physics: { enabled: false, stabilization: { iterations: 0 } },
+  // PERF: physics ENABLED with 500 stabilization iterations, matching the
+  // reference canvas — the hierarchical layout needs physics to settle, or
+  // fixed Start/End positions leave nodes cramped/misplaced.
+  physics: { enabled: true, stabilization: { iterations: 500 } },
   interaction: { zoomView: false },
   nodes: {
     shape: 'box',
@@ -66,9 +69,6 @@ const NETWORK_OPTIONS = {
     borderWidth: 2,
     font: { size: 14, color: '#000000' },
     shadow: { enabled: true, color: 'rgba(0,0,0,0.2)', size: 3, x: 3, y: 3 },
-    // Wrap long labels (e.g. "agent=bedrock__us.anthropic…") so nodes stay narrow
-    // enough to fit the drawer's left panel instead of overflowing horizontally.
-    widthConstraint: { maximum: 180 },
     scaling: { label: { enabled: true, min: 14, max: 16 } },
   },
   edges: {
