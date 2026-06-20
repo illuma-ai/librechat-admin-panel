@@ -194,10 +194,16 @@ export interface TracesQuery {
   tags?: string[];
 }
 
-/** Distinct facet values available for the filter controls. */
+/** A facet value with its occurrence count (Langfuse shows counts per option). */
+export interface FacetOption {
+  value: string;
+  count: number;
+}
+
+/** Distinct facet values (with counts) available for the filter controls. */
 export interface TraceFilterOptions {
-  environments: string[];
-  names: string[];
-  userIds: string[];
-  tags: string[];
+  environments: FacetOption[];
+  names: FacetOption[];
+  userIds: FacetOption[];
+  tags: FacetOption[];
 }

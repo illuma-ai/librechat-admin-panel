@@ -185,23 +185,36 @@ export const tracesQueryOptions = (query: t.TracesQuery) =>
 export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
   .inputValidator(tenantScopeSchema)
   .handler(async ({ data }): Promise<t.TraceFilterOptions> => {
-    const [row] = await chQuery<Record<string, unknown>>(
-      `SELECT
-         arrayFilter(x -> x != '', groupUniqArray(200)(environment)) AS environments,
-         arrayFilter(x -> x != '', groupUniqArray(200)(name)) AS names,
-         arrayFilter(x -> x != '', groupUniqArray(200)(user_id)) AS userIds,
-         arrayFilter(x -> x != '', arrayDistinct(arrayFlatten(groupUniqArray(200)(tags)))) AS tags
-       FROM traces FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0`,
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT facet, value, count() AS cnt FROM (
+         SELECT 'env' AS facet, environment AS value FROM traces FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 AND environment != ''
+         UNION ALL
+         SELECT 'name', name FROM traces FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != ''
+         UNION ALL
+         SELECT 'user', user_id FROM traces FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 AND user_id != ''
+         UNION ALL
+         SELECT 'tag', arrayJoin(tags) AS value FROM traces FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0
+       )
+       WHERE value != ''
+       GROUP BY facet, value
+       ORDER BY cnt DESC
+       LIMIT 800`,
       { t: data.tenantId },
     );
-    const arr = (v: unknown): string[] =>
-      Array.isArray(v) ? v.map(String).filter(Boolean).sort() : [];
+    const pick = (facet: string): t.FacetOption[] =>
+      rows
+        .filter((r) => r.facet === facet)
+        .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.cnt) }))
+        .filter((o) => o.value);
     return {
-      environments: arr(row?.environments),
-      names: arr(row?.names),
-      userIds: arr(row?.userIds),
-      tags: arr(row?.tags),
+      environments: pick('env'),
+      names: pick('name'),
+      userIds: pick('user'),
+      tags: pick('tag'),
     };
   });
 

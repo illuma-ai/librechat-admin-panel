@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Select } from '@clickhouse/click-ui';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
@@ -25,17 +27,21 @@ interface TracingShellProps {
   searchPlaceholder: string;
   /** Tab bar slot (Traces/Observations use TracingTabs; Sessions passes none). */
   tabs?: ReactNode;
-  /** Extra toolbar controls (filters, columns, …). */
+  /** Extra toolbar controls (columns menu, …). */
   toolbarExtra?: ReactNode;
+  /** Left filter sidebar (Langfuse facet panel); a "Hide filters" toggle is shown when set. */
+  filterSidebar?: ReactNode;
+  /** Number of active filters, shown on the toggle. */
+  activeFilterCount?: number;
   children: ReactNode;
   drawer?: ReactNode;
 }
 
 /**
- * Shared Tracing page layout (Langfuse hierarchy): tabs → toolbar (search +
- * tenant + range + extras) → full-width table → pagination. The page title lives
- * in the global top-nav header. Presentational; the page owns tenant resolution
- * (`useTracingTenant`) and the data query.
+ * Shared Tracing page layout (Langfuse): tabs → toolbar (Hide-filters + search +
+ * tenant + range + extras) → [filter sidebar | full-width table] → pagination.
+ * The page title lives in the top-nav header. Presentational; the page owns
+ * tenant resolution and the query.
  */
 export function TracingShell({
   tenant,
@@ -51,16 +57,41 @@ export function TracingShell({
   searchPlaceholder,
   tabs,
   toolbarExtra,
+  filterSidebar,
+  activeFilterCount = 0,
   children,
   drawer,
 }: TracingShellProps) {
   const localize = useLocalize();
+  const [filtersOpen, setFiltersOpen] = useState(true);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {tabs}
 
-      {/* Toolbar: search + tenant + time range + extra controls */}
+      {/* Toolbar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-(--cui-color-stroke-default) px-3 py-2">
+        {filterSidebar ? (
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((o) => !o)}
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-(--cui-color-stroke-default) px-2 text-sm text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted)"
+          >
+            {filtersOpen ? (
+              <PanelLeftClose className="size-4" />
+            ) : (
+              <PanelLeftOpen className="size-4" />
+            )}
+            {filtersOpen
+              ? localize('com_traces_hide_filters')
+              : localize('com_traces_show_filters')}
+            {activeFilterCount > 0 ? (
+              <span className="rounded-full bg-(--cui-color-background-muted) px-1.5 text-xs">
+                {activeFilterCount}
+              </span>
+            ) : null}
+          </button>
+        ) : null}
         <div className="min-w-65 flex-1">
           <SearchInput value={search} onChange={onSearch} placeholder={searchPlaceholder} />
         </div>
@@ -86,7 +117,15 @@ export function TracingShell({
         {toolbarExtra}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-auto">{children}</div>
+      {/* Body: filter sidebar (collapsible) + table */}
+      <div className="flex min-h-0 flex-1">
+        {filterSidebar && filtersOpen ? (
+          <aside className="w-64 shrink-0 overflow-auto border-r border-(--cui-color-stroke-default)">
+            {filterSidebar}
+          </aside>
+        ) : null}
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto">{children}</div>
+      </div>
 
       <div className="flex shrink-0 justify-end border-t border-(--cui-color-stroke-default) px-3 py-1.5">
         <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPage} />

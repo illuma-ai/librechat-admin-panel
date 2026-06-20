@@ -8,7 +8,7 @@ import { DataTable } from './DataTable';
 import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
-import { TracesFilters } from './TracesFilters';
+import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { TraceDrawer } from './TraceDrawer';
 import { UserCell } from './UserCell';
 import { useTracingTenant } from './useTracingTenant';
@@ -145,8 +145,14 @@ export function TracesPage({
       totalPages={totalPages}
       onPage={onPage}
       searchPlaceholder={localize('com_traces_search_placeholder')}
-      toolbarExtra={
-        <TracesFilters tenant={effectiveTenant} filters={filters} onChange={onFilters} />
+      activeFilterCount={
+        filters.environment.length +
+        filters.name.length +
+        filters.userId.length +
+        filters.tags.length
+      }
+      filterSidebar={
+        <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
       }
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />
