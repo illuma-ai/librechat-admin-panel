@@ -22,6 +22,7 @@ import {
   toNumber,
 } from './traces.logic';
 import { chQuery } from './utils/clickhouse';
+import { pgQuery } from './utils/postgres';
 
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
@@ -76,11 +77,21 @@ const tenantScopeSchema = z.object({ tenantId: z.string().min(1) });
 // ── Tenants ──────────────────────────────────────────────────────────
 
 export const getTenantsFn = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<string[]> => {
+  async (): Promise<t.TenantOption[]> => {
+    // The tenant UUIDs that actually have telemetry come from ClickHouse...
     const rows = await chQuery<{ tenant: string }>(
       'SELECT DISTINCT tenant_id AS tenant FROM traces WHERE is_deleted = 0 ORDER BY tenant',
     );
-    return rows.map((r) => r.tenant).filter(Boolean);
+    const ids = rows.map((r) => r.tenant).filter(Boolean);
+    if (ids.length === 0) return [];
+    // ...their display names come from the collector's control-plane Postgres
+    // `tenants` registry (best-effort; falls back to the id when unavailable).
+    const named = await pgQuery<{ id: string; name: string }>(
+      'SELECT id::text AS id, name FROM tenants WHERE id::text = ANY($1)',
+      [ids],
+    );
+    const nameById = new Map(named.map((n) => [n.id, n.name]));
+    return ids.map((id) => ({ id, name: nameById.get(id) || id }));
   },
 );
 

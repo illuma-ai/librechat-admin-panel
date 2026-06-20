@@ -29,7 +29,7 @@ const DEFAULT_PAGE_SIZE = 50;
 
 interface TracingShellProps {
   tenant: string;
-  tenants: string[];
+  tenants: t.TenantOption[];
   onTenant: (tenant: string) => void;
   search: string;
   onSearch: (search: string) => void;
@@ -155,7 +155,7 @@ export function TracingShell({
             value={tenant}
             onSelect={onTenant}
             placeholder={localize('com_traces_select_tenant')}
-            options={tenants.map((tn) => ({ value: tn, label: tn }))}
+            options={tenants.map((tn) => ({ value: tn.id, label: tn.name }))}
             disabled={tenants.length === 0}
           />
         </div>

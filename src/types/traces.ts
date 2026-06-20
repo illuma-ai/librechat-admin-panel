@@ -192,6 +192,12 @@ export interface TraceDetail {
   scores: TraceScore[];
 }
 
+/** A selectable tenant: the UUID used by queries + a human-readable display name. */
+export interface TenantOption {
+  id: string;
+  name: string;
+}
+
 /** Headline metrics for the selected tenant. */
 export interface TraceMetricsSummary {
   traces: number;
