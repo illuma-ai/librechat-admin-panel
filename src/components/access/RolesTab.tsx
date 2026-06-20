@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type * as t from '@/types';
 import {

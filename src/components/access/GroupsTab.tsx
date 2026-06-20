@@ -1,4 +1,4 @@
-import { Button } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import type { AdminGroup } from '@librechat/data-schemas';

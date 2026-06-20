@@ -1,4 +1,5 @@
-import { Icon, Button, Dialog } from '@clickhouse/click-ui';
+import { Icon, Dialog } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import type * as t from '@/types';
 import { getScopeTypeConfig } from '@/constants';
 import { useLocalize } from '@/hooks';

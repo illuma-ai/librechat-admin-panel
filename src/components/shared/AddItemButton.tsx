@@ -1,4 +1,4 @@
-import { Button } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 
 export function AddItemButton({
   label,

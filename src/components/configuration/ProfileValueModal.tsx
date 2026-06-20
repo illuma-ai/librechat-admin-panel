@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PrincipalType } from 'librechat-data-provider';
-import { Icon, Button, Dialog } from '@clickhouse/click-ui';
+import { Icon, Dialog } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import type * as t from '@/types';
 import { getEnumOptions, getArrayItemType, toKVPair } from './utils';
 import { KeyValueField } from './fields/KeyValueField';

@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
-import { Badge, Button, Dialog } from '@clickhouse/click-ui';
+import { Badge, Dialog } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';

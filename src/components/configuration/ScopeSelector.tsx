@@ -1,5 +1,6 @@
 import { Command } from 'cmdk';
-import { Button, Icon } from '@clickhouse/click-ui';
+import { Icon } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import { PrincipalType } from 'librechat-data-provider';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

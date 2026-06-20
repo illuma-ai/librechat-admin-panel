@@ -1,4 +1,4 @@
-import { Button } from '@clickhouse/click-ui';
+import { Button } from '@admin/ui';
 import { useState, useCallback, useEffect, memo } from 'react';
 import type * as t from '@/types';
 import { ObjectEntryCard } from './ObjectEntryCard';

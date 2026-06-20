@@ -48,6 +48,7 @@
     --cui-color-title-default: #161517;
     --cui-color-title-muted: #6c6f77;
     --cui-color-accent: var(--brand-primary);
+    --cui-color-accent-hover: var(--brand-primary-hover);
     --cui-color-outline: var(--brand-primary);
     --cui-color-shadow: rgb(0% 0% 0% / 0.1);
     --cui-color-accent-success: #16a34a;
@@ -93,6 +94,7 @@
     --cui-color-title-default: rgb(97.5% 97.5% 97.5%);
     --cui-color-title-muted: #b3b6bd;
     --cui-color-accent: var(--brand-primary);
+    --cui-color-accent-hover: var(--brand-primary-hover);
     --cui-color-outline: var(--brand-primary);
     --cui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
     --cui-color-accent-success: #4ade80;
@@ -139,6 +141,7 @@
       --cui-color-title-default: rgb(97.5% 97.5% 97.5%);
       --cui-color-title-muted: #b3b6bd;
       --cui-color-accent: var(--brand-primary);
+      --cui-color-accent-hover: var(--brand-primary-hover);
       --cui-color-outline: var(--brand-primary);
       --cui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
       --cui-color-accent-success: #4ade80;
