@@ -27,6 +27,7 @@ import {
   ChartColumn,
   TriangleAlert,
   CircleHelp,
+  LogOut,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from './cn';
@@ -67,6 +68,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
   'dots-horizontal': MoreHorizontal,
+  'slide-out': LogOut,
   chat: MessageSquare,
   metrics: ChartColumn,
   warning: TriangleAlert,

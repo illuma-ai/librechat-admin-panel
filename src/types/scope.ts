@@ -1,4 +1,4 @@
-import { Dropdown, Icon } from '@clickhouse/click-ui';
+import { Dropdown, Icon } from '@admin/ui';
 import { PrincipalType } from 'librechat-data-provider';
 
 import type { ComponentProps } from 'react';

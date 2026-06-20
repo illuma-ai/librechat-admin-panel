@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu';
+import { Icon } from './icon';
+import { cn } from './cn';
 
 /**
  * Radix-based dropdown menu — a drop-in replacement for the click-ui `Dropdown`
@@ -41,14 +43,23 @@ function DropdownContent({ children, align = 'start' }: DropdownContentProps) {
 interface DropdownItemProps {
   children: ReactNode;
   onClick?: () => void;
+  /** click-ui icon name rendered before the label. */
+  icon?: string;
+  disabled?: boolean;
+  className?: string;
 }
 
-function DropdownItem({ children, onClick }: DropdownItemProps) {
+function DropdownItem({ children, onClick, icon, disabled, className }: DropdownItemProps) {
   return (
     <DropdownPrimitive.Item
       onSelect={onClick}
-      className="relative flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-(--cui-color-text-default) outline-none select-none data-highlighted:bg-(--cui-color-background-muted)"
+      disabled={disabled}
+      className={cn(
+        'relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-(--cui-color-text-default) outline-none select-none data-highlighted:bg-(--cui-color-background-muted) data-disabled:cursor-not-allowed data-disabled:opacity-50',
+        className,
+      )}
     >
+      {icon ? <Icon name={icon} size="sm" /> : null}
       {children}
     </DropdownPrimitive.Item>
   );
