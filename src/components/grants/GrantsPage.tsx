@@ -1,4 +1,4 @@
-// import { Tabs } from '@clickhouse/click-ui';
+// import { Tabs } from '@admin/ui';
 import type * as t from '@/types';
 import { GrantManagementTab } from './GrantManagementTab';
 // import { AuditLogTab } from './AuditLogTab';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tabs } from '@clickhouse/click-ui';
+import { Tabs } from '@admin/ui';
 import type * as t from '@/types';
 import { CreateGroupDialog } from './CreateGroupDialog';
 import { CreateRoleDialog } from './CreateRoleDialog';

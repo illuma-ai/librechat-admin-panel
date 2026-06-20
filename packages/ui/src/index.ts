@@ -6,3 +6,4 @@ export { Popover } from './popover';
 export { Checkbox } from './checkbox';
 export { Tooltip } from './tooltip';
 export { Drawer } from './drawer';
+export { Tabs } from './tabs';
