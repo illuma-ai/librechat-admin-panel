@@ -34,9 +34,11 @@ interface TracesPageProps {
   selectedTraceId: string | null;
   filters: t.TraceFacetFilters;
   orderBy: OrderBy | null;
+  searchType: t.TraceSearchType;
   onSort: (key: string) => void;
   onTenant: (tenant: string) => void;
   onSearch: (search: string) => void;
+  onSearchType: (searchType: t.TraceSearchType) => void;
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
   onPageSize: (pageSize: number) => void;
@@ -54,9 +56,11 @@ export function TracesPage({
   selectedTraceId,
   filters,
   orderBy,
+  searchType,
   onSort,
   onTenant,
   onSearch,
+  onSearchType,
   onRange,
   onPage,
   onPageSize,
@@ -78,6 +82,7 @@ export function TracesPage({
       userId: filters.userId,
       type: filters.type,
       tags: filters.tags,
+      searchType,
       orderBy: orderBy ? { column: orderBy.id, dir: orderBy.dir } : undefined,
     }),
   );
@@ -270,6 +275,8 @@ export function TracesPage({
       onTenant={onTenant}
       search={search}
       onSearch={onSearch}
+      searchType={searchType}
+      onSearchType={onSearchType}
       range={range}
       onRange={onRange}
       page={page}

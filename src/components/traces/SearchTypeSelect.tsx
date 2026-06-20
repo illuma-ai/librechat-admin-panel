@@ -18,8 +18,8 @@ interface SearchTypeSelectProps {
 
 /**
  * Search-scope dropdown attached to the right of the search box, mirroring
- * Langfuse's "IDs / Names" vs "Full Text" selector. Purely UI state today — the
- * page still searches by IDs/Names regardless of selection (see wiring follow-up).
+ * Langfuse's "IDs / Names" vs "Full Text" selector. Wired to the `searchType` URL
+ * param: `fullText` extends the server search into observation input/output.
  */
 export function SearchTypeSelect({ value, onChange }: SearchTypeSelectProps) {
   const localize = useLocalize();

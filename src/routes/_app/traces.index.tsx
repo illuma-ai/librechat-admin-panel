@@ -22,6 +22,8 @@ interface TracesSearch {
   tags: string[];
   /** Sort encoded as "<column>.<dir>" (e.g. "timestamp.desc"); optional. */
   sort?: string;
+  /** Search scope: `metadata` (ids/names) or `fullText` (also input/output). */
+  searchType?: t.TraceSearchType;
 }
 
 const SORT_DIRS: SortDirection[] = ['asc', 'desc'];
@@ -66,12 +68,13 @@ export const Route = createFileRoute('/_app/traces/')({
     user: parseStrArray(search.user),
     tags: parseStrArray(search.tags),
     sort: typeof search.sort === 'string' ? search.sort : undefined,
+    searchType: search.searchType === 'fullText' ? 'fullText' : 'metadata',
   }),
   component: TracesRoute,
 });
 
 function TracesRoute() {
-  const { tenant, q, range, page, size, trace, env, type, name, user, tags, sort } =
+  const { tenant, q, range, page, size, trace, env, type, name, user, tags, sort, searchType } =
     Route.useSearch();
   const navigate = useNavigate({ from: '/traces/' });
   const orderBy = parseSort(sort);
@@ -86,11 +89,13 @@ function TracesRoute() {
       selectedTraceId={trace || null}
       filters={{ environment: env, type, name, userId: user, tags }}
       orderBy={orderBy}
+      searchType={searchType ?? 'metadata'}
       onSort={(key) => {
         const dir: SortDirection =
           orderBy.id === key && orderBy.dir === 'desc' ? 'asc' : 'desc';
         navigate({ search: (prev) => ({ ...prev, sort: `${key}.${dir}`, page: 1 }) });
       }}
+      onSearchType={(value) => navigate({ search: (prev) => ({ ...prev, searchType: value, page: 1 }) })}
       onTenant={(value) =>
         navigate({
           search: {

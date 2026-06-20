@@ -13,6 +13,7 @@ import type * as t from '@/types';
 import {
   buildAgentGraph,
   buildOrderByClause,
+  buildSearchClause,
   buildTraceFilters,
   buildTree,
   deriveConversation,
@@ -45,6 +46,7 @@ const tracesQuerySchema = z.object({
   userId: z.array(z.string()).default([]),
   type: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  searchType: z.enum(['metadata', 'fullText']).default('metadata'),
   orderBy: orderBySchema,
 });
 
@@ -124,9 +126,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
   .handler(async ({ data }): Promise<t.TracesPage> => {
     const offset = (data.page - 1) * data.pageSize;
     const hasSearch = data.search.trim().length > 0;
-    const searchClause = hasSearch
-      ? 'AND (name ILIKE {s:String} OR user_id ILIKE {s:String} OR id ILIKE {s:String})'
-      : '';
+    const searchClause = buildSearchClause(data.search, data.searchType);
     const timeClause = rangeClause(data.range, 'timestamp');
     const filters = buildTraceFilters({
       environment: data.environment,

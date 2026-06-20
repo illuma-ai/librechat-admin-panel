@@ -110,6 +110,22 @@ export function buildTraceFilters(filters: TraceFilters): {
   return { clause: clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : '', params };
 }
 
+/**
+ * Build the parameterized free-text search predicate (Langfuse search scopes).
+ * `metadata` matches trace id/name/user; `fullText` additionally matches traces
+ * whose observations contain the term in their input/output. The literal is bound
+ * via the `s` param (caller supplies `%term%`) — never interpolated into SQL.
+ * Returns an empty clause for a blank search.
+ */
+export function buildSearchClause(search: string, searchType: t.TraceSearchType): string {
+  if (search.trim().length === 0) return '';
+  const base = 'name ILIKE {s:String} OR user_id ILIKE {s:String} OR id ILIKE {s:String}';
+  const fullText =
+    ' OR id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String}' +
+    ' AND is_deleted = 0 AND (input ILIKE {s:String} OR output ILIKE {s:String}))';
+  return `AND (${base}${searchType === 'fullText' ? fullText : ''})`;
+}
+
 /** Validated direction keywords; an out-of-range `dir` maps to undefined and triggers the fallback. */
 const ORDER_DIRECTIONS: Record<t.SortDir, string> = { asc: 'ASC', desc: 'DESC' };
 

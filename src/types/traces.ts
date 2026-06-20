@@ -196,6 +196,9 @@ export interface TraceFacetFilters {
 /** Direction for a sortable column (Langfuse: ▼ desc / ▲ asc). */
 export type SortDir = 'asc' | 'desc';
 
+/** Search scope (Langfuse): `metadata` = ids/names; `fullText` = also input/output content. */
+export type TraceSearchType = 'metadata' | 'fullText';
+
 /** A requested sort: which logical column and which direction. */
 export interface TracesOrderBy {
   column: string;
@@ -214,6 +217,8 @@ export interface TracesQuery {
   userId?: string[];
   type?: string[];
   tags?: string[];
+  /** Search scope; `fullText` extends the search into observation input/output. */
+  searchType?: TraceSearchType;
   /** Optional server-side sort; defaults to timestamp desc when omitted. */
   orderBy?: TracesOrderBy;
 }

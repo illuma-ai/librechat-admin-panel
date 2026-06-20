@@ -3,6 +3,7 @@ import type * as t from '@/types';
 import {
   buildAgentGraph,
   buildOrderByClause,
+  buildSearchClause,
   buildTraceFilters,
   buildTree,
   deriveConversation,
@@ -284,6 +285,30 @@ describe('buildOrderByClause', () => {
     expect(
       buildOrderByClause({ column: 't.timestamp; DROP TABLE traces', dir: 'asc' }, allowed, fallback),
     ).toBe('ORDER BY t.timestamp DESC');
+  });
+});
+
+describe('buildSearchClause', () => {
+  it('returns an empty clause for blank search', () => {
+    expect(buildSearchClause('', 'metadata')).toBe('');
+    expect(buildSearchClause('   ', 'fullText')).toBe('');
+  });
+
+  it('metadata scope matches id/name/user only', () => {
+    const clause = buildSearchClause('foo', 'metadata');
+    expect(clause).toBe(
+      'AND (name ILIKE {s:String} OR user_id ILIKE {s:String} OR id ILIKE {s:String})',
+    );
+    expect(clause).not.toContain('observations');
+  });
+
+  it('fullText scope additionally matches observation input/output via subquery', () => {
+    const clause = buildSearchClause('foo', 'fullText');
+    expect(clause).toContain('name ILIKE {s:String}');
+    expect(clause).toContain(
+      'id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String}',
+    );
+    expect(clause).toContain('input ILIKE {s:String} OR output ILIKE {s:String}');
   });
 });
 
