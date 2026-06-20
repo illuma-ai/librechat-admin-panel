@@ -11,7 +11,7 @@ import { verifyAdminTokenFn } from '@/server';
 import { Header } from '@/components/Header';
 
 const ROUTE_TITLE_KEYS: Record<string, string> = {
-  '/': 'com_dash_title',
+  '/': 'com_nav_dashboard',
   '/configuration': 'com_config_title',
   '/users': 'com_users_title',
   '/access': 'com_access_title',

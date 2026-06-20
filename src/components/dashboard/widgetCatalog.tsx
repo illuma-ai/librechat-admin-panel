@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
+import { useLocalize } from '@/hooks';
 import {
   dashboardBreakdownsQueryOptions,
   dashboardLatencySeriesQueryOptions,
@@ -18,18 +19,21 @@ export interface DashboardData {
   summary?: t.DashboardSummary;
   breakdowns?: t.DashboardBreakdowns;
   points: (t.MetricBucket & { label: string })[];
-  latencyPoints: (t.LatencyBucket & { label: string })[];
+  traceLatency: (t.LatencyBucket & { label: string })[];
+  generationLatency: (t.LatencyBucket & { label: string })[];
+  observationLatency: (t.LatencyBucket & { label: string })[];
   isLoading: boolean;
 }
 
-/** A reusable dashboard widget: stable id + title key + a renderer over the data. */
+/** A reusable dashboard widget. `showAllTo` adds a header link; `placeholder` marks WIP. */
 export interface WidgetDef {
   id: string;
   titleKey: string;
   render: (d: DashboardData) => ReactNode;
+  showAllTo?: string;
+  placeholder?: boolean;
 }
 
-/** Compact bucket-axis label: time-of-day for the 24h range, else month/day. */
 function bucketLabel(bucket: string, range: t.TraceRange): string {
   const d = parseChDate(bucket);
   if (Number.isNaN(d.getTime())) return bucket;
@@ -44,59 +48,83 @@ export function useDashboardData(tenant: string, range: t.TraceRange): Dashboard
   const summary = useQuery(dashboardSummaryQueryOptions(tenant, range));
   const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range));
   const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range));
-  const latency = useQuery(dashboardLatencySeriesQueryOptions(tenant, range));
+  const traceLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'trace'));
+  const genLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation'));
+  const obsLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'observation'));
 
+  const label = (b: { bucket: string }) => bucketLabel(b.bucket, range);
   const points = useMemo(
-    () => (series.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
+    () => (series.data ?? []).map((b) => ({ ...b, label: label(b) })),
     [series.data, range],
   );
-  const latencyPoints = useMemo(
-    () => (latency.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
-    [latency.data, range],
-  );
+  const withLabel = (rows?: t.LatencyBucket[]) => (rows ?? []).map((b) => ({ ...b, label: label(b) }));
 
   return {
     summary: summary.data,
     breakdowns: breakdowns.data,
     points,
-    latencyPoints,
-    isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading || latency.isLoading,
+    traceLatency: useMemo(() => withLabel(traceLat.data), [traceLat.data, range]),
+    generationLatency: useMemo(() => withLabel(genLat.data), [genLat.data, range]),
+    observationLatency: useMemo(() => withLabel(obsLat.data), [obsLat.data, range]),
+    isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading,
   };
 }
 
 const barPoints = (d: DashboardData, key: 'traces' | 'cost' | 'tokens' | 'observations') =>
   d.points.map((p) => ({ label: p.label, value: p[key] }));
 
+/** Model Usage widget with Cost / Usage (tokens) tabs over time (reference parity). */
+function ModelUsageWidget({ data }: { data: DashboardData }) {
+  const localize = useLocalize();
+  const [tab, setTab] = useState<'cost' | 'tokens'>('cost');
+  const tabBtn = (active: boolean) =>
+    `rounded px-2 py-0.5 text-xs ${active ? 'bg-(--ui-color-background-muted) text-(--ui-color-text-default)' : 'text-(--ui-color-text-muted)'}`;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-1">
+        <button type="button" className={tabBtn(tab === 'cost')} onClick={() => setTab('cost')}>
+          {localize('com_dash_tab_cost')}
+        </button>
+        <button type="button" className={tabBtn(tab === 'tokens')} onClick={() => setTab('tokens')}>
+          {localize('com_dash_tab_usage')}
+        </button>
+      </div>
+      {tab === 'cost' ? (
+        <BarTimeChart points={barPoints(data, 'cost')} valueName="Cost" formatValue={formatCost} />
+      ) : (
+        <BarTimeChart points={barPoints(data, 'tokens')} valueName="Tokens" formatValue={formatTokens} />
+      )}
+    </div>
+  );
+}
+
+function PlaceholderBody() {
+  const localize = useLocalize();
+  return (
+    <div className="flex h-40 items-center justify-center rounded-md border border-dashed border-(--ui-color-stroke-default) text-sm text-(--ui-color-text-muted)">
+      {localize('com_dash_coming_soon')}
+    </div>
+  );
+}
+
 /**
- * Widget catalog mirroring the reference dashboard: time-series bar charts, a
- * multi-line latency-percentile chart, and breakdown tables (model costs, model
- * latencies, scores, user consumption). Each renders from the shared `DashboardData`
- * so a custom dashboard runs the queries once and renders a chosen subset.
+ * Widget catalog mirroring the reference dashboard 1:1 (Traces, Model costs, Scores,
+ * Observations by time, Model Usage [tabbed], User consumption, Trace/Generation/
+ * Observation latency percentiles, Model latencies, Scores Analytics). Each renders
+ * from the shared `DashboardData`; computable widgets are live, the rest are
+ * labelled placeholders.
  */
 export const WIDGET_CATALOG: WidgetDef[] = [
   {
     id: 'traces',
     titleKey: 'com_dash_w_traces',
+    showAllTo: '/traces',
     render: (d) => <BarTimeChart points={barPoints(d, 'traces')} valueName="Traces" />,
-  },
-  {
-    id: 'observations',
-    titleKey: 'com_dash_w_observations',
-    render: (d) => <BarTimeChart points={barPoints(d, 'observations')} valueName="Observations" />,
-  },
-  {
-    id: 'cost',
-    titleKey: 'com_dash_w_cost',
-    render: (d) => <BarTimeChart points={barPoints(d, 'cost')} valueName="Cost" formatValue={formatCost} />,
-  },
-  {
-    id: 'trace_latency',
-    titleKey: 'com_dash_w_latency',
-    render: (d) => <LatencyLineChart points={d.latencyPoints} />,
   },
   {
     id: 'model_costs',
     titleKey: 'com_dash_w_model_costs',
+    showAllTo: '/observations',
     render: (d) => (
       <MetricTable
         rows={d.breakdowns?.modelUsage ?? []}
@@ -108,6 +136,59 @@ export const WIDGET_CATALOG: WidgetDef[] = [
         ]}
       />
     ),
+  },
+  {
+    id: 'scores',
+    titleKey: 'com_dash_w_scores',
+    showAllTo: '/scores',
+    render: (d) => (
+      <MetricTable
+        rows={d.breakdowns?.scoreDistribution ?? []}
+        rowKey={(r) => r.name}
+        columns={[
+          { key: 'name', header: 'Name', render: (r) => r.name },
+          { key: 'count', header: 'Count', align: 'right', render: (r) => r.count.toLocaleString() },
+          { key: 'avg', header: 'Avg', align: 'right', render: (r) => (r.average === null ? '—' : r.average.toFixed(2)) },
+        ]}
+      />
+    ),
+  },
+  {
+    id: 'observations',
+    titleKey: 'com_dash_w_observations',
+    render: (d) => <BarTimeChart points={barPoints(d, 'observations')} valueName="Observations" />,
+  },
+  {
+    id: 'model_usage',
+    titleKey: 'com_dash_w_model_usage',
+    render: (d) => <ModelUsageWidget data={d} />,
+  },
+  {
+    id: 'user_consumption',
+    titleKey: 'com_dash_w_user_consumption',
+    showAllTo: '/trace-users',
+    render: (d) => (
+      <MetricTable
+        rows={d.breakdowns?.userConsumption ?? []}
+        rowKey={(r) => r.userId}
+        columns={[
+          { key: 'user', header: 'User', render: (r) => r.userId },
+          { key: 'traces', header: 'Traces', align: 'right', render: (r) => r.traces.toLocaleString() },
+          { key: 'cost', header: 'Token cost', align: 'right', render: (r) => formatCost(r.cost) },
+        ]}
+      />
+    ),
+  },
+  { id: 'trace_latency', titleKey: 'com_dash_w_latency', render: (d) => <LatencyLineChart points={d.traceLatency} /> },
+  {
+    id: 'generation_latency',
+    titleKey: 'com_dash_w_gen_latency',
+    render: (d) => <LatencyLineChart points={d.generationLatency} />,
+  },
+  {
+    id: 'observation_latency',
+    titleKey: 'com_dash_w_obs_latency',
+    render: (d) => <LatencyLineChart points={d.observationLatency} />,
   },
   {
     id: 'model_latency',
@@ -125,41 +206,7 @@ export const WIDGET_CATALOG: WidgetDef[] = [
       />
     ),
   },
-  {
-    id: 'scores',
-    titleKey: 'com_dash_w_scores',
-    render: (d) => (
-      <MetricTable
-        rows={d.breakdowns?.scoreDistribution ?? []}
-        rowKey={(r) => r.name}
-        columns={[
-          { key: 'name', header: 'Name', render: (r) => r.name },
-          { key: 'count', header: 'Count', align: 'right', render: (r) => r.count.toLocaleString() },
-          {
-            key: 'avg',
-            header: 'Avg',
-            align: 'right',
-            render: (r) => (r.average === null ? '—' : r.average.toFixed(2)),
-          },
-        ]}
-      />
-    ),
-  },
-  {
-    id: 'user_consumption',
-    titleKey: 'com_dash_w_user_consumption',
-    render: (d) => (
-      <MetricTable
-        rows={d.breakdowns?.userConsumption ?? []}
-        rowKey={(r) => r.userId}
-        columns={[
-          { key: 'user', header: 'User', render: (r) => r.userId },
-          { key: 'traces', header: 'Traces', align: 'right', render: (r) => r.traces.toLocaleString() },
-          { key: 'cost', header: 'Token cost', align: 'right', render: (r) => formatCost(r.cost) },
-        ]}
-      />
-    ),
-  },
+  { id: 'scores_analytics', titleKey: 'com_dash_w_scores_analytics', placeholder: true, render: () => <PlaceholderBody /> },
 ];
 
 export const WIDGET_BY_ID = new Map(WIDGET_CATALOG.map((w) => [w.id, w]));
@@ -176,10 +223,20 @@ export function CatalogWidget({
   title: string;
   action?: ReactNode;
 }) {
+  const localize = useLocalize();
   const def = WIDGET_BY_ID.get(id);
   if (!def) return null;
+  const showAll =
+    def.showAllTo && !action ? (
+      <a
+        href={def.showAllTo}
+        className="ml-auto text-xs text-(--ui-color-text-link) no-underline hover:underline"
+      >
+        {localize('com_dash_show_all')}
+      </a>
+    ) : undefined;
   return (
-    <Widget title={title} info={action}>
+    <Widget title={title} info={action ?? showAll}>
       {def.render(data)}
     </Widget>
   );

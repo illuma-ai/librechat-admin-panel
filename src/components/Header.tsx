@@ -9,10 +9,10 @@ export function Header({ title, onSearchClick, children }: t.HeaderProps) {
 
   return (
     <header className="shrink-0 border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-panel)">
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-3 px-4 py-2">
         <div className="flex shrink-0 flex-col">
           {title ? (
-            <h1 className="text-base font-bold text-(--ui-color-text-default)">{title}</h1>
+            <h1 className="text-sm font-semibold text-(--ui-color-text-default)">{title}</h1>
           ) : (
             <div />
           )}

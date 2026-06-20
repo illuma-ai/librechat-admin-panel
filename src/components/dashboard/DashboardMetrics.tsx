@@ -30,23 +30,18 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
   const data = useDashboardData(effectiveTenant, range);
 
   return (
-    <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-(--ui-color-text-default)">
-          {localize('com_dash_metrics')}
-        </h2>
-        <div className="flex items-center gap-2">
-          <Select
-            value={effectiveTenant}
-            onSelect={onTenant}
-            options={tenants.map((tn) => ({ value: tn.id, label: tn.name }))}
-          />
-          <Select
-            value={range}
-            onSelect={(value) => onRange(value as t.TraceRange)}
-            options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
-          />
-        </div>
+    <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-3">
+      <div className="flex items-center justify-end gap-2">
+        <Select
+          value={effectiveTenant}
+          onSelect={onTenant}
+          options={tenants.map((tn) => ({ value: tn.id, label: tn.name }))}
+        />
+        <Select
+          value={range}
+          onSelect={(value) => onRange(value as t.TraceRange)}
+          options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">

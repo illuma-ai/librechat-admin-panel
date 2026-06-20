@@ -196,22 +196,38 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
 
 // ── Latency percentiles over time (multi-line chart) ─────────────────
 
+const latencySchema = z.object({
+  tenantId: z.string().min(1),
+  range: rangeSchema,
+  /** trace = per-trace span; generation/observation = per-observation latency. */
+  scope: z.enum(['trace', 'generation', 'observation']).default('trace'),
+});
+
 export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
-  .inputValidator(dashboardSchema)
+  .inputValidator(latencySchema)
   .handler(async ({ data }): Promise<t.LatencyBucket[]> => {
     const params = { t: data.tenantId };
-    // Per-trace span bucketed on the trace's first observation start; quantiles per bucket.
+    // Trace scope = the trace span (first obs start → last obs end), grouped per
+    // trace. Generation/observation scope = each observation's own latency; the
+    // generation scope further restricts to generation-type observations.
+    const inner =
+      data.scope === 'trace'
+        ? `SELECT min(start_time) AS startT,
+                  dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
+           FROM observations FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 ${rangeClause(data.range, 'start_time')}
+           GROUP BY trace_id`
+        : `SELECT start_time AS startT, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
+           FROM observations FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0
+                 ${data.scope === 'generation' ? "AND type = 'generation'" : ''}
+                 ${rangeClause(data.range, 'start_time')}`;
+
     const rows = await chQuery<Record<string, unknown>>(
       `SELECT toString(${bucketExpr(data.range, 'startT')}) AS bucket,
               quantile(0.5)(lat) AS p50, quantile(0.9)(lat) AS p90,
               quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
-       FROM (
-         SELECT min(start_time) AS startT,
-                dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
-         FROM observations FINAL
-         WHERE tenant_id = {t:String} AND is_deleted = 0 ${rangeClause(data.range, 'start_time')}
-         GROUP BY trace_id
-       )
+       FROM (${inner})
        GROUP BY bucket ORDER BY bucket ASC`,
       params,
     );
@@ -224,10 +240,14 @@ export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
     }));
   });
 
-export const dashboardLatencySeriesQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardLatencySeriesQueryOptions = (
+  tenantId: string,
+  range: t.TraceRange,
+  scope: 'trace' | 'generation' | 'observation' = 'trace',
+) =>
   queryOptions({
-    queryKey: ['dashboard', 'latencySeries', tenantId, range],
-    queryFn: () => getDashboardLatencySeriesFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'latencySeries', tenantId, range, scope],
+    queryFn: () => getDashboardLatencySeriesFn({ data: { tenantId, range, scope } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
