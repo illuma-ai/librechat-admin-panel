@@ -97,6 +97,7 @@ function SessionsRoute() {
         level: [],
         model: [],
         tags: [],
+        scores: [],
         tokensMin: tokMin,
         tokensMax: tokMax,
         costMin,
@@ -154,6 +155,7 @@ function SessionsRoute() {
             name: [],
             user: [],
             tags: [],
+            scores: [],
           },
         })
       }

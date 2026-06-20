@@ -531,6 +531,7 @@ export type FacetKey =
   | 'release'
   | 'version'
   | 'tags'
+  | 'scores'
   | 'duration'
   | 'tracesCount';
 
@@ -548,6 +549,7 @@ const ALL_FACETS: FacetKey[] = [
   'release',
   'version',
   'tags',
+  'scores',
 ];
 
 interface TraceFilterSidebarProps {
@@ -594,6 +596,7 @@ export function TraceFilterSidebar({
     filters.name.length > 0 ||
     filters.userId.length > 0 ||
     filters.tags.length > 0 ||
+    filters.scores.length > 0 ||
     filters.latencyMin !== undefined ||
     filters.latencyMax !== undefined ||
     filters.costMin !== undefined ||
@@ -619,6 +622,7 @@ export function TraceFilterSidebar({
       name: [],
       userId: [],
       tags: [],
+      scores: [],
       latencyMin: undefined,
       latencyMax: undefined,
       costMin: undefined,
@@ -811,6 +815,15 @@ export function TraceFilterSidebar({
           onChange={(v) => onChange({ tags: v })}
           operator={tagOperator}
           onOperatorChange={setTagOperator}
+        />
+      )}
+      {show('scores') && (
+        <CategoricalFacet
+          label={localize('com_traces_scores')}
+          info={<InfoTooltip description={localize('com_traces_filter_scores_info')} />}
+          options={data?.scoreNames ?? []}
+          value={filters.scores}
+          onChange={(v) => onChange({ scores: v })}
         />
       )}
     </div>

@@ -45,6 +45,11 @@ export interface TraceFilters {
    */
   level?: string[];
   tags: string[];
+  /**
+   * Score name the trace must have a score for. Lives on `scores`; applied via a
+   * membership subquery (a trace matches if it has a score with one of these names).
+   */
+  scores?: string[];
   /** session_id IN (...) */
   sessionId?: string[];
   /** release IN (...) */
@@ -169,6 +174,12 @@ export function buildTraceFilters(filters: TraceFilters): {
   if (filters.tags.length > 0) {
     clauses.push(tagsClause(filters.tagOperator ?? 'any of'));
     params.fTags = filters.tags;
+  }
+  if (filters.scores && filters.scores.length > 0) {
+    clauses.push(
+      'id IN (SELECT trace_id FROM scores WHERE tenant_id = {t:String} AND is_deleted = 0 AND name IN {fScores:Array(String)})',
+    );
+    params.fScores = filters.scores;
   }
   const numericFacets: NumericRangeFacet[] = [
     {

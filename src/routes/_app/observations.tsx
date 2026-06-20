@@ -100,6 +100,7 @@ function ObservationsRoute() {
         model,
         userId: [],
         tags: [],
+        scores: [],
         latencyMin: latMin,
         latencyMax: latMax,
         costMin,

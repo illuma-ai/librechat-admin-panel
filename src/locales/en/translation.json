@@ -1226,6 +1226,8 @@
   "com_traces_zoom_out": "Zoom out",
   "com_traces_zoom_reset": "Reset view",
   "com_traces_tags": "Tags",
+  "com_traces_scores": "Scores",
+  "com_traces_filter_scores_info": "Filter to traces that carry a score with the selected name.",
   "com_traces_input": "Input",
   "com_traces_output": "Output",
   "com_traces_not_found_desc": "Trace not found for this tenant.",

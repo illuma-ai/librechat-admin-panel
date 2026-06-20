@@ -18,6 +18,7 @@ import { useColumnVisibility } from './useColumnVisibility';
 import {
   CostCell,
   EnvBadge,
+  ScoresCell,
   IOPreviewCell,
   LevelCountsCell,
   MetadataCell,
@@ -89,6 +90,7 @@ export function TracesPage({
       type: filters.type,
       level: filters.level,
       tags: filters.tags,
+      scores: filters.scores,
       latencyMin: filters.latencyMin,
       latencyMax: filters.latencyMax,
       costMin: filters.costMin,
@@ -190,6 +192,12 @@ export function TracesPage({
       header: localize('com_traces_tags'),
       width: 150,
       render: (r) => <TagsCell tags={r.tags} />,
+    },
+    {
+      id: 'scores',
+      header: localize('com_traces_scores'),
+      width: 200,
+      render: (r) => <ScoresCell scores={r.scores} />,
     },
     {
       id: 'metadata',
@@ -311,6 +319,7 @@ export function TracesPage({
         filters.type.length +
         filters.level.length +
         filters.tags.length +
+        filters.scores.length +
         (filters.latencyMin !== undefined || filters.latencyMax !== undefined ? 1 : 0) +
         (filters.costMin !== undefined || filters.costMax !== undefined ? 1 : 0) +
         (filters.tokensMin !== undefined || filters.tokensMax !== undefined ? 1 : 0)
@@ -330,6 +339,7 @@ export function TracesPage({
             name: filters.name,
             user: filters.userId,
             tags: filters.tags,
+            scores: filters.scores,
             latencyMin: filters.latencyMin,
             latencyMax: filters.latencyMax,
             costMin: filters.costMin,

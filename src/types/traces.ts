@@ -29,6 +29,8 @@ export interface TraceListItem {
   errors: number;
   warnings: number;
   latencyMs: number;
+  /** Feedback/eval scores attached to this trace (reference Scores column). */
+  scores: TraceScore[];
 }
 
 /** Server-side paginated result for the traces list. */
@@ -257,6 +259,8 @@ export interface TraceFacetFilters extends TraceNumericFilters, SessionNumericFi
   /** Model name (observations only). */
   model: string[];
   tags: string[];
+  /** Score names the trace must carry (traces only). */
+  scores: string[];
 }
 
 /** Direction for a sortable column (reference: ▼ desc / ▲ asc). */
@@ -285,6 +289,7 @@ export interface TracesQuery extends TraceNumericFilters, SessionNumericFilters 
   level?: string[];
   model?: string[];
   tags?: string[];
+  scores?: string[];
   /** Search scope; `fullText` extends the search into observation input/output. */
   searchType?: TraceSearchType;
   /** Optional server-side sort; defaults to timestamp desc when omitted. */
@@ -309,6 +314,8 @@ export interface TraceFilterOptions {
   /** Per-model distinct-trace counts. */
   model: FacetOption[];
   tags: FacetOption[];
+  /** Distinct score names with their distinct-trace counts. */
+  scoreNames: FacetOption[];
   /** Max trace latency in seconds across all traces (drives the numeric input range). */
   latencyMax: number;
   /** Max trace total cost in USD across all traces. */

@@ -56,6 +56,7 @@ function SessionDetailRoute() {
                 name: [],
                 user: [],
                 tags: [],
+                scores: [],
               },
             })
           }

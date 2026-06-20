@@ -49,6 +49,7 @@ const tracesQuerySchema = z.object({
   level: z.array(z.string()).default([]),
   model: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  scores: z.array(z.string()).default([]),
   latencyMin: z.number().nonnegative().optional(),
   latencyMax: z.number().nonnegative().optional(),
   costMin: z.number().nonnegative().optional(),
@@ -166,6 +167,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
       type: data.type,
       level: data.level,
       tags: data.tags,
+      scores: data.scores,
       latencyMin: data.latencyMin,
       latencyMax: data.latencyMax,
       costMin: data.costMin,
@@ -223,6 +225,14 @@ export const getTracesFn = createServerFn({ method: 'GET' })
       params,
     );
 
+    // Scores for the page's traces, fetched in one round-trip and grouped per
+    // trace (reference Scores column). Kept as a separate query rather than a
+    // join so the score rows stay one-per-record (a join would multiply trace
+    // rows by their score count). Only trace-scoped here; observation scores show
+    // in the detail drawer.
+    const traceIds = rows.map((r) => String(r.id ?? '')).filter(Boolean);
+    const scoresByTrace = await fetchScoresByTrace(data.tenantId, traceIds);
+
     return {
       total: toNumber(countRow?.c),
       rows: rows.map((r) => ({
@@ -252,9 +262,47 @@ export const getTracesFn = createServerFn({ method: 'GET' })
         errors: toNumber(r.errors),
         warnings: toNumber(r.warnings),
         latencyMs: toNumber(r.latencyMs),
+        scores: scoresByTrace.get(String(r.id ?? '')) ?? [],
       })),
     };
   });
+
+/**
+ * Fetch all scores for a set of traces and group them by trace id. Returns an
+ * empty map for an empty id list (no query issued). Bound as an array param —
+ * trace ids are never interpolated into SQL.
+ */
+async function fetchScoresByTrace(
+  tenantId: string,
+  traceIds: string[],
+): Promise<Map<string, t.TraceScore[]>> {
+  const byTrace = new Map<string, t.TraceScore[]>();
+  if (traceIds.length === 0) return byTrace;
+  const scoreRows = await chQuery<Record<string, unknown>>(
+    `SELECT trace_id AS traceId, name, value, string_value AS stringValue,
+            data_type AS dataType, source, comment, toString(timestamp) AS timestamp
+     FROM scores FINAL
+     WHERE tenant_id = {t:String} AND trace_id IN {ids:Array(String)} AND is_deleted = 0
+     ORDER BY timestamp ASC`,
+    { t: tenantId, ids: traceIds },
+  );
+  for (const r of scoreRows) {
+    const traceId = String(r.traceId ?? '');
+    const score: t.TraceScore = {
+      name: String(r.name ?? ''),
+      value: r.value === null || r.value === undefined ? null : toNumber(r.value),
+      stringValue: r.stringValue ? String(r.stringValue) : null,
+      dataType: String(r.dataType ?? ''),
+      source: String(r.source ?? ''),
+      comment: r.comment ? String(r.comment) : null,
+      timestamp: String(r.timestamp ?? ''),
+    };
+    const bucket = byTrace.get(traceId);
+    if (bucket) bucket.push(score);
+    else byTrace.set(traceId, [score]);
+  }
+  return byTrace;
+}
 
 /**
  * Refetch policy shared by the trace / observation / session LIST queries,
@@ -353,6 +401,19 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
       { t: data.tenantId },
     );
 
+    // Distinct score names (count = number of distinct traces carrying that score)
+    // for the Scores filter facet.
+    const scoreRows = await chQuery<Record<string, unknown>>(
+      `SELECT name AS value, uniqExact(trace_id) AS count
+       FROM scores FINAL
+       WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != ''
+       GROUP BY name ORDER BY count DESC`,
+      { t: data.tenantId },
+    );
+    const scoreNames: t.FacetOption[] = scoreRows
+      .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.count) }))
+      .filter((o) => o.value);
+
     return {
       environments: pick('env'),
       names: pick('name'),
@@ -361,6 +422,7 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
       level: pickFacet('level'),
       model: pickFacet('model'),
       tags: pick('tag'),
+      scoreNames,
       latencyMax: toNumber(bounds?.latencyMax),
       costMax: toNumber(bounds?.costMax),
       tokensMax: toNumber(bounds?.tokensMax),

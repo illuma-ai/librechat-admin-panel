@@ -88,6 +88,10 @@ export const getSessionFn = createServerFn({ method: 'GET' })
       errors: toNumber(r.errors),
       warnings: toNumber(r.warnings),
       latencyMs: toNumber(r.latencyMs),
+      // Score chips are surfaced on the main Traces list + the trace drawer's
+      // Scores tab; the session-detail trace rows omit them to avoid an extra
+      // per-trace fetch here.
+      scores: [],
     }));
 
     const users = [...new Set(traces.map((tr) => tr.userId).filter(Boolean))];

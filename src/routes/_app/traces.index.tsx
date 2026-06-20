@@ -21,6 +21,7 @@ interface TracesSearch {
   name: string[];
   user: string[];
   tags: string[];
+  scores: string[];
   latencyMin?: number;
   latencyMax?: number;
   costMin?: number;
@@ -82,6 +83,7 @@ export const Route = createFileRoute('/_app/traces/')({
     name: parseStrArray(search.name),
     user: parseStrArray(search.user),
     tags: parseStrArray(search.tags),
+    scores: parseStrArray(search.scores),
     latencyMin: parseNum(search.latencyMin),
     latencyMax: parseNum(search.latencyMax),
     costMin: parseNum(search.costMin),
@@ -108,6 +110,7 @@ function TracesRoute() {
     name,
     user,
     tags,
+    scores,
     latencyMin,
     latencyMax,
     costMin,
@@ -136,6 +139,7 @@ function TracesRoute() {
         name,
         userId: user,
         tags,
+        scores,
         latencyMin,
         latencyMax,
         costMin,
@@ -165,6 +169,7 @@ function TracesRoute() {
             name: [],
             user: [],
             tags: [],
+            scores: [],
             latencyMin: undefined,
             latencyMax: undefined,
             costMin: undefined,
@@ -190,6 +195,7 @@ function TracesRoute() {
             name: patch.name ?? prev.name,
             user: patch.userId ?? prev.user,
             tags: patch.tags ?? prev.tags,
+            scores: patch.scores ?? prev.scores,
             latencyMin: 'latencyMin' in patch ? patch.latencyMin : prev.latencyMin,
             latencyMax: 'latencyMax' in patch ? patch.latencyMax : prev.latencyMax,
             costMin: 'costMin' in patch ? patch.costMin : prev.costMin,

@@ -1,7 +1,8 @@
 import { Info } from 'lucide-react';
+import type * as t from '@/types';
 import { TypeIcon } from './traceIcons';
 import { MetricBreakdown } from './MetricBreakdown';
-import { formatCost, formatTokens } from './format';
+import { formatCost, formatTokens, scoreDisplayValue } from './format';
 
 /** Best-effort readable preview of a serialized message/IO payload. */
 function previewText(raw: string): string {
@@ -112,6 +113,31 @@ export function EnvBadge({ value }: { value: string }) {
   return (
     <span className="max-w-fit truncate rounded-sm bg-(--ui-color-background-muted) px-1 text-xs font-normal text-(--ui-color-text-default)">
       {value}
+    </span>
+  );
+}
+
+/**
+ * Scores cell — one chip per feedback/eval score (reference Scores column),
+ * rendered `name: value`. Numeric scores show the number; categorical/boolean show
+ * the label (via `scoreDisplayValue`). Wraps; a hover title lists each in full.
+ */
+export function ScoresCell({ scores }: { scores: t.TraceScore[] }) {
+  if (!scores || scores.length === 0) return <>—</>;
+  return (
+    <span className="flex flex-wrap gap-1">
+      {scores.map((score, i) => (
+        <span
+          key={`${score.name}-${i}`}
+          title={`${score.name}: ${scoreDisplayValue(score)}${score.source ? ` (${score.source})` : ''}`}
+          className="inline-flex max-w-fit items-center gap-1 truncate rounded-sm bg-(--ui-color-background-muted) px-1 text-xs"
+        >
+          <span className="text-(--ui-color-text-muted)">{score.name}</span>
+          <span className="font-medium text-(--ui-color-text-default)">
+            {scoreDisplayValue(score)}
+          </span>
+        </span>
+      ))}
     </span>
   );
 }

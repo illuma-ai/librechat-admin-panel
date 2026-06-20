@@ -32,6 +32,7 @@ export function TraceDetailPage({ tenant, traceId }: TraceDetailPageProps) {
             name: [],
             user: [],
             tags: [],
+            scores: [],
           }}
           className="inline-flex w-fit items-center gap-1 text-sm text-(--ui-color-text-muted) no-underline hover:text-(--ui-color-text-default)"
         >

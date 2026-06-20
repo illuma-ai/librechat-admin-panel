@@ -251,6 +251,19 @@ describe('buildTraceFilters', () => {
     expect(out).toEqual({ clause: '', params: {} });
   });
 
+  it('builds a scores membership subquery (trace has a score with one of the names)', () => {
+    const out = buildTraceFilters({ ...empty, scores: ['hallucination', 'helpfulness'] });
+    expect(out.clause).toBe(
+      'AND id IN (SELECT trace_id FROM scores WHERE tenant_id = {t:String} AND is_deleted = 0 AND name IN {fScores:Array(String)})',
+    );
+    expect(out.params).toEqual({ fScores: ['hallucination', 'helpfulness'] });
+  });
+
+  it('omits the scores facet when empty', () => {
+    const out = buildTraceFilters({ ...empty, scores: [] });
+    expect(out).toEqual({ clause: '', params: {} });
+  });
+
   it('builds a min-only latency HAVING subquery (seconds → ms in the param)', () => {
     const out = buildTraceFilters({ ...empty, latencyMin: 2 });
     expect(out.clause).toBe(
