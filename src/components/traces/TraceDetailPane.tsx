@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ExternalLink, Info } from 'lucide-react';
+import { ExternalLink, Info, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
@@ -24,6 +24,10 @@ interface TraceDetailPaneProps {
   isRoot: boolean;
   /** The whole observation forest — needed by the Log View (not just the selected node). */
   observations: t.ObservationNode[];
+  /** Whether the left nav panel is collapsed (drives the header panel-toggle icon). */
+  navCollapsed?: boolean;
+  /** Collapse/expand the left nav panel (Langfuse header panel-toggle). */
+  onToggleNav?: () => void;
   /** Feedback/eval scores for the trace; defaults to [] until getTraceScoresFn is wired. */
   scores?: TraceScore[];
 }
@@ -123,6 +127,8 @@ export function TraceDetailPane({
   node,
   isRoot,
   observations,
+  navCollapsed = false,
+  onToggleNav,
   scores = [],
 }: TraceDetailPaneProps) {
   const localize = useLocalize();
@@ -153,6 +159,21 @@ export function TraceDetailPane({
       {/* header: title + timestamp + badges (Langfuse TraceDetailViewHeader: p-2 space-y-2 gap-1) */}
       <div className="shrink-0 space-y-2 border-b border-(--cui-color-stroke-default) p-2">
         <div className="flex w-full flex-row items-center gap-1">
+          {onToggleNav ? (
+            <button
+              type="button"
+              onClick={onToggleNav}
+              aria-label={localize(navCollapsed ? 'com_traces_expand' : 'com_traces_collapse')}
+              title={localize(navCollapsed ? 'com_traces_expand' : 'com_traces_collapse')}
+              className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+            >
+              {navCollapsed ? (
+                <PanelLeftOpen className="size-4" />
+              ) : (
+                <PanelLeftClose className="size-4" />
+              )}
+            </button>
+          ) : null}
           <TypeIcon type={node ? node.type : 'trace'} isRoot={isRoot} isSmall />
           <span className="line-clamp-2 min-w-0 font-medium break-all wrap-break-word text-(--cui-color-text-default)">
             {title}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Group, Panel, Separator, useDefaultLayout } from 'react-resizable-panels';
+import { Group, Panel, Separator, useDefaultLayout, usePanelRef } from 'react-resizable-panels';
 import { Download, FoldVertical, Network, UnfoldVertical } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
@@ -84,6 +84,17 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
     storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
   });
 
+  // Programmatic collapse of the nav panel (Langfuse's header panel-toggle). The
+  // toggle lives in the right detail pane so it stays reachable when collapsed.
+  const navPanelRef = usePanelRef();
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const toggleNav = useCallback(() => {
+    const panel = navPanelRef.current;
+    if (!panel) return;
+    if (panel.isCollapsed()) panel.expand();
+    else panel.collapse();
+  }, [navPanelRef]);
+
   if (isLoading) return <LoadingState />;
   if (!data) return <EmptyState message={localize('com_traces_not_found_desc')} />;
 
@@ -102,10 +113,12 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
       {/* Left navigation panel — draggable + collapsible, mirroring Langfuse TraceLayoutDesktop. */}
       <Panel
         id="trace-nav"
+        panelRef={navPanelRef}
         collapsible
         collapsedSize="0px"
         minSize="260px"
         defaultSize="450px"
+        onResize={() => setNavCollapsed(navPanelRef.current?.isCollapsed() ?? false)}
         className="flex min-h-0 flex-col overflow-hidden"
       >
         <div className="flex shrink-0 items-center gap-1 border-b border-(--cui-color-stroke-default) px-2 py-1">
@@ -203,6 +216,8 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
           node={selectedNode}
           isRoot={isRoot}
           observations={data.observations}
+          navCollapsed={navCollapsed}
+          onToggleNav={toggleNav}
         />
       </Panel>
     </Group>
