@@ -255,18 +255,27 @@ class (ThemeContext) + the token stylesheet — there is no theme provider to wr
   file in `packages/ui/src/` (e.g. `select.tsx`), re-exported from `packages/ui/src/index.ts`.
 - **Feature-specific composites** stay in their feature dir under `src/components/<feature>/` and
   compose the `@admin/ui` primitives — never re-implement a primitive locally.
-- Each primitive is **Radix-based**, styled **only** with `--cui-color-*` theme tokens (no hardcoded
+- Each primitive is **Radix-based**, styled **only** with `--ui-color-*` theme tokens (no hardcoded
   colors), and exposes a compound API (`X.Trigger` / `X.Content` / `X.Item`) so it is a drop-in for
   the click-ui shape it replaces.
 
 **Theming — single source of truth:**
 
 - The brand accent is **`--brand-primary`** (derived from the logo) in `src/styles.css`; every accent
-  token (`--cui-color-accent`, `--cui-color-text-link`, `--cui-color-outline`, active-tab underline…)
+  token (`--ui-color-accent`, `--ui-color-text-link`, `--ui-color-outline`, active-tab underline…)
   derives from it. Never hardcode an accent/brand color in a component.
-- A component needing a color uses a `--cui-color-*` token. A literal hex is allowed **only** as a
+- A component needing a color uses a `--ui-color-*` token. A literal hex is allowed **only** as a
   `var(--token, #fallback)` fallback, or where a `<canvas>` (e.g. vis-network) genuinely cannot read
   CSS vars — and then it lives in **one** JS module (e.g. `observationPalette.ts`), never duplicated.
+- **Token prefix is `--ui-color-*`** (brand-neutral; renamed from the legacy `--cui-` = "click-ui").
+  Never introduce a `--cui-` token. The full set is defined in `src/styles.css` across three blocks
+  (`:root` light, `.dark`, and `@media (prefers-color-scheme: dark)`) — add a new token to **all
+  three** or it breaks one theme. Sanity check: every `--ui-color-*` referenced in `src/` +
+  `packages/ui/` must resolve in all three blocks (a bare undefined token = invisible color).
+- **App-shell surface lives on `body`** (`background-color` + `color`, token-mapped) in `styles.css` —
+  the single source for the root background, present from first SSR paint. Do **not** rely on a React
+  provider for the root background (there is none); uncovered regions fall back to `body`. The root
+  `.isolate` div is only a stacking context. White-in-dark-mode = a missing/transparent shell surface.
 
 **Adding a new primitive:** create `packages/ui/src/<name>.tsx`, export from `index.ts`, match the
 existing compound-API style, declare any new `@radix-ui/*` dep in the **root** `package.json`
