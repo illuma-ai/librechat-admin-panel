@@ -9,3 +9,4 @@ export { Drawer } from './drawer';
 export { Tabs } from './tabs';
 export { Button } from './button';
 export { Icon } from './icon';
+export { Dialog } from './dialog';

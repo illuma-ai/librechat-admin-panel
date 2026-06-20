@@ -1,5 +1,5 @@
-import { Dialog } from '@clickhouse/click-ui';
-import { Button } from '@admin/ui';
+import { Dialog, Button  } from '@admin/ui';
+
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';

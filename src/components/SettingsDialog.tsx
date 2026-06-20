@@ -1,4 +1,4 @@
-import { Dialog } from '@clickhouse/click-ui';
+import { Dialog } from '@admin/ui';
 import type * as t from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLocalize } from '@/hooks';

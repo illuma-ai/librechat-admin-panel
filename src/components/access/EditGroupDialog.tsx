@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Dialog } from '@clickhouse/click-ui';
-import { Button, Tabs  } from '@admin/ui';
+import { Dialog, Button, Tabs   } from '@admin/ui';
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import type { AdminMember, AdminUserSearchResult } from '@librechat/data-schemas';
