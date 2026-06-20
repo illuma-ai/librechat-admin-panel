@@ -10,3 +10,5 @@ export { TraceDrawer } from './TraceDrawer';
 export { TraceSequence } from './TraceSequence';
 export { TraceDetailPane } from './TraceDetailPane';
 export { TraceGraph } from './TraceGraph';
+export { useTracingTenant } from './useTracingTenant';
+export { formatCost, formatTokens, formatTimestamp, parseChDate } from './format';

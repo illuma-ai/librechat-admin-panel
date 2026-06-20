@@ -7,3 +7,4 @@ export * from './scopes';
 export * from './users';
 export * from './traces';
 export * from './traceUsers';
+export * from './dashboard';

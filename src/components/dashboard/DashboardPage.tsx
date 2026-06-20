@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import type * as t from '@/types';
 import { useCapabilities, useLocalize } from '@/hooks';
 import { SystemCapabilities } from '@/constants';
+import { DashboardMetrics } from './DashboardMetrics';
 
 const QUICK_LINKS: (t.NavItem & { descKey: string })[] = [
   {
@@ -34,7 +35,14 @@ const QUICK_LINKS: (t.NavItem & { descKey: string })[] = [
   },
 ];
 
-export function DashboardPage() {
+interface DashboardPageProps {
+  tenant: string;
+  range: t.TraceRange;
+  onTenant: (tenant: string) => void;
+  onRange: (range: t.TraceRange) => void;
+}
+
+export function DashboardPage({ tenant, range, onTenant, onRange }: DashboardPageProps) {
   const localize = useLocalize();
   const { hasCapability } = useCapabilities();
 
@@ -57,6 +65,8 @@ export function DashboardPage() {
       aria-label={localize('com_nav_dashboard')}
       className="flex flex-1 flex-col gap-8 overflow-auto p-6"
     >
+      <DashboardMetrics tenant={tenant} range={range} onTenant={onTenant} onRange={onRange} />
+
       <section aria-label={localize('com_dash_quick_links')}>
         <h3 className="mb-3 text-sm font-medium text-(--ui-color-text-muted)">
           {localize('com_dash_quick_links')}
