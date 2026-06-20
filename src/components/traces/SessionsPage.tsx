@@ -157,7 +157,20 @@ export function SessionsPage({
       views={
         <ViewsMenu
           tableKey="sessions"
-          current={{ q: search, range, env: filters.environment, user: filters.userId }}
+          current={{
+            q: search,
+            range,
+            env: filters.environment,
+            user: filters.userId,
+            tokMin: filters.tokensMin,
+            tokMax: filters.tokensMax,
+            costMin: filters.costMin,
+            costMax: filters.costMax,
+            durMin: filters.durationMin,
+            durMax: filters.durationMax,
+            tcMin: filters.traceCountMin,
+            tcMax: filters.traceCountMax,
+          }}
           onApply={onApplyView}
         />
       }
