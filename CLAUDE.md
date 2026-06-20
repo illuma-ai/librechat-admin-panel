@@ -9,7 +9,7 @@ configuration, user/group/role management, and capability grants.
 ## Tech Stack
 
 - **Framework:** TanStack Start (React 19 + TanStack Router + React Query)
-- **UI:** `@admin/ui` — local Radix-based component library (`packages/ui`) + Tailwind CSS 4. Legacy areas still consume ClickHouse click-ui; new/migrated code uses `@admin/ui`.
+- **UI:** `@admin/ui` — local Radix-based component library (`packages/ui`) + Tailwind CSS 4. The `@clickhouse/click-ui` dependency has been fully removed; all UI is `@admin/ui`.
 - **Language:** TypeScript (strict mode, `verbatimModuleSyntax`)
 - **Build:** Vite 8
 - **Testing:** Vitest (unit), Playwright (e2e)
@@ -239,7 +239,15 @@ Fix all formatting lint errors (trailing spaces, tabs, newlines, indentation) us
 
 All shared, primitive UI lives in the **`packages/ui`** workspace package, imported as
 **`@admin/ui`** (mapped in `tsconfig.json` paths + declared `workspace:*` in `package.json`).
-This replaces `@clickhouse/click-ui`; the migration is top-down and ongoing.
+This **fully replaced** `@clickhouse/click-ui` (dependency removed). Primitives:
+Select, Dropdown, Popover, Checkbox, Tooltip, Drawer, Tabs, Button, Icon, Dialog, Switch,
+TextField/NumberField/TextAreaField/SearchField/PasswordField, Alert, Badge, IconButton,
+Avatar, Container/Panel/Separator/Title, MultiAccordion. Dark mode is driven by the `.dark`
+class (ThemeContext) + the token stylesheet — there is no theme provider to wrap the app.
+
+> Note: the `tools/eslint-plugin-click-ui` dev plugin is **kept** — despite its name its
+> `form-controlled-components` rule lints `@admin/ui` form components by name (hence the
+> occasional `eslint-disable-next-line click-ui/form-controlled-components` on spread props).
 
 **Where things go:**
 
