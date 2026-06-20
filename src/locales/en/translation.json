@@ -1161,6 +1161,8 @@
   "com_traces_filter_latency_info": "Filter by the trace's total latency (in seconds) — the span from its first observation start to its last observation end.",
   "com_traces_filter_cost_info": "Filter by the trace's total cost in USD, summed across all of its observations.",
   "com_traces_filter_tokens_info": "Filter by the trace's total tokens, summed across all of its observations.",
+  "com_traces_filter_duration_info": "Filter by the session's duration (in seconds) — the span from its earliest trace to its latest.",
+  "com_traces_filter_traces_info": "Filter by the number of traces in the session.",
   "com_traces_filter_min": "Min",
   "com_traces_filter_max": "Max",
   "com_traces_unit_seconds": "s",

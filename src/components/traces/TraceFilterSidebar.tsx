@@ -529,7 +529,9 @@ export type FacetKey =
   | 'sessionId'
   | 'release'
   | 'version'
-  | 'tags';
+  | 'tags'
+  | 'duration'
+  | 'tracesCount';
 
 /** Full facet set (Traces). Observations/Sessions pass a narrower list. */
 const ALL_FACETS: FacetKey[] = [
@@ -596,6 +598,10 @@ export function TraceFilterSidebar({
     filters.costMax !== undefined ||
     filters.tokensMin !== undefined ||
     filters.tokensMax !== undefined ||
+    filters.durationMin !== undefined ||
+    filters.durationMax !== undefined ||
+    filters.traceCountMin !== undefined ||
+    filters.traceCountMax !== undefined ||
     sessionId.length > 0 ||
     release.length > 0 ||
     version.length > 0 ||
@@ -616,6 +622,10 @@ export function TraceFilterSidebar({
       costMax: undefined,
       tokensMin: undefined,
       tokensMax: undefined,
+      durationMin: undefined,
+      durationMax: undefined,
+      traceCountMin: undefined,
+      traceCountMax: undefined,
     });
     setSessionId([]);
     setRelease([]);
@@ -711,6 +721,25 @@ export function TraceFilterSidebar({
           min={filters.tokensMin}
           max={filters.tokensMax}
           onChange={({ min, max }) => onChange({ tokensMin: min, tokensMax: max })}
+        />
+      )}
+      {show('duration') && (
+        <NumericRangeFacet
+          label={localize('com_traces_col_duration')}
+          info={<InfoTooltip description={localize('com_traces_filter_duration_info')} />}
+          unit={localize('com_traces_unit_seconds')}
+          min={filters.durationMin}
+          max={filters.durationMax}
+          onChange={({ min, max }) => onChange({ durationMin: min, durationMax: max })}
+        />
+      )}
+      {show('tracesCount') && (
+        <NumericRangeFacet
+          label={localize('com_traces_col_traces')}
+          info={<InfoTooltip description={localize('com_traces_filter_traces_info')} />}
+          min={filters.traceCountMin}
+          max={filters.traceCountMax}
+          onChange={({ min, max }) => onChange({ traceCountMin: min, traceCountMax: max })}
         />
       )}
       {show('name') && (

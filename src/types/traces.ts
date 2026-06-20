@@ -229,8 +229,24 @@ export interface TraceNumericFilters {
   tokensMax?: number;
 }
 
-/** Categorical + numeric facet filters for the traces/observations list. */
-export interface TraceFacetFilters extends TraceNumericFilters {
+/**
+ * Numeric filters specific to the sessions list. These predicate on the session
+ * aggregate (its trace span and trace count), not on any single trace, so they are
+ * only meaningful on the Sessions tab. Applied server-side as HAVING predicates.
+ */
+export interface SessionNumericFilters {
+  /** Minimum session duration in seconds (converted to ms server-side). */
+  durationMin?: number;
+  /** Maximum session duration in seconds (converted to ms server-side). */
+  durationMax?: number;
+  /** Minimum number of traces in the session. */
+  traceCountMin?: number;
+  /** Maximum number of traces in the session. */
+  traceCountMax?: number;
+}
+
+/** Categorical + numeric facet filters for the traces/observations/sessions list. */
+export interface TraceFacetFilters extends TraceNumericFilters, SessionNumericFilters {
   environment: string[];
   name: string[];
   userId: string[];
@@ -254,7 +270,7 @@ export interface TracesOrderBy {
 }
 
 /** Query input for the paginated traces list. */
-export interface TracesQuery extends TraceNumericFilters {
+export interface TracesQuery extends TraceNumericFilters, SessionNumericFilters {
   tenantId: string;
   search: string;
   range: TraceRange;

@@ -54,6 +54,10 @@ const tracesQuerySchema = z.object({
   costMax: z.number().nonnegative().optional(),
   tokensMin: z.number().nonnegative().optional(),
   tokensMax: z.number().nonnegative().optional(),
+  durationMin: z.number().nonnegative().optional(),
+  durationMax: z.number().nonnegative().optional(),
+  traceCountMin: z.number().nonnegative().optional(),
+  traceCountMax: z.number().nonnegative().optional(),
   searchType: z.enum(['metadata', 'fullText']).default('metadata'),
   orderBy: orderBySchema,
 });
@@ -494,6 +498,11 @@ export const getSessionsFn = createServerFn({ method: 'GET' })
     addHaving(data.tokensMax, 'totalTokens <= {hTokMax:Float64}', 'hTokMax');
     addHaving(data.costMin, 'totalCost >= {hCostMin:Float64}', 'hCostMin');
     addHaving(data.costMax, 'totalCost <= {hCostMax:Float64}', 'hCostMax');
+    addHaving(data.traceCountMin, 'traceCount >= {hTcMin:Float64}', 'hTcMin');
+    addHaving(data.traceCountMax, 'traceCount <= {hTcMax:Float64}', 'hTcMax');
+    // Duration facet is in seconds; the aggregate is milliseconds.
+    addHaving(data.durationMin, 'durationMs >= {hDurMin:Float64} * 1000', 'hDurMin');
+    addHaving(data.durationMax, 'durationMs <= {hDurMax:Float64} * 1000', 'hDurMax');
     const having = havingParts.length > 0 ? `HAVING ${havingParts.join(' AND ')}` : '';
 
     // Latest version per trace, then group by session.
