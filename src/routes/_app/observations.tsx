@@ -16,6 +16,7 @@ interface ObservationsSearch {
   type: string[];
   level: string[];
   name: string[];
+  model: string[];
   /** Numeric range filters on the observation's own latency / cost / tokens. */
   latMin?: number;
   latMax?: number;
@@ -51,6 +52,7 @@ export const Route = createFileRoute('/_app/observations')({
     type: parseStrArray(search.type),
     level: parseStrArray(search.level),
     name: parseStrArray(search.name),
+    model: parseStrArray(search.model),
     latMin: parseNum(search.latMin),
     latMax: parseNum(search.latMax),
     costMin: parseNum(search.costMin),
@@ -62,8 +64,24 @@ export const Route = createFileRoute('/_app/observations')({
 });
 
 function ObservationsRoute() {
-  const { tenant, q, range, page, trace, env, type, level, name, latMin, latMax, costMin, costMax, tokMin, tokMax } =
-    Route.useSearch();
+  const {
+    tenant,
+    q,
+    range,
+    page,
+    trace,
+    env,
+    type,
+    level,
+    name,
+    model,
+    latMin,
+    latMax,
+    costMin,
+    costMax,
+    tokMin,
+    tokMax,
+  } = Route.useSearch();
   const navigate = useNavigate({ from: '/observations' });
 
   return (
@@ -79,6 +97,7 @@ function ObservationsRoute() {
         type,
         level,
         name,
+        model,
         userId: [],
         tags: [],
         latencyMin: latMin,
@@ -100,6 +119,7 @@ function ObservationsRoute() {
             type: [],
             level: [],
             name: [],
+            model: [],
           },
         })
       }
@@ -114,6 +134,7 @@ function ObservationsRoute() {
             type: patch.type ?? prev.type,
             level: patch.level ?? prev.level,
             name: patch.name ?? prev.name,
+            model: patch.model ?? prev.model,
             latMin: 'latencyMin' in patch ? patch.latencyMin : prev.latMin,
             latMax: 'latencyMax' in patch ? patch.latencyMax : prev.latMax,
             costMin: 'costMin' in patch ? patch.costMin : prev.costMin,

@@ -521,6 +521,7 @@ export type FacetKey =
   | 'environment'
   | 'type'
   | 'level'
+  | 'model'
   | 'latency'
   | 'cost'
   | 'tokens'
@@ -589,6 +590,7 @@ export function TraceFilterSidebar({
     filters.environment.length > 0 ||
     filters.type.length > 0 ||
     filters.level.length > 0 ||
+    filters.model.length > 0 ||
     filters.name.length > 0 ||
     filters.userId.length > 0 ||
     filters.tags.length > 0 ||
@@ -613,6 +615,7 @@ export function TraceFilterSidebar({
       environment: [],
       type: [],
       level: [],
+      model: [],
       name: [],
       userId: [],
       tags: [],
@@ -689,6 +692,15 @@ export function TraceFilterSidebar({
           value={filters.level}
           onChange={(v) => onChange({ level: v })}
           renderOptionLabel={(value) => <LevelOptionLabel value={value} />}
+        />
+      )}
+      {show('model') && (
+        <CategoricalFacet
+          label={localize('com_traces_col_model')}
+          info={<InfoTooltip description={localize('com_traces_filter_model_info')} />}
+          options={data?.model ?? []}
+          value={filters.model}
+          onChange={(v) => onChange({ model: v })}
         />
       )}
       {show('latency') && (

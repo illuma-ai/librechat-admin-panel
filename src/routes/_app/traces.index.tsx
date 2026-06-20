@@ -132,6 +132,7 @@ function TracesRoute() {
         environment: env,
         type,
         level,
+        model: [],
         name,
         userId: user,
         tags,

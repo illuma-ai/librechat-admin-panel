@@ -254,6 +254,8 @@ export interface TraceFacetFilters extends TraceNumericFilters, SessionNumericFi
   type: string[];
   /** Observation level (DEBUG/DEFAULT/WARNING/ERROR) the trace must contain. */
   level: string[];
+  /** Model name (observations only). */
+  model: string[];
   tags: string[];
 }
 
@@ -281,6 +283,7 @@ export interface TracesQuery extends TraceNumericFilters, SessionNumericFilters 
   userId?: string[];
   type?: string[];
   level?: string[];
+  model?: string[];
   tags?: string[];
   /** Search scope; `fullText` extends the search into observation input/output. */
   searchType?: TraceSearchType;
@@ -303,6 +306,8 @@ export interface TraceFilterOptions {
   type: FacetOption[];
   /** Per observation-level distinct-trace counts (DEBUG/DEFAULT/WARNING/ERROR). */
   level: FacetOption[];
+  /** Per-model distinct-trace counts. */
+  model: FacetOption[];
   tags: FacetOption[];
   /** Max trace latency in seconds across all traces (drives the numeric input range). */
   latencyMax: number;

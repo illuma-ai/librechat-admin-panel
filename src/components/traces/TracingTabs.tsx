@@ -49,6 +49,7 @@ export function TracingTabs({ active }: { active: TracingTab }) {
                   type: [],
                   level: [],
                   name: [],
+                  model: [],
                 },
               });
             }}

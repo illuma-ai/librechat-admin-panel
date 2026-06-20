@@ -95,6 +95,7 @@ function SessionsRoute() {
         name: [],
         type: [],
         level: [],
+        model: [],
         tags: [],
         tokensMin: tokMin,
         tokensMax: tokMax,

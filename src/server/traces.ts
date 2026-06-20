@@ -47,6 +47,7 @@ const tracesQuerySchema = z.object({
   userId: z.array(z.string()).default([]),
   type: z.array(z.string()).default([]),
   level: z.array(z.string()).default([]),
+  model: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   latencyMin: z.number().nonnegative().optional(),
   latencyMax: z.number().nonnegative().optional(),
@@ -324,6 +325,9 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
          UNION ALL
          SELECT 'level', level, trace_id FROM observations FINAL
            WHERE tenant_id = {t:String} AND is_deleted = 0 AND level != ''
+         UNION ALL
+         SELECT 'model', model, trace_id FROM observations FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 AND model != ''
        )
        GROUP BY facet, value
        ORDER BY count DESC`,
@@ -355,6 +359,7 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
       userIds: pick('user'),
       type: pickFacet('type'),
       level: pickFacet('level'),
+      model: pickFacet('model'),
       tags: pick('tag'),
       latencyMax: toNumber(bounds?.latencyMax),
       costMax: toNumber(bounds?.costMax),
@@ -402,6 +407,7 @@ export const getObservationsFn = createServerFn({ method: 'GET' })
     addFacet(data.type, 'type', 'fType');
     addFacet(data.level, 'level', 'fLevel');
     addFacet(data.name, 'name', 'fName');
+    addFacet(data.model, 'model', 'fModel');
 
     // Numeric range filters on the observation's own columns (per-row, not
     // aggregated) — latency in seconds (vs the ms span), total cost, total tokens.

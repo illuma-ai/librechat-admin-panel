@@ -63,6 +63,7 @@ export function ObservationsPage({
       type: filters.type,
       level: filters.level,
       name: filters.name,
+      model: filters.model,
       latencyMin: filters.latencyMin,
       latencyMax: filters.latencyMax,
       costMin: filters.costMin,
@@ -217,6 +218,7 @@ export function ObservationsPage({
             type: filters.type,
             level: filters.level,
             name: filters.name,
+            model: filters.model,
             latMin: filters.latencyMin,
             latMax: filters.latencyMax,
             costMin: filters.costMin,
@@ -241,7 +243,7 @@ export function ObservationsPage({
           tenant={effectiveTenant}
           filters={filters}
           onChange={onFilters}
-          facets={['environment', 'type', 'level', 'name', 'latency', 'cost', 'tokens']}
+          facets={['environment', 'type', 'level', 'name', 'model', 'latency', 'cost', 'tokens']}
         />
       }
       drawer={
