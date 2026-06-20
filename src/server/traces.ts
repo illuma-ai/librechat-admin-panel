@@ -167,6 +167,143 @@ export const tracesQueryOptions = (query: t.TracesQuery) =>
     enabled: query.tenantId.length > 0,
   });
 
+// ── Paginated observations list ──────────────────────────────────────
+
+export const getObservationsFn = createServerFn({ method: 'GET' })
+  .inputValidator(tracesQuerySchema)
+  .handler(async ({ data }): Promise<t.ObservationsPage> => {
+    const offset = (data.page - 1) * data.pageSize;
+    const hasSearch = data.search.trim().length > 0;
+    const searchClause = hasSearch
+      ? 'AND (name ILIKE {s:String} OR model ILIKE {s:String} OR trace_id ILIKE {s:String})'
+      : '';
+    const timeClause = rangeClause(data.range, 'start_time');
+    const params: Record<string, unknown> = {
+      t: data.tenantId,
+      limit: data.pageSize,
+      offset,
+      ...(hasSearch ? { s: `%${data.search.trim()}%` } : {}),
+    };
+
+    const [countRow] = await chQuery<{ c: string }>(
+      `SELECT count() AS c FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause}`,
+      params,
+    );
+
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT id, trace_id AS traceId, type, name, model, toString(start_time) AS startTime, level,
+              dateDiff('millisecond', start_time, end_time) AS latencyMs,
+              input_tokens AS inputTokens, output_tokens AS outputTokens, total_tokens AS totalTokens,
+              total_cost AS cost, environment
+       FROM observations FINAL
+       WHERE tenant_id = {t:String} AND is_deleted = 0 ${timeClause} ${searchClause}
+       ORDER BY start_time DESC
+       LIMIT {limit:UInt32} OFFSET {offset:UInt32}`,
+      params,
+    );
+
+    return {
+      total: toNumber(countRow?.c),
+      rows: rows.map((r) => ({
+        id: String(r.id ?? ''),
+        traceId: String(r.traceId ?? ''),
+        type: String(r.type ?? 'span'),
+        name: String(r.name ?? ''),
+        model: String(r.model ?? ''),
+        startTime: String(r.startTime ?? ''),
+        level: String(r.level ?? ''),
+        latencyMs: toNumber(r.latencyMs),
+        inputTokens: toNumber(r.inputTokens),
+        outputTokens: toNumber(r.outputTokens),
+        totalTokens: toNumber(r.totalTokens),
+        cost: toNumber(r.cost),
+        environment: String(r.environment ?? ''),
+      })),
+    };
+  });
+
+export const observationsQueryOptions = (query: t.TracesQuery) =>
+  queryOptions({
+    queryKey: ['observations', 'list', query],
+    queryFn: () => getObservationsFn({ data: query }),
+    staleTime: 10_000,
+    enabled: query.tenantId.length > 0,
+  });
+
+// ── Paginated sessions list ──────────────────────────────────────────
+
+export const getSessionsFn = createServerFn({ method: 'GET' })
+  .inputValidator(tracesQuerySchema)
+  .handler(async ({ data }): Promise<t.SessionsPage> => {
+    const offset = (data.page - 1) * data.pageSize;
+    const hasSearch = data.search.trim().length > 0;
+    const searchClause = hasSearch ? 'AND session_id ILIKE {s:String}' : '';
+    const timeClause = rangeClause(data.range, 'timestamp');
+    const params: Record<string, unknown> = {
+      t: data.tenantId,
+      limit: data.pageSize,
+      offset,
+      ...(hasSearch ? { s: `%${data.search.trim()}%` } : {}),
+    };
+
+    // Latest version per trace, then group by session.
+    const base = `(
+      SELECT argMax(session_id, updated_at) AS session_id, argMax(user_id, updated_at) AS user_id,
+             argMax(timestamp, updated_at) AS timestamp, argMax(environment, updated_at) AS environment, id
+      FROM traces WHERE tenant_id = {t:String}
+      GROUP BY id HAVING argMax(is_deleted, updated_at) = 0
+    )`;
+
+    const [countRow] = await chQuery<{ c: string }>(
+      `SELECT count() AS c FROM (
+         SELECT session_id FROM ${base} WHERE session_id != '' ${timeClause} ${searchClause}
+         GROUP BY session_id
+       )`,
+      params,
+    );
+
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT t.session_id AS id, toString(max(t.timestamp)) AS timestamp,
+              count(DISTINCT t.id) AS traceCount, count(DISTINCT t.user_id) AS userCount,
+              any(t.environment) AS environment,
+              dateDiff('millisecond', min(t.timestamp), max(t.timestamp)) AS durationMs,
+              sum(o.cost) AS totalCost, sum(o.tokens) AS totalTokens
+       FROM ${base} AS t
+       LEFT JOIN (
+         SELECT trace_id, sum(total_cost) AS cost, sum(total_tokens) AS tokens
+         FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0
+         GROUP BY trace_id
+       ) AS o ON o.trace_id = t.id
+       WHERE t.session_id != '' ${timeClause} ${searchClause}
+       GROUP BY t.session_id
+       ORDER BY max(t.timestamp) DESC
+       LIMIT {limit:UInt32} OFFSET {offset:UInt32}`,
+      params,
+    );
+
+    return {
+      total: toNumber(countRow?.c),
+      rows: rows.map((r) => ({
+        id: String(r.id ?? ''),
+        timestamp: String(r.timestamp ?? ''),
+        traceCount: toNumber(r.traceCount),
+        userCount: toNumber(r.userCount),
+        totalCost: toNumber(r.totalCost),
+        totalTokens: toNumber(r.totalTokens),
+        durationMs: toNumber(r.durationMs),
+        environment: String(r.environment ?? ''),
+      })),
+    };
+  });
+
+export const sessionsQueryOptions = (query: t.TracesQuery) =>
+  queryOptions({
+    queryKey: ['sessions', 'list', query],
+    queryFn: () => getSessionsFn({ data: query }),
+    staleTime: 10_000,
+    enabled: query.tenantId.length > 0,
+  });
+
 // ── Trace detail (observation tree) ──────────────────────────────────
 
 export const getTraceFn = createServerFn({ method: 'GET' })

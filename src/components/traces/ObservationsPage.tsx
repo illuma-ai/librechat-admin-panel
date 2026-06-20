@@ -1,20 +1,17 @@
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { TUser } from 'librechat-data-provider';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
-import { tracesQueryOptions, usersQueryOptions } from '@/server';
+import { observationsQueryOptions } from '@/server';
 import { DataTable } from './DataTable';
 import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
 import { TraceDrawer } from './TraceDrawer';
-import { UserCell } from './UserCell';
 import { useTracingTenant } from './useTracingTenant';
-import { EnvBadge, ModelCell, TokenBadge } from './cells';
-import { formatCost, formatLatency, formatTime, formatTokens } from './format';
+import { EnvBadge, ModelCell, TokenBadge, TypeCell } from './cells';
+import { formatCost, formatLatency, formatTime } from './format';
 
-interface TracesPageProps {
+interface ObservationsPageProps {
   tenant: string;
   search: string;
   range: t.TraceRange;
@@ -29,7 +26,7 @@ interface TracesPageProps {
   onCloseTrace: () => void;
 }
 
-export function TracesPage({
+export function ObservationsPage({
   tenant,
   search,
   range,
@@ -42,47 +39,40 @@ export function TracesPage({
   onPage,
   onOpenTrace,
   onCloseTrace,
-}: TracesPageProps) {
+}: ObservationsPageProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
-  const tracesQuery = useQuery(
-    tracesQueryOptions({ tenantId: effectiveTenant, search, range, page, pageSize }),
+  const query = useQuery(
+    observationsQueryOptions({ tenantId: effectiveTenant, search, range, page, pageSize }),
   );
-  const usersQuery = useQuery(usersQueryOptions);
 
-  const userMap = useMemo(() => {
-    const map = new Map<string, TUser>();
-    for (const user of usersQuery.data ?? []) map.set(user.id, user);
-    return map;
-  }, [usersQuery.data]);
-
-  const total = tracesQuery.data?.total ?? 0;
+  const total = query.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const columns: DataTableColumn<t.TraceListItem>[] = [
+  const columns: DataTableColumn<t.ObservationListItem>[] = [
     {
-      id: 'timestamp',
-      header: localize('com_traces_col_time'),
+      id: 'startTime',
+      header: localize('com_traces_col_start_time'),
       width: 160,
-      render: (r) => formatTime(r.timestamp),
+      render: (r) => formatTime(r.startTime),
+    },
+    {
+      id: 'type',
+      header: localize('com_traces_col_type'),
+      width: 130,
+      render: (r) => <TypeCell type={r.type} />,
     },
     {
       id: 'name',
       header: localize('com_traces_col_name'),
-      width: 180,
+      width: 200,
       render: (r) => r.name || '—',
     },
     {
-      id: 'user',
-      header: localize('com_traces_col_user'),
-      width: 210,
-      render: (r) => <UserCell user={userMap.get(r.userId)} fallback={r.userId} />,
-    },
-    {
-      id: 'env',
-      header: localize('com_traces_environment'),
-      width: 120,
-      render: (r) => <EnvBadge value={r.environment} />,
+      id: 'level',
+      header: localize('com_traces_col_level'),
+      width: 90,
+      render: (r) => r.level || '—',
     },
     {
       id: 'latency',
@@ -94,7 +84,9 @@ export function TracesPage({
       id: 'tokens',
       header: localize('com_traces_col_tokens'),
       width: 180,
-      render: (r) => <TokenBadge input={r.inputTokens} output={r.outputTokens} total={r.tokens} />,
+      render: (r) => (
+        <TokenBadge input={r.inputTokens} output={r.outputTokens} total={r.totalTokens} />
+      ),
     },
     {
       id: 'cost',
@@ -109,16 +101,16 @@ export function TracesPage({
       render: (r) => <ModelCell model={r.model} />,
     },
     {
-      id: 'obs',
-      header: localize('com_traces_metric_observations'),
-      width: 110,
-      render: (r) => formatTokens(r.observations),
+      id: 'env',
+      header: localize('com_traces_environment'),
+      width: 120,
+      render: (r) => <EnvBadge value={r.environment} />,
     },
   ];
 
   return (
     <TracingShell
-      tabs={<TracingTabs active="traces" />}
+      tabs={<TracingTabs active="observations" />}
       tenant={effectiveTenant}
       tenants={tenants}
       onTenant={onTenant}
@@ -129,18 +121,17 @@ export function TracesPage({
       page={page}
       totalPages={totalPages}
       onPage={onPage}
-      searchPlaceholder={localize('com_traces_search_placeholder')}
+      searchPlaceholder={localize('com_traces_obs_search_placeholder')}
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />
       }
     >
       <DataTable
         columns={columns}
-        rows={tracesQuery.data?.rows ?? []}
+        rows={query.data?.rows ?? []}
         rowKey={(r) => r.id}
-        onRowClick={(r) => onOpenTrace(r.id)}
-        selectedId={selectedTraceId}
-        loading={tracesQuery.isLoading}
+        onRowClick={(r) => onOpenTrace(r.traceId)}
+        loading={query.isLoading}
         emptyMessage={localize('com_traces_none')}
       />
     </TracingShell>

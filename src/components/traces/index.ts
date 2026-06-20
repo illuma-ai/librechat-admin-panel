@@ -1,4 +1,6 @@
 export { TracesPage } from './TracesPage';
+export { ObservationsPage } from './ObservationsPage';
+export { SessionsPage } from './SessionsPage';
 export { TraceDetailPage } from './TraceDetailPage';
 export { TraceDetailContent } from './TraceDetailContent';
 export { TraceDrawer } from './TraceDrawer';

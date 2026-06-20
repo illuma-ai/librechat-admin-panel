@@ -13,6 +13,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
+import { Route as AppSessionsRouteImport } from './routes/_app/sessions'
+import { Route as AppObservationsRouteImport } from './routes/_app/observations'
 import { Route as AppHelpRouteImport } from './routes/_app/help'
 import { Route as AppGrantsRouteImport } from './routes/_app/grants'
 import { Route as AppAccessRouteImport } from './routes/_app/access'
@@ -38,6 +40,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSessionsRoute = AppSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppObservationsRoute = AppObservationsRouteImport.update({
+  id: '/observations',
+  path: '/observations',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHelpRoute = AppHelpRouteImport.update({
@@ -82,6 +94,8 @@ export interface FileRoutesByFullPath {
   '/access': typeof AppAccessRoute
   '/grants': typeof AppGrantsRoute
   '/help': typeof AppHelpRoute
+  '/observations': typeof AppObservationsRoute
+  '/sessions': typeof AppSessionsRoute
   '/users': typeof AppUsersRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
@@ -93,6 +107,8 @@ export interface FileRoutesByTo {
   '/access': typeof AppAccessRoute
   '/grants': typeof AppGrantsRoute
   '/help': typeof AppHelpRoute
+  '/observations': typeof AppObservationsRoute
+  '/sessions': typeof AppSessionsRoute
   '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
@@ -107,6 +123,8 @@ export interface FileRoutesById {
   '/_app/access': typeof AppAccessRoute
   '/_app/grants': typeof AppGrantsRoute
   '/_app/help': typeof AppHelpRoute
+  '/_app/observations': typeof AppObservationsRoute
+  '/_app/sessions': typeof AppSessionsRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
   '/_app/traces/$traceId': typeof AppTracesTraceIdRoute
@@ -122,6 +140,8 @@ export interface FileRouteTypes {
     | '/access'
     | '/grants'
     | '/help'
+    | '/observations'
+    | '/sessions'
     | '/users'
     | '/traces/$traceId'
     | '/auth/openid/callback'
@@ -133,6 +153,8 @@ export interface FileRouteTypes {
     | '/access'
     | '/grants'
     | '/help'
+    | '/observations'
+    | '/sessions'
     | '/users'
     | '/'
     | '/traces/$traceId'
@@ -146,6 +168,8 @@ export interface FileRouteTypes {
     | '/_app/access'
     | '/_app/grants'
     | '/_app/help'
+    | '/_app/observations'
+    | '/_app/sessions'
     | '/_app/users'
     | '/_app/'
     | '/_app/traces/$traceId'
@@ -188,6 +212,20 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sessions': {
+      id: '/_app/sessions'
+      path: '/sessions'
+      fullPath: '/sessions'
+      preLoaderRoute: typeof AppSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/observations': {
+      id: '/_app/observations'
+      path: '/observations'
+      fullPath: '/observations'
+      preLoaderRoute: typeof AppObservationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/help': {
@@ -246,6 +284,8 @@ interface AppRouteChildren {
   AppAccessRoute: typeof AppAccessRoute
   AppGrantsRoute: typeof AppGrantsRoute
   AppHelpRoute: typeof AppHelpRoute
+  AppObservationsRoute: typeof AppObservationsRoute
+  AppSessionsRoute: typeof AppSessionsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
   AppTracesTraceIdRoute: typeof AppTracesTraceIdRoute
@@ -257,6 +297,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccessRoute: AppAccessRoute,
   AppGrantsRoute: AppGrantsRoute,
   AppHelpRoute: AppHelpRoute,
+  AppObservationsRoute: AppObservationsRoute,
+  AppSessionsRoute: AppSessionsRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
   AppTracesTraceIdRoute: AppTracesTraceIdRoute,

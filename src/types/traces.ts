@@ -25,6 +25,58 @@ export interface TracesPage {
   total: number;
 }
 
+/** A row in the paginated observations list. */
+export interface ObservationListItem {
+  id: string;
+  traceId: string;
+  type: string;
+  name: string;
+  model: string;
+  startTime: string;
+  level: string;
+  latencyMs: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  cost: number;
+  environment: string;
+}
+
+/** Server-side paginated result for the observations list. */
+export interface ObservationsPage {
+  rows: ObservationListItem[];
+  total: number;
+}
+
+/** A row in the sessions list (a session groups traces by session_id). */
+export interface SessionListItem {
+  id: string;
+  timestamp: string;
+  traceCount: number;
+  userCount: number;
+  totalCost: number;
+  totalTokens: number;
+  durationMs: number;
+  environment: string;
+}
+
+/** Server-side paginated result for the sessions list. */
+export interface SessionsPage {
+  rows: SessionListItem[];
+  total: number;
+}
+
+/** A session's detail: header + its traces. */
+export interface SessionDetail {
+  id: string;
+  traceCount: number;
+  totalCost: number;
+  totalTokens: number;
+  durationMs: number;
+  users: string[];
+  traces: TraceListItem[];
+}
+
 /** A normalized chat message extracted from a producer's serialized I/O. */
 export interface TraceMessage {
   role: 'user' | 'assistant' | 'system' | 'tool' | 'unknown';
