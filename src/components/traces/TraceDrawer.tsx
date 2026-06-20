@@ -185,7 +185,15 @@ export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceD
         if (!open) onClose();
       }}
     >
-      <Flyout.Content strategy="fixed" width="min(60vw, 96vw)" closeOnInteractOutside showOverlay>
+      {/* Langfuse peek keeps the drawer open during resize/drag: it closes only via
+          the X button or Escape, never on an outside pointer-down (which a panel-resize
+          pointer-capture can otherwise trigger). closeOnInteractOutside={false}. */}
+      <Flyout.Content
+        strategy="fixed"
+        width="min(60vw, 96vw)"
+        closeOnInteractOutside={false}
+        showOverlay
+      >
         {traceId ? (
           <Flyout.Header showClose showSeparator>
             <DrawerHeader tenant={tenant} traceId={traceId} onPrev={onPrev} onNext={onNext} />
