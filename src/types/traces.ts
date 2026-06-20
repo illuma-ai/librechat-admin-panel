@@ -80,6 +80,37 @@ export interface SessionsPage {
   total: number;
 }
 
+/** A row in the users list (an LLM end-user, aggregated from their traces). */
+export interface TraceUserListItem {
+  userId: string;
+  environment: string;
+  /** Earliest trace timestamp for this user. */
+  firstEvent: string;
+  /** Latest trace timestamp for this user. */
+  lastEvent: string;
+  /** Number of traces (events) attributed to this user. */
+  totalEvents: number;
+  totalTokens: number;
+  totalCost: number;
+}
+
+/** Server-side paginated result for the users list. */
+export interface TraceUsersPage {
+  rows: TraceUserListItem[];
+  total: number;
+}
+
+/** Query input for the paginated users list. */
+export interface TraceUsersQuery {
+  tenantId: string;
+  search: string;
+  range: TraceRange;
+  page: number;
+  pageSize: number;
+  environment?: string[];
+  orderBy?: TracesOrderBy;
+}
+
 /** A session's detail: header + its traces. */
 export interface SessionDetail {
   id: string;

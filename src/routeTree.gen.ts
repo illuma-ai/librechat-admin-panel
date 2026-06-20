@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
+import { Route as AppTraceUsersRouteImport } from './routes/_app/trace-users'
 import { Route as AppSessionsRouteImport } from './routes/_app/sessions'
 import { Route as AppObservationsRouteImport } from './routes/_app/observations'
 import { Route as AppHelpRouteImport } from './routes/_app/help'
@@ -41,6 +42,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTraceUsersRoute = AppTraceUsersRouteImport.update({
+  id: '/trace-users',
+  path: '/trace-users',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSessionsRoute = AppSessionsRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof AppHelpRoute
   '/observations': typeof AppObservationsRoute
   '/sessions': typeof AppSessionsRouteWithChildren
+  '/trace-users': typeof AppTraceUsersRoute
   '/users': typeof AppUsersRoute
   '/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/help': typeof AppHelpRoute
   '/observations': typeof AppObservationsRoute
   '/sessions': typeof AppSessionsRouteWithChildren
+  '/trace-users': typeof AppTraceUsersRoute
   '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
   '/sessions/$sessionId': typeof AppSessionsSessionIdRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/_app/help': typeof AppHelpRoute
   '/_app/observations': typeof AppObservationsRoute
   '/_app/sessions': typeof AppSessionsRouteWithChildren
+  '/_app/trace-users': typeof AppTraceUsersRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
   '/_app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/observations'
     | '/sessions'
+    | '/trace-users'
     | '/users'
     | '/sessions/$sessionId'
     | '/traces/$traceId'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/observations'
     | '/sessions'
+    | '/trace-users'
     | '/users'
     | '/'
     | '/sessions/$sessionId'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/_app/help'
     | '/_app/observations'
     | '/_app/sessions'
+    | '/_app/trace-users'
     | '/_app/users'
     | '/_app/'
     | '/_app/sessions/$sessionId'
@@ -224,6 +236,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/trace-users': {
+      id: '/_app/trace-users'
+      path: '/trace-users'
+      fullPath: '/trace-users'
+      preLoaderRoute: typeof AppTraceUsersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/sessions': {
@@ -317,6 +336,7 @@ interface AppRouteChildren {
   AppHelpRoute: typeof AppHelpRoute
   AppObservationsRoute: typeof AppObservationsRoute
   AppSessionsRoute: typeof AppSessionsRouteWithChildren
+  AppTraceUsersRoute: typeof AppTraceUsersRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
   AppTracesTraceIdRoute: typeof AppTracesTraceIdRoute
@@ -330,6 +350,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHelpRoute: AppHelpRoute,
   AppObservationsRoute: AppObservationsRoute,
   AppSessionsRoute: AppSessionsRouteWithChildren,
+  AppTraceUsersRoute: AppTraceUsersRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
   AppTracesTraceIdRoute: AppTracesTraceIdRoute,
