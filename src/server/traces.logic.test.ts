@@ -203,6 +203,46 @@ describe('buildTraceFilters', () => {
     expect(out.clause).toBe('AND environment IN {fEnv:Array(String)}');
     expect(out.params).toEqual({ fEnv: ['prod'] });
   });
+
+  it('builds IN clauses for sessionId, release, and version', () => {
+    const out = buildTraceFilters({
+      ...empty,
+      sessionId: ['s1', 's2'],
+      release: ['v1.2.0'],
+      version: ['a'],
+    });
+    expect(out.clause).toBe(
+      'AND session_id IN {fSession:Array(String)} AND release IN {fRelease:Array(String)} AND version IN {fVersion:Array(String)}',
+    );
+    expect(out.params).toEqual({
+      fSession: ['s1', 's2'],
+      fRelease: ['v1.2.0'],
+      fVersion: ['a'],
+    });
+  });
+
+  it('ignores empty optional facets', () => {
+    const out = buildTraceFilters({ ...empty, sessionId: [], release: [], version: [] });
+    expect(out).toEqual({ clause: '', params: {} });
+  });
+
+  it('uses hasAny for the default tag operator', () => {
+    const out = buildTraceFilters({ ...empty, tags: ['agent'] });
+    expect(out.clause).toBe('AND hasAny(tags, {fTags:Array(String)})');
+    expect(out.params).toEqual({ fTags: ['agent'] });
+  });
+
+  it('uses hasAll for the "all of" tag operator', () => {
+    const out = buildTraceFilters({ ...empty, tags: ['a', 'b'], tagOperator: 'all of' });
+    expect(out.clause).toBe('AND hasAll(tags, {fTags:Array(String)})');
+    expect(out.params).toEqual({ fTags: ['a', 'b'] });
+  });
+
+  it('negates with NOT hasAny for the "none of" tag operator', () => {
+    const out = buildTraceFilters({ ...empty, tags: ['spam'], tagOperator: 'none of' });
+    expect(out.clause).toBe('AND NOT hasAny(tags, {fTags:Array(String)})');
+    expect(out.params).toEqual({ fTags: ['spam'] });
+  });
 });
 
 describe('buildAgentGraph', () => {

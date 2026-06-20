@@ -5,6 +5,7 @@ import { sessionsQueryOptions } from '@/server';
 import { DataTable } from './DataTable';
 import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
+import { SessionDrawer } from './SessionDrawer';
 import { useTracingTenant } from './useTracingTenant';
 import { EnvBadge } from './cells';
 import { formatCost, formatLatency, formatTime, formatTokens } from './format';
@@ -15,11 +16,14 @@ interface SessionsPageProps {
   range: t.TraceRange;
   page: number;
   pageSize: number;
+  selectedSessionId: string | null;
   onTenant: (tenant: string) => void;
   onSearch: (search: string) => void;
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
   onOpenSession: (sessionId: string) => void;
+  onCloseSession: () => void;
+  onOpenTrace: (traceId: string) => void;
 }
 
 export function SessionsPage({
@@ -28,11 +32,14 @@ export function SessionsPage({
   range,
   page,
   pageSize,
+  selectedSessionId,
   onTenant,
   onSearch,
   onRange,
   onPage,
   onOpenSession,
+  onCloseSession,
+  onOpenTrace,
 }: SessionsPageProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
@@ -111,12 +118,21 @@ export function SessionsPage({
       totalPages={totalPages}
       onPage={onPage}
       searchPlaceholder={localize('com_traces_session_search_placeholder')}
+      drawer={
+        <SessionDrawer
+          tenant={effectiveTenant}
+          sessionId={selectedSessionId}
+          onClose={onCloseSession}
+          onOpenTrace={onOpenTrace}
+        />
+      }
     >
       <DataTable
         columns={columns}
         rows={query.data?.rows ?? []}
         rowKey={(r) => r.id}
         onRowClick={(r) => onOpenSession(r.id)}
+        selectedId={selectedSessionId}
         loading={query.isLoading}
         emptyMessage={localize('com_traces_none')}
       />

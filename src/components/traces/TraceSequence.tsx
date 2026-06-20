@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
@@ -34,17 +34,67 @@ function flatten(
   return out;
 }
 
+/** Collect every node id in the tree (used to collapse/expand all at once). */
+function collectIds(nodes: t.ObservationNode[], out: string[] = []): string[] {
+  for (const node of nodes) {
+    out.push(node.id);
+    collectIds(node.children, out);
+  }
+  return out;
+}
+
+/**
+ * Keep a node if its name matches the filter, or if any descendant matches —
+ * so ancestors of a hit stay visible (mirrors Langfuse tree search).
+ */
+function matchesFilter(node: t.ObservationNode, needle: string): boolean {
+  if (!needle) return true;
+  const name = (node.name || node.type).toLowerCase();
+  if (name.includes(needle)) return true;
+  return node.children.some((child) => matchesFilter(child, needle));
+}
+
+function filterTree(nodes: t.ObservationNode[], needle: string): t.ObservationNode[] {
+  if (!needle) return nodes;
+  return nodes
+    .filter((node) => matchesFilter(node, needle))
+    .map((node) => ({ ...node, children: filterTree(node.children, needle) }));
+}
+
 interface TraceSequenceProps {
   observations: t.ObservationNode[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Monotonically-increasing signals from the toolbar to collapse/expand the whole tree. */
+  collapseAllSignal?: number;
+  expandAllSignal?: number;
+  /** Case-insensitive name filter; non-matching branches are hidden. */
+  filter?: string;
 }
 
 /** Langfuse observation tree — connector lines, colored type icons, per-node metrics. */
-export function TraceSequence({ observations, selectedId, onSelect }: TraceSequenceProps) {
+export function TraceSequence({
+  observations,
+  selectedId,
+  onSelect,
+  collapseAllSignal = 0,
+  expandAllSignal = 0,
+  filter = '',
+}: TraceSequenceProps) {
   const localize = useLocalize();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const rows = useMemo(() => flatten(observations, collapsed), [observations, collapsed]);
+
+  useEffect(() => {
+    if (collapseAllSignal > 0) setCollapsed(new Set(collectIds(observations)));
+  }, [collapseAllSignal, observations]);
+
+  useEffect(() => {
+    if (expandAllSignal > 0) setCollapsed(new Set());
+  }, [expandAllSignal]);
+
+  const needle = filter.trim().toLowerCase();
+  const visible = useMemo(() => filterTree(observations, needle), [observations, needle]);
+  const rows = useMemo(() => flatten(visible, collapsed), [visible, collapsed]);
 
   const toggleCollapse = (id: string) =>
     setCollapsed((prev) => {

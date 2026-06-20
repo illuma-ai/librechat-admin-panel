@@ -7,9 +7,11 @@ import type { DataTableColumn } from './DataTable';
 import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
 import { TraceDrawer } from './TraceDrawer';
+import { ColumnsMenu } from './ColumnsMenu';
 import { useTracingTenant } from './useTracingTenant';
-import { EnvBadge, ModelCell, TokenBadge, TypeCell } from './cells';
-import { formatCost, formatLatency, formatTime } from './format';
+import { useColumnVisibility } from './useColumnVisibility';
+import { EnvBadge, MetadataCell, ModelCell, TokenBadge, TypeCell } from './cells';
+import { formatCost, formatLatency, formatTime, formatTokens } from './format';
 
 interface ObservationsPageProps {
   tenant: string;
@@ -49,6 +51,9 @@ export function ObservationsPage({
   const total = query.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
+  // Langfuse observation column order + default visibility (defaultHidden columns
+  // appear in the Columns menu but stay hidden until enabled). Input/Output/Metadata
+  // are not yet on ObservationListItem — they render '—' until the backend adds them.
   const columns: DataTableColumn<t.ObservationListItem>[] = [
     {
       id: 'startTime',
@@ -69,6 +74,18 @@ export function ObservationsPage({
       render: (r) => r.name || '—',
     },
     {
+      id: 'input',
+      header: localize('com_traces_input'),
+      width: 240,
+      render: () => <>—</>,
+    },
+    {
+      id: 'output',
+      header: localize('com_traces_output'),
+      width: 240,
+      render: () => <>—</>,
+    },
+    {
       id: 'level',
       header: localize('com_traces_col_level'),
       width: 90,
@@ -81,18 +98,18 @@ export function ObservationsPage({
       render: (r) => formatLatency(r.latencyMs),
     },
     {
+      id: 'cost',
+      header: localize('com_traces_col_cost'),
+      width: 110,
+      render: (r) => formatCost(r.cost),
+    },
+    {
       id: 'tokens',
       header: localize('com_traces_col_tokens'),
       width: 180,
       render: (r) => (
         <TokenBadge input={r.inputTokens} output={r.outputTokens} total={r.totalTokens} />
       ),
-    },
-    {
-      id: 'cost',
-      header: localize('com_traces_col_cost'),
-      width: 110,
-      render: (r) => formatCost(r.cost),
     },
     {
       id: 'model',
@@ -106,7 +123,51 @@ export function ObservationsPage({
       width: 120,
       render: (r) => <EnvBadge value={r.environment} />,
     },
+    {
+      id: 'metadata',
+      header: localize('com_traces_metadata'),
+      width: 110,
+      render: () => <MetadataCell metadata={{}} />,
+    },
+    {
+      id: 'traceId',
+      header: localize('com_traces_col_trace_id'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => (
+        <span className="truncate font-mono text-xs" title={r.traceId}>
+          {r.traceId.slice(0, 8)}
+        </span>
+      ),
+    },
+    {
+      id: 'id',
+      header: localize('com_traces_col_observation_id'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => (
+        <span className="truncate font-mono text-xs" title={r.id}>
+          {r.id.slice(0, 8)}
+        </span>
+      ),
+    },
+    {
+      id: 'inputTokens',
+      header: localize('com_traces_col_input_tokens'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => formatTokens(r.inputTokens),
+    },
+    {
+      id: 'outputTokens',
+      header: localize('com_traces_col_output_tokens'),
+      width: 120,
+      defaultHidden: true,
+      render: (r) => formatTokens(r.outputTokens),
+    },
   ];
+
+  const columnVisibility = useColumnVisibility('observations', columns);
 
   return (
     <TracingShell
@@ -122,12 +183,22 @@ export function ObservationsPage({
       totalPages={totalPages}
       onPage={onPage}
       searchPlaceholder={localize('com_traces_obs_search_placeholder')}
+      toolbarExtra={
+        <ColumnsMenu
+          columns={columns}
+          hidden={columnVisibility.hidden}
+          onToggle={columnVisibility.toggle}
+          visibleCount={columnVisibility.visibleCount}
+          total={columnVisibility.total}
+        />
+      }
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />
       }
     >
       <DataTable
         columns={columns}
+        hiddenColumnIds={columnVisibility.hidden}
         rows={query.data?.rows ?? []}
         rowKey={(r) => r.id}
         onRowClick={(r) => onOpenTrace(r.traceId)}

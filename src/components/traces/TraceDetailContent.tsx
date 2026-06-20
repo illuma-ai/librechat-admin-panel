@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Download, FoldVertical, UnfoldVertical } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
+import { cn } from '@/utils';
 import { EmptyState, LoadingState } from '@/components/shared';
 import { traceDetailQueryOptions } from '@/server';
 import { TraceDetailPane } from './TraceDetailPane';
@@ -36,11 +38,26 @@ function aggregateTotals(nodes: t.ObservationNode[], rootLatencyMs: number) {
   return { latencyMs: rootLatencyMs, totalCost, totalTokens, inputTokens, outputTokens };
 }
 
+/** Trigger a client-side download of the trace detail data as `trace-<id>.json`. */
+function downloadTraceJson(traceId: string, data: t.TraceDetail) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `trace-${traceId}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 /** Langfuse trace detail: left observation tree + right detail pane (shared by drawer + page). */
 export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps) {
   const localize = useLocalize();
   const { data, isLoading } = useQuery(traceDetailQueryOptions(tenant, traceId));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState('');
+  const [timeline, setTimeline] = useState(false);
+  const [collapseSignal, setCollapseSignal] = useState(0);
+  const [expandSignal, setExpandSignal] = useState(0);
 
   const rootId = data?.observations[0]?.id ?? null;
   useEffect(() => {
@@ -53,6 +70,10 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
     [data?.observations, data?.latencyMs],
   );
 
+  const handleDownload = useCallback(() => {
+    if (data) downloadTraceJson(traceId, data);
+  }, [data, traceId]);
+
   if (isLoading) return <LoadingState />;
   if (!data) return <EmptyState message={localize('com_traces_not_found_desc')} />;
 
@@ -62,14 +83,63 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
   return (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
       <div className="flex min-h-0 flex-col border-b border-(--cui-color-stroke-default) md:w-[44%] md:max-w-130 md:min-w-75 md:border-r md:border-b-0">
-        <div className="flex shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) px-3 py-2 text-xs font-semibold tracking-wide text-(--cui-color-text-muted) uppercase">
-          {localize('com_traces_sequence')}
+        <div className="flex shrink-0 items-center gap-1 border-b border-(--cui-color-stroke-default) px-2 py-1">
+          <input
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder={localize('com_traces_search')}
+            className="h-7 min-w-0 flex-1 bg-transparent px-1 text-xs text-(--cui-color-text-default) outline-none placeholder:text-(--cui-color-text-muted)"
+            aria-label={localize('com_traces_search')}
+          />
+          <button
+            type="button"
+            onClick={() => setExpandSignal((n) => n + 1)}
+            title={localize('com_traces_expand_all')}
+            aria-label={localize('com_traces_expand_all')}
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+          >
+            <UnfoldVertical className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setCollapseSignal((n) => n + 1)}
+            title={localize('com_traces_collapse_all')}
+            aria-label={localize('com_traces_collapse_all')}
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+          >
+            <FoldVertical className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleDownload}
+            title={localize('com_traces_download_json')}
+            aria-label={localize('com_traces_download_json')}
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+          >
+            <Download className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeline((v) => !v)}
+            className={cn(
+              'flex h-7 shrink-0 cursor-pointer items-center rounded-sm px-2 text-xs',
+              timeline
+                ? 'bg-(--cui-color-background-muted) text-(--cui-color-text-default)'
+                : 'text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)',
+            )}
+          >
+            {localize('com_traces_timeline')}
+          </button>
         </div>
         <div className="min-h-0 flex-1 overflow-auto">
           <TraceSequence
             observations={data.observations}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            filter={filter}
+            collapseAllSignal={collapseSignal}
+            expandAllSignal={expandSignal}
           />
         </div>
       </div>

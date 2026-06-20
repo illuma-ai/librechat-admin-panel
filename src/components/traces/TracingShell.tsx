@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Select } from '@clickhouse/click-ui';
-import { PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { Pagination, SearchInput } from '@/components/shared';
+import { AutoRefreshControl, type RefreshInterval } from './AutoRefreshControl';
+import { SearchTypeSelect, type SearchType } from './SearchTypeSelect';
 
 const RANGE_OPTIONS: { value: t.TraceRange; labelKey: string }[] = [
   { value: '24h', labelKey: 'com_traces_range_24h' },
@@ -26,6 +28,13 @@ interface TracingShellProps {
   totalPages: number;
   onPage: (page: number) => void;
   searchPlaceholder: string;
+  /**
+   * Search-scope mode shown in the SearchTypeSelect next to the search box.
+   * Optional/controlled: when omitted, the shell keeps its own UI-only state
+   * (default "IDs / Names"). Does not yet affect the query — see full-text wiring.
+   */
+  searchType?: SearchType;
+  onSearchType?: (searchType: SearchType) => void;
   /** Tab bar slot (Traces/Observations use TracingTabs; Sessions passes none). */
   tabs?: ReactNode;
   /** Extra toolbar controls (columns menu, …). */
@@ -56,6 +65,8 @@ export function TracingShell({
   totalPages,
   onPage,
   searchPlaceholder,
+  searchType,
+  onSearchType,
   tabs,
   toolbarExtra,
   filterSidebar,
@@ -70,6 +81,10 @@ export function TracingShell({
     useIsFetching({ queryKey: ['observations'] }) +
     useIsFetching({ queryKey: ['sessions'] });
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState<RefreshInterval>(null);
+  const [internalSearchType, setInternalSearchType] = useState<SearchType>('metadata');
+  const activeSearchType = searchType ?? internalSearchType;
+  const handleSearchType = onSearchType ?? setInternalSearchType;
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['traces'] });
@@ -104,8 +119,11 @@ export function TracingShell({
             ) : null}
           </button>
         ) : null}
-        <div className="min-w-65 flex-1">
-          <SearchInput value={search} onChange={onSearch} placeholder={searchPlaceholder} />
+        <div className="flex min-w-65 flex-1 items-stretch">
+          <div className="min-w-0 flex-1">
+            <SearchInput value={search} onChange={onSearch} placeholder={searchPlaceholder} />
+          </div>
+          <SearchTypeSelect value={activeSearchType} onChange={handleSearchType} />
         </div>
         <div style={{ minWidth: 200 }}>
           <Select
@@ -126,15 +144,12 @@ export function TracingShell({
             }))}
           />
         </div>
-        <button
-          type="button"
-          onClick={refresh}
-          title={localize('com_traces_refresh')}
-          aria-label={localize('com_traces_refresh')}
-          className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted)"
-        >
-          <RefreshCw className={fetching > 0 ? 'size-4 animate-spin' : 'size-4'} />
-        </button>
+        <AutoRefreshControl
+          onRefresh={refresh}
+          fetching={fetching > 0}
+          interval={refreshInterval}
+          onInterval={setRefreshInterval}
+        />
         {toolbarExtra}
       </div>
 

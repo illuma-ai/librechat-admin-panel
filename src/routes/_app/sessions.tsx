@@ -10,6 +10,7 @@ interface SessionsSearch {
   q: string;
   range: t.TraceRange;
   page: number;
+  session: string;
 }
 
 function parseRange(value: unknown): t.TraceRange {
@@ -22,12 +23,13 @@ export const Route = createFileRoute('/_app/sessions')({
     q: typeof search.q === 'string' ? search.q : '',
     range: parseRange(search.range),
     page: Math.max(1, Number(search.page) || 1),
+    session: typeof search.session === 'string' ? search.session : '',
   }),
   component: SessionsRoute,
 });
 
 function SessionsRoute() {
-  const { tenant, q, range, page } = Route.useSearch();
+  const { tenant, q, range, page, session } = Route.useSearch();
   const navigate = useNavigate();
 
   return (
@@ -37,25 +39,34 @@ function SessionsRoute() {
       range={range}
       page={page}
       pageSize={PAGE_SIZE}
+      selectedSessionId={session || null}
       onTenant={(value) =>
-        navigate({ to: '/sessions', search: { tenant: value, q: '', range, page: 1 } })
+        navigate({ to: '/sessions', search: { tenant: value, q: '', range, page: 1, session: '' } })
       }
       onSearch={(value) =>
-        navigate({ to: '/sessions', search: { tenant, q: value, range, page: 1 } })
+        navigate({ to: '/sessions', search: { tenant, q: value, range, page: 1, session: '' } })
       }
       onRange={(value) =>
-        navigate({ to: '/sessions', search: { tenant, q, range: value, page: 1 } })
+        navigate({ to: '/sessions', search: { tenant, q, range: value, page: 1, session: '' } })
       }
-      onPage={(value) => navigate({ to: '/sessions', search: { tenant, q, range, page: value } })}
+      onPage={(value) =>
+        navigate({ to: '/sessions', search: { tenant, q, range, page: value, session } })
+      }
       onOpenSession={(sessionId) =>
+        navigate({ to: '/sessions', search: { tenant, q, range, page, session: sessionId } })
+      }
+      onCloseSession={() =>
+        navigate({ to: '/sessions', search: { tenant, q, range, page, session: '' } })
+      }
+      onOpenTrace={(traceId) =>
         navigate({
           to: '/traces',
           search: {
             tenant,
-            q: sessionId,
+            q: '',
             range,
             page: 1,
-            trace: '',
+            trace: traceId,
             env: [],
             name: [],
             user: [],

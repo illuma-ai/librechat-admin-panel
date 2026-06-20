@@ -30,15 +30,24 @@ function previewText(raw: string): string {
   }
 }
 
-/** Input/Output preview cell — gray (input) or green (output) tinted, single line. */
+/**
+ * Input/Output preview cell — Input renders plain (no background), Output renders
+ * with the light-green tint (`--trace-output-bg`). Both single-line truncate with
+ * a hover title, matching Langfuse density.
+ */
 export function IOPreviewCell({ raw, variant }: { raw: string; variant: 'input' | 'output' }) {
   const text = previewText(raw);
   if (!text) return <>—</>;
+  const isOutput = variant === 'output';
   return (
     <span
       title={text}
-      className="block max-w-full truncate rounded-sm px-1 py-0.5 text-xs"
-      style={variant === 'output' ? { backgroundColor: 'var(--trace-output-bg)' } : undefined}
+      className={
+        isOutput
+          ? 'block max-w-full truncate rounded-sm px-1.5 py-0.5 text-xs'
+          : 'block max-w-full truncate text-xs'
+      }
+      style={isOutput ? { backgroundColor: 'var(--trace-output-bg)' } : undefined}
     >
       {text}
     </span>
