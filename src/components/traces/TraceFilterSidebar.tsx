@@ -7,6 +7,7 @@ import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { traceFilterOptionsQueryOptions } from '@/server';
+import { TypeIcon } from './traceIcons';
 import { formatTokens } from './format';
 
 /** Array-membership operator for the tags facet (Langfuse SOME/ALL/NONE). */
@@ -22,6 +23,23 @@ interface TextRule {
 }
 
 const MAX_VISIBLE = 12;
+
+/** Capitalize an observation type value (e.g. "generation" → "Generation") for display. */
+function capitalize(value: string): string {
+  return value.length === 0 ? value : value[0].toUpperCase() + value.slice(1);
+}
+
+/** Render an observation-type option: colored type icon + capitalized label. */
+function TypeOptionLabel({ value }: { value: string }) {
+  return (
+    <span className="flex min-w-0 flex-1 items-center gap-1.5">
+      <TypeIcon type={value} isSmall />
+      <span className="min-w-0 flex-1 truncate text-xs" title={value}>
+        {capitalize(value)}
+      </span>
+    </span>
+  );
+}
 
 /**
  * Read a not-yet-typed facet option list off the filter-options payload.
@@ -198,6 +216,7 @@ function CategoricalFacet({
   textRules,
   onTextRulesChange,
   emptyHint,
+  renderOptionLabel,
 }: {
   label: string;
   info?: ReactNode;
@@ -210,6 +229,8 @@ function CategoricalFacet({
   textRules?: TextRule[];
   onTextRulesChange?: (next: TextRule[]) => void;
   emptyHint?: string;
+  /** Custom renderer for an option's label (e.g. the Type facet's colored icon). */
+  renderOptionLabel?: (value: string) => ReactNode;
 }) {
   const localize = useLocalize();
   const [open, setOpen] = useState(true);
@@ -336,13 +357,17 @@ function CategoricalFacet({
                                 )
                               }
                               label={
-                                <span className="flex min-w-0 flex-1 items-center">
-                                  <span
-                                    className="min-w-0 flex-1 truncate text-xs"
-                                    title={opt.value}
-                                  >
-                                    {opt.value}
-                                  </span>
+                                <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                                  {renderOptionLabel ? (
+                                    renderOptionLabel(opt.value)
+                                  ) : (
+                                    <span
+                                      className="min-w-0 flex-1 truncate text-xs"
+                                      title={opt.value}
+                                    >
+                                      {opt.value}
+                                    </span>
+                                  )}
                                   {opt.count > 0 ? (
                                     <span className="ml-auto pl-2 text-right text-xs text-(--cui-color-text-muted)">
                                       {formatTokens(opt.count)}
@@ -403,6 +428,7 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
 
   const isFiltered =
     filters.environment.length > 0 ||
+    filters.type.length > 0 ||
     filters.name.length > 0 ||
     filters.userId.length > 0 ||
     filters.tags.length > 0 ||
@@ -413,7 +439,7 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
     userTextRules.length > 0;
 
   const clearAll = () => {
-    onChange({ environment: [], name: [], userId: [], tags: [] });
+    onChange({ environment: [], type: [], name: [], userId: [], tags: [] });
     setSessionId([]);
     setRelease([]);
     setVersion([]);
@@ -455,6 +481,14 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
         options={data?.environments ?? []}
         value={filters.environment}
         onChange={(v) => onChange({ environment: v })}
+      />
+      <CategoricalFacet
+        label={localize('com_traces_type')}
+        info={<InfoTooltip description={localize('com_traces_filter_type_info')} />}
+        options={data?.type ?? []}
+        value={filters.type}
+        onChange={(v) => onChange({ type: v })}
+        renderOptionLabel={(value) => <TypeOptionLabel value={value} />}
       />
       <CategoricalFacet
         label={localize('com_traces_col_name')}

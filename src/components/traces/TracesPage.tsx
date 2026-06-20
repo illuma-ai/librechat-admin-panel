@@ -76,6 +76,7 @@ export function TracesPage({
       environment: filters.environment,
       name: filters.name,
       userId: filters.userId,
+      type: filters.type,
       tags: filters.tags,
       orderBy: orderBy ? { column: orderBy.id, dir: orderBy.dir } : undefined,
     }),
@@ -281,6 +282,7 @@ export function TracesPage({
         filters.environment.length +
         filters.name.length +
         filters.userId.length +
+        filters.type.length +
         filters.tags.length
       }
       filterSidebar={

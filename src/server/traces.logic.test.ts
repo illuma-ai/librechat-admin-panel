@@ -227,6 +227,19 @@ describe('buildTraceFilters', () => {
     expect(out).toEqual({ clause: '', params: {} });
   });
 
+  it('builds a parameterized observations subquery for the type facet', () => {
+    const out = buildTraceFilters({ ...empty, type: ['generation', 'tool'] });
+    expect(out.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 AND type IN {fType:Array(String)})',
+    );
+    expect(out.params).toEqual({ fType: ['generation', 'tool'] });
+  });
+
+  it('omits the type facet when empty', () => {
+    const out = buildTraceFilters({ ...empty, type: [] });
+    expect(out).toEqual({ clause: '', params: {} });
+  });
+
   it('uses hasAny for the default tag operator', () => {
     const out = buildTraceFilters({ ...empty, tags: ['agent'] });
     expect(out.clause).toBe('AND hasAny(tags, {fTags:Array(String)})');

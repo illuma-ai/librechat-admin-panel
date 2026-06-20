@@ -43,6 +43,7 @@ const tracesQuerySchema = z.object({
   environment: z.array(z.string()).default([]),
   name: z.array(z.string()).default([]),
   userId: z.array(z.string()).default([]),
+  type: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   orderBy: orderBySchema,
 });
@@ -131,6 +132,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
       environment: data.environment,
       name: data.name,
       userId: data.userId,
+      type: data.type,
       tags: data.tags,
     });
     const params: Record<string, unknown> = {
@@ -252,10 +254,24 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
         .filter((r) => r.facet === facet)
         .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.cnt) }))
         .filter((o) => o.value);
+
+    // `type` lives on observations, not traces, so it is counted separately.
+    const typeRows = await chQuery<Record<string, unknown>>(
+      `SELECT type AS value, count() AS count FROM observations FINAL
+         WHERE tenant_id = {t:String} AND is_deleted = 0 AND type != ''
+       GROUP BY type
+       ORDER BY count DESC`,
+      { t: data.tenantId },
+    );
+    const type: t.FacetOption[] = typeRows
+      .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.count) }))
+      .filter((o) => o.value);
+
     return {
       environments: pick('env'),
       names: pick('name'),
       userIds: pick('user'),
+      type,
       tags: pick('tag'),
     };
   });

@@ -188,6 +188,8 @@ export interface TraceFacetFilters {
   environment: string[];
   name: string[];
   userId: string[];
+  /** Observation type (span/generation/tool/agent/event) the trace must contain. */
+  type: string[];
   tags: string[];
 }
 
@@ -210,6 +212,7 @@ export interface TracesQuery {
   environment?: string[];
   name?: string[];
   userId?: string[];
+  type?: string[];
   tags?: string[];
   /** Optional server-side sort; defaults to timestamp desc when omitted. */
   orderBy?: TracesOrderBy;
@@ -226,5 +229,7 @@ export interface TraceFilterOptions {
   environments: FacetOption[];
   names: FacetOption[];
   userIds: FacetOption[];
+  /** Per observation-type counts (span/generation/tool/agent/event). */
+  type: FacetOption[];
   tags: FacetOption[];
 }

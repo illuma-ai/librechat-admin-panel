@@ -51,6 +51,7 @@ function SessionDetailRoute() {
                 page: 1,
                 trace: traceId,
                 env: [],
+                type: [],
                 name: [],
                 user: [],
                 tags: [],

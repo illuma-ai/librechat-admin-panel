@@ -1159,6 +1159,8 @@
   "com_traces_filter_smart_reserved": "Smart filters (coming soon)",
   "com_traces_filter_session_id_info": "Filter by session ID. Sessions group related traces from a multi-step conversation or workflow.",
   "com_traces_filter_tags_info": "Filter by tags attached to traces. Use the match toggle to require some, all, or none of the selected tags.",
+  "com_traces_type": "Type",
+  "com_traces_filter_type_info": "Filter to traces that contain an observation of the selected type (span, generation, tool, agent, or event).",
   "com_traces_hide_filters": "Hide filters",
   "com_traces_show_filters": "Show filters",
   "com_traces_rows_per_page": "Rows per page",

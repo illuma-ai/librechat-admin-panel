@@ -33,6 +33,12 @@ export interface TraceFilters {
   environment: string[];
   name: string[];
   userId: string[];
+  /**
+   * Observation type the trace must contain (span/generation/tool/agent/event).
+   * Lives on `observations`, not `traces`, so it is applied via a subquery rather
+   * than a bare column predicate.
+   */
+  type?: string[];
   tags: string[];
   /** session_id IN (...) */
   sessionId?: string[];
@@ -78,6 +84,12 @@ export function buildTraceFilters(filters: TraceFilters): {
   if (filters.userId.length > 0) {
     clauses.push('user_id IN {fUser:Array(String)}');
     params.fUser = filters.userId;
+  }
+  if (filters.type && filters.type.length > 0) {
+    clauses.push(
+      'id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 AND type IN {fType:Array(String)})',
+    );
+    params.fType = filters.type;
   }
   if (filters.sessionId && filters.sessionId.length > 0) {
     clauses.push('session_id IN {fSession:Array(String)}');

@@ -16,6 +16,7 @@ interface TracesSearch {
   size?: number;
   trace: string;
   env: string[];
+  type: string[];
   name: string[];
   user: string[];
   tags: string[];
@@ -60,6 +61,7 @@ export const Route = createFileRoute('/_app/traces/')({
     size: parsePageSize(search.size),
     trace: typeof search.trace === 'string' ? search.trace : '',
     env: parseStrArray(search.env),
+    type: parseStrArray(search.type),
     name: parseStrArray(search.name),
     user: parseStrArray(search.user),
     tags: parseStrArray(search.tags),
@@ -69,7 +71,8 @@ export const Route = createFileRoute('/_app/traces/')({
 });
 
 function TracesRoute() {
-  const { tenant, q, range, page, size, trace, env, name, user, tags, sort } = Route.useSearch();
+  const { tenant, q, range, page, size, trace, env, type, name, user, tags, sort } =
+    Route.useSearch();
   const navigate = useNavigate({ from: '/traces/' });
   const orderBy = parseSort(sort);
 
@@ -81,7 +84,7 @@ function TracesRoute() {
       page={page}
       pageSize={size ?? DEFAULT_PAGE_SIZE}
       selectedTraceId={trace || null}
-      filters={{ environment: env, name, userId: user, tags }}
+      filters={{ environment: env, type, name, userId: user, tags }}
       orderBy={orderBy}
       onSort={(key) => {
         const dir: SortDirection =
@@ -97,6 +100,7 @@ function TracesRoute() {
             page: 1,
             trace: '',
             env: [],
+            type: [],
             name: [],
             user: [],
             tags: [],
@@ -114,6 +118,7 @@ function TracesRoute() {
           search: (prev) => ({
             ...prev,
             env: patch.environment ?? prev.env,
+            type: patch.type ?? prev.type,
             name: patch.name ?? prev.name,
             user: patch.userId ?? prev.user,
             tags: patch.tags ?? prev.tags,
