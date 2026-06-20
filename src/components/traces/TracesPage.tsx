@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon, Select, Table } from '@clickhouse/click-ui';
 import { useQuery } from '@tanstack/react-query';
 import type { TUser } from 'librechat-data-provider';
@@ -11,7 +12,7 @@ import {
   tracesQueryOptions,
   usersQueryOptions,
 } from '@/server';
-import { formatCost, formatLatency, formatTime, formatTokens } from './format';
+import { formatCost, formatLatency, formatTime, formatTokenCounts, formatTokens } from './format';
 import { TraceDrawer } from './TraceDrawer';
 import { UserCell } from './UserCell';
 
@@ -48,6 +49,56 @@ function MetricCard({ label, value, hint }: { label: string; value: string; hint
       </div>
       <div className="text-2xl font-semibold text-(--cui-color-text-default)">{value}</div>
     </div>
+  );
+}
+
+function EnvBadge({ value }: { value: string }) {
+  if (!value) return <>—</>;
+  return (
+    <span className="max-w-fit truncate rounded-sm bg-(--cui-color-background-muted) px-1 text-xs font-normal text-(--cui-color-text-default)">
+      {value}
+    </span>
+  );
+}
+
+function TokenCell({ row }: { row: t.TraceListItem }) {
+  const text = formatTokenCounts(row.inputTokens, row.outputTokens, row.tokens);
+  if (!text) return <>—</>;
+  return (
+    <span className="font-mono text-xs whitespace-nowrap text-(--cui-color-text-default)">
+      {text}
+    </span>
+  );
+}
+
+/** Renders the tenant dropdown into the global top-nav header (Langfuse project-switcher style). */
+function TenantTopNav({
+  tenant,
+  tenants,
+  onTenant,
+}: {
+  tenant: string;
+  tenants: string[];
+  onTenant: (t: string) => void;
+}) {
+  const localize = useLocalize();
+  const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalEl(document.getElementById('header-actions-portal'));
+  }, []);
+  if (!portalEl) return null;
+  return createPortal(
+    <div style={{ minWidth: 240 }}>
+      <Select
+        value={tenant}
+        onSelect={onTenant}
+        placeholder={localize('com_traces_select_tenant')}
+        label={localize('com_traces_tenant')}
+        options={tenants.map((tn) => ({ value: tn, label: tn }))}
+        disabled={tenants.length === 0}
+      />
+    </div>,
+    portalEl,
   );
 }
 
@@ -93,14 +144,15 @@ export function TracesPage({
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const headers = [
-    { label: localize('com_traces_col_time'), width: '170px' },
-    { label: localize('com_traces_col_name') },
+    { label: localize('com_traces_col_time'), width: '160px' },
+    { label: localize('com_traces_col_name'), width: '180px' },
     { label: localize('com_traces_col_user'), width: '210px' },
-    { label: localize('com_traces_col_model'), width: '200px' },
+    { label: localize('com_traces_environment'), width: '120px' },
     { label: localize('com_traces_col_latency'), width: '90px' },
-    { label: localize('com_traces_col_tokens'), width: '100px' },
+    { label: localize('com_traces_col_tokens'), width: '180px' },
     { label: localize('com_traces_col_cost'), width: '110px' },
-    { label: localize('com_traces_col_spans'), width: '80px' },
+    { label: localize('com_traces_col_model'), width: '200px' },
+    { label: localize('com_traces_metric_observations'), width: '110px' },
   ];
 
   const rows = (tracesQuery.data?.rows ?? []).map((row: t.TraceListItem) => ({
@@ -108,9 +160,13 @@ export function TracesPage({
     onClick: () => onOpenTrace(row.id),
     style: { cursor: 'pointer' },
     items: [
-      { label: formatTime(row.timestamp) },
+      { label: <span className="whitespace-nowrap">{formatTime(row.timestamp)}</span> },
       { label: row.name || '—' },
       { label: <UserCell user={userMap.get(row.userId)} fallback={row.userId} /> },
+      { label: <EnvBadge value={row.environment} /> },
+      { label: <span className="whitespace-nowrap">{formatLatency(row.latencyMs)}</span> },
+      { label: <TokenCell row={row} /> },
+      { label: <span className="whitespace-nowrap">{formatCost(row.cost)}</span> },
       {
         label: row.model ? (
           <span className="truncate text-xs text-(--cui-color-text-default)" title={row.model}>
@@ -120,10 +176,7 @@ export function TracesPage({
           '—'
         ),
       },
-      { label: formatLatency(row.latencyMs) },
-      { label: formatTokens(row.tokens) },
-      { label: formatCost(row.cost) },
-      { label: `${row.observations}` },
+      { label: formatTokens(row.observations) },
     ],
   }));
 
@@ -133,21 +186,7 @@ export function TracesPage({
       aria-label={localize('com_nav_traces')}
       className="flex flex-1 flex-col gap-6 overflow-auto p-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-(--cui-color-text-default)">
-          {localize('com_nav_traces')}
-        </h2>
-        <div style={{ minWidth: 240 }}>
-          <Select
-            value={effectiveTenant}
-            onSelect={onTenant}
-            placeholder={localize('com_traces_select_tenant')}
-            label={localize('com_traces_tenant')}
-            options={tenants.map((tn) => ({ value: tn, label: tn }))}
-            disabled={tenants.length === 0}
-          />
-        </div>
-      </div>
+      <TenantTopNav tenant={effectiveTenant} tenants={tenants} onTenant={onTenant} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard

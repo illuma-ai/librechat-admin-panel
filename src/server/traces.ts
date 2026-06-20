@@ -111,7 +111,8 @@ export const getTracesFn = createServerFn({ method: 'GET' })
     const rows = await chQuery<Record<string, unknown>>(
       `SELECT t.id AS id, t.name AS name, t.user_id AS userId, t.session_id AS sessionId,
               t.environment AS environment, toString(t.timestamp) AS timestamp,
-              o.model AS model, o.cost AS cost, o.tokens AS tokens, o.obs AS observations,
+              o.model AS model, o.cost AS cost, o.tokens AS tokens,
+              o.inTok AS inputTokens, o.outTok AS outputTokens, o.obs AS observations,
               o.gens AS generations, o.tools AS tools, o.latency AS latencyMs
        FROM (
          SELECT id, name, user_id, session_id, environment, timestamp
@@ -122,7 +123,8 @@ export const getTracesFn = createServerFn({ method: 'GET' })
        ) AS t
        LEFT JOIN (
          SELECT trace_id,
-                sum(total_cost) AS cost, sum(total_tokens) AS tokens, count() AS obs,
+                sum(total_cost) AS cost, sum(total_tokens) AS tokens,
+                sum(input_tokens) AS inTok, sum(output_tokens) AS outTok, count() AS obs,
                 countIf(type = 'generation') AS gens, countIf(type = 'tool') AS tools,
                 arrayStringConcat(arrayFilter(x -> x != '', groupUniqArray(model)), ', ') AS model,
                 dateDiff('millisecond', min(start_time), max(end_time)) AS latency
@@ -146,6 +148,8 @@ export const getTracesFn = createServerFn({ method: 'GET' })
         environment: String(r.environment ?? ''),
         cost: toNumber(r.cost),
         tokens: toNumber(r.tokens),
+        inputTokens: toNumber(r.inputTokens),
+        outputTokens: toNumber(r.outputTokens),
         observations: toNumber(r.observations),
         generations: toNumber(r.generations),
         tools: toNumber(r.tools),

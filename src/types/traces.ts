@@ -11,6 +11,8 @@ export interface TraceListItem {
   environment: string;
   cost: number;
   tokens: number;
+  inputTokens: number;
+  outputTokens: number;
   observations: number;
   generations: number;
   tools: number;
