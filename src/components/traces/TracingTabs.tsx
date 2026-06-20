@@ -1,47 +1,63 @@
-import { Tabs } from '@clickhouse/click-ui';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
+import { cn } from '@/utils';
 
 type TracingTab = 'traces' | 'observations';
 
+const TABS: { value: TracingTab; labelKey: string; to: '/traces' | '/observations' }[] = [
+  { value: 'traces', labelKey: 'com_nav_traces', to: '/traces' },
+  { value: 'observations', labelKey: 'com_traces_tab_observations', to: '/observations' },
+];
+
 /**
- * the reference UI Tracing tab bar (Traces / Observations) using the admin panel's
- * click-ui Tabs — same component/styling as the Configuration page. Each tab is a
- * route; switching navigates (Sessions is a separate page, not a tab here).
+ * Tracing tab bar (Traces / Observations) — underline tabs matching the reference
+ * UI and the trace-detail tab bar. Each tab is a route; switching navigates
+ * (Sessions is a separate page, not a tab here). Native buttons, no click-ui.
  */
 export function TracingTabs({ active }: { active: TracingTab }) {
   const localize = useLocalize();
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as {
-    tenant?: string;
-    range?: t.TraceRange;
-  };
+  const search = useSearch({ strict: false }) as { tenant?: string; range?: t.TraceRange };
+
   return (
-    <div className="shrink-0 px-3 pt-2">
-      <Tabs
-        value={active}
-        onValueChange={(value) => {
-          if (value === active) return;
-          // Carry tenant + time range across the tab switch; reset list filters.
-          const next = {
-            tenant: search.tenant ?? '',
-            q: '',
-            range: search.range ?? ('all' as t.TraceRange),
-            page: 1,
-            trace: '',
-          };
-          navigate({ to: value === 'traces' ? '/traces' : '/observations', search: next });
-        }}
-        ariaLabel={localize('com_traces_page_title')}
+    <div className="shrink-0 border-b border-(--cui-color-stroke-default) px-3">
+      <div
+        className="flex items-center gap-4"
+        role="tablist"
+        aria-label={localize('com_traces_page_title')}
       >
-        <Tabs.TriggersList>
-          <Tabs.Trigger value="traces">{localize('com_nav_traces')}</Tabs.Trigger>
-          <Tabs.Trigger value="observations">
-            {localize('com_traces_tab_observations')}
-          </Tabs.Trigger>
-        </Tabs.TriggersList>
-      </Tabs>
+        {TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            role="tab"
+            aria-selected={active === tab.value}
+            onClick={() => {
+              if (tab.value === active) return;
+              // Carry tenant + time range across the tab switch; reset list filters.
+              navigate({
+                to: tab.to,
+                search: {
+                  tenant: search.tenant ?? '',
+                  q: '',
+                  range: search.range ?? ('all' as t.TraceRange),
+                  page: 1,
+                  trace: '',
+                },
+              });
+            }}
+            className={cn(
+              'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium transition-colors',
+              active === tab.value
+                ? 'border-(--cui-color-stroke-intense) text-(--cui-color-text-default)'
+                : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+            )}
+          >
+            {localize(tab.labelKey)}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
