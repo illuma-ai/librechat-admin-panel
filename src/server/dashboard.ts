@@ -141,6 +141,32 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
        GROUP BY name ORDER BY count DESC LIMIT 20`,
       params,
     );
+
+    // Top users by cost — joins each trace's user to its observation cost/tokens.
+    const userRows = await chQuery<Record<string, unknown>>(
+      `SELECT t.user_id AS userId, count(DISTINCT t.id) AS traces,
+              sum(o.cost) AS cost, sum(o.tokens) AS tokens
+       FROM (SELECT argMax(user_id, updated_at) AS user_id, argMax(timestamp, updated_at) AS timestamp, id
+             FROM traces WHERE tenant_id = {t:String}
+             GROUP BY id HAVING argMax(is_deleted, updated_at) = 0) AS t
+       LEFT JOIN (SELECT trace_id, sum(total_cost) AS cost, sum(total_tokens) AS tokens
+                  FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0
+                  GROUP BY trace_id) AS o ON o.trace_id = t.id
+       WHERE t.user_id != '' ${rangeClause(data.range, 't.timestamp')}
+       GROUP BY t.user_id ORDER BY cost DESC LIMIT 10`,
+      params,
+    );
+
+    // Trace-latency percentiles (seconds): per-trace span, then quantiles over traces.
+    const [lat] = await chQuery<Record<string, unknown>>(
+      `SELECT quantile(0.5)(lat) AS p50, quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
+       FROM (SELECT dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
+             FROM observations FINAL
+             WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}
+             GROUP BY trace_id)`,
+      params,
+    );
+
     return {
       modelUsage: modelRows.map((r) => ({
         model: String(r.model ?? ''),
@@ -154,6 +180,17 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
         count: toNumber(r.count),
         average: r.average === null || r.average === undefined ? null : toNumber(r.average),
       })),
+      userConsumption: userRows.map((r) => ({
+        userId: String(r.userId ?? ''),
+        traces: toNumber(r.traces),
+        cost: toNumber(r.cost),
+        tokens: toNumber(r.tokens),
+      })),
+      latency: {
+        p50: toNumber(lat?.p50),
+        p95: toNumber(lat?.p95),
+        p99: toNumber(lat?.p99),
+      },
     };
   });
 

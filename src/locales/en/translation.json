@@ -1063,6 +1063,8 @@
   "com_dash_w_observations": "Observations by time",
   "com_dash_w_model_usage": "Model usage (by cost)",
   "com_dash_w_scores": "Scores",
+  "com_dash_w_user_consumption": "User consumption (by cost)",
+  "com_dash_w_latency": "Trace latency percentiles",
   "com_dash_config_desc": "View and manage instance configuration settings.",
   "com_dash_access_desc": "Create and manage groups, assign roles, and fine-tune member permissions across your organization.",
   "com_dash_grants_desc": "Control which capabilities each role has access to, from reading configs to managing users.",

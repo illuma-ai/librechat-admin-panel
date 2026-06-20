@@ -41,10 +41,27 @@ export interface ScoreDistributionRow {
   average: number | null;
 }
 
+/** Per-user rollup for the User Consumption widget. */
+export interface UserConsumptionRow {
+  userId: string;
+  traces: number;
+  cost: number;
+  tokens: number;
+}
+
+/** Trace-latency percentiles (seconds) for the Latency widget. */
+export interface LatencyPercentiles {
+  p50: number;
+  p95: number;
+  p99: number;
+}
+
 /** Breakdown widgets bundle for the dashboard. */
 export interface DashboardBreakdowns {
   modelUsage: ModelUsageRow[];
   scoreDistribution: ScoreDistributionRow[];
+  userConsumption: UserConsumptionRow[];
+  latency: LatencyPercentiles;
 }
 
 /** A single plotted point for the time-series chart (label pre-formatted). */

@@ -69,6 +69,13 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
     value: sc.count,
     display: sc.count.toLocaleString(),
   }));
+  const userRows: t.BarRow[] = (breakdowns.data?.userConsumption ?? []).map((u) => ({
+    label: u.userId,
+    value: u.cost,
+    display: formatCost(u.cost),
+  }));
+  const latency = breakdowns.data?.latency;
+  const formatSeconds = (n: number) => `${n.toFixed(2)}s`;
 
   return (
     <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-4">
@@ -125,6 +132,16 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
         </Widget>
         <Widget title={localize('com_dash_w_scores')}>
           <BarList rows={scoreRows} />
+        </Widget>
+        <Widget title={localize('com_dash_w_user_consumption')}>
+          <BarList rows={userRows} />
+        </Widget>
+        <Widget title={localize('com_dash_w_latency')}>
+          <div className="grid grid-cols-3 gap-3">
+            <StatCard label="p50" value={formatSeconds(latency?.p50 ?? 0)} />
+            <StatCard label="p95" value={formatSeconds(latency?.p95 ?? 0)} />
+            <StatCard label="p99" value={formatSeconds(latency?.p99 ?? 0)} />
+          </div>
         </Widget>
       </div>
     </section>
