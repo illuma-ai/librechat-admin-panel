@@ -1211,6 +1211,8 @@
   "com_traces_other_usage": "Other usage",
   "com_traces_total_usage": "Total usage",
   "com_traces_no_graph": "No graph data available",
+  "com_traces_fullscreen": "Fullscreen",
+  "com_traces_exit_fullscreen": "Exit fullscreen",
   "com_traces_zoom_in": "Zoom in",
   "com_traces_zoom_out": "Zoom out",
   "com_traces_zoom_reset": "Reset view",

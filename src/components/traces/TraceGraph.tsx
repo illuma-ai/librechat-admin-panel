@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DataSet } from 'vis-data';
 import { Network } from 'vis-network/standalone';
-import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { Maximize2, Minimize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
+import { cn } from '@/utils';
 import { typePalette } from './observationPalette';
 
 /** vis-network node color spec (border + fill + highlight). */
@@ -112,6 +113,17 @@ export function TraceGraph({ graph }: { graph: t.TraceGraph }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<Network | null>(null);
   const [hovering, setHovering] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Esc exits fullscreen; mirrors the reference's expandable graph canvas.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fullscreen]);
 
   const visNodes = useMemo<VisNode[]>(
     () =>
@@ -178,12 +190,21 @@ export function TraceGraph({ graph }: { graph: t.TraceGraph }) {
 
   return (
     <div
-      className="relative h-full min-h-50 w-full"
+      className={cn(
+        fullscreen
+          ? 'fixed inset-0 z-50 bg-(--ui-color-background-default) p-4'
+          : 'relative h-full min-h-50 w-full',
+      )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      {hovering ? (
+      {hovering || fullscreen ? (
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+          <ZoomButton
+            icon={fullscreen ? Minimize2 : Maximize2}
+            title={localize(fullscreen ? 'com_traces_exit_fullscreen' : 'com_traces_fullscreen')}
+            onClick={() => setFullscreen((v) => !v)}
+          />
           <ZoomButton
             icon={ZoomIn}
             title={localize('com_traces_zoom_in')}
