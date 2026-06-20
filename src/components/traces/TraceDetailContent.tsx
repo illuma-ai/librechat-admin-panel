@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Download, FoldVertical, UnfoldVertical } from 'lucide-react';
+import { Download, FoldVertical, Network, UnfoldVertical } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { EmptyState, LoadingState } from '@/components/shared';
 import { traceDetailQueryOptions } from '@/server';
 import { TraceDetailPane } from './TraceDetailPane';
+import { TraceGraph } from './TraceGraph';
 import { TraceSequence } from './TraceSequence';
 
 interface TraceDetailContentProps {
@@ -56,6 +57,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
   const [timeline, setTimeline] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
   const [collapseSignal, setCollapseSignal] = useState(0);
   const [expandSignal, setExpandSignal] = useState(0);
 
@@ -79,6 +81,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
 
   const selectedNode = selectedId ? (nodeById.get(selectedId) ?? null) : null;
   const isRoot = !selectedNode || selectedNode.id === rootId;
+  const graphAvailable = data.graph.nodes.length > 0;
 
   return (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
@@ -119,6 +122,23 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
           >
             <Download className="size-3.5" />
           </button>
+          {graphAvailable ? (
+            <button
+              type="button"
+              onClick={() => setShowGraph((v) => !v)}
+              title={localize('com_traces_tab_graph')}
+              aria-label={localize('com_traces_tab_graph')}
+              aria-pressed={showGraph}
+              className={cn(
+                'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm',
+                showGraph
+                  ? 'bg-(--cui-color-background-muted) text-(--cui-color-text-default)'
+                  : 'text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)',
+              )}
+            >
+              <Network className="size-3.5" />
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => setTimeline((v) => !v)}
@@ -132,6 +152,13 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             {localize('com_traces_timeline')}
           </button>
         </div>
+        {/* Langfuse renders the agent graph as toggleable secondary content above the
+            observation tree in the left navigation panel (not as a right-pane tab). */}
+        {showGraph && graphAvailable ? (
+          <div className="h-2/5 min-h-0 shrink-0 overflow-hidden border-b border-(--cui-color-stroke-default)">
+            <TraceGraph graph={data.graph} />
+          </div>
+        ) : null}
         <div className="min-h-0 flex-1 overflow-auto">
           <TraceSequence
             observations={data.observations}
@@ -144,13 +171,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
         </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">
-        <TraceDetailPane
-          trace={data.trace}
-          totals={totals}
-          node={selectedNode}
-          isRoot={isRoot}
-          graph={data.graph}
-        />
+        <TraceDetailPane trace={data.trace} totals={totals} node={selectedNode} isRoot={isRoot} />
       </div>
     </div>
   );

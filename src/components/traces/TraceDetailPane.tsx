@@ -4,12 +4,11 @@ import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { Markdown } from '@/components/shared';
-import { TraceGraph } from './TraceGraph';
 import { ScoresTab } from './ScoresTab';
 import { LogViewTab } from './LogViewTab';
 import { TypeIcon } from './traceIcons';
 import type { TraceScore } from './ScoresTab';
-import { formatCost, formatLatency, formatTime, formatTokenCounts } from './format';
+import { formatCost, formatLatency, formatTimestampLong, formatTokenCounts } from './format';
 
 interface TraceTotals {
   latencyMs: number;
@@ -24,7 +23,6 @@ interface TraceDetailPaneProps {
   totals: TraceTotals;
   node: t.ObservationNode | null;
   isRoot: boolean;
-  graph: t.TraceGraph;
   /** Feedback/eval scores for the trace; defaults to [] until getTraceScoresFn is wired. */
   scores?: TraceScore[];
 }
@@ -127,29 +125,23 @@ function metadataRows(
 }
 
 /** Langfuse trace/observation detail pane: badges → Preview (Tags, Input, Output, Metadata). */
-type TabId = 'preview' | 'log' | 'scores' | 'graph';
+type TabId = 'preview' | 'scores' | 'log';
+
+/** Tab order mirrors Langfuse: Preview, Scores, Log View. */
+const TAB_IDS: readonly TabId[] = ['preview', 'scores', 'log'];
 
 /** i18n key per tab — keeps the underline tab bar declarative. */
 const TAB_LABEL_KEYS: Record<TabId, string> = {
   preview: 'com_traces_tab_preview',
-  log: 'com_traces_tab_log',
   scores: 'com_traces_tab_scores',
-  graph: 'com_traces_tab_graph',
+  log: 'com_traces_tab_log',
 };
 
-export function TraceDetailPane({
-  trace,
-  totals,
-  node,
-  isRoot,
-  graph,
-  scores = [],
-}: TraceDetailPaneProps) {
+export function TraceDetailPane({ trace, totals, node, isRoot, scores = [] }: TraceDetailPaneProps) {
   const localize = useLocalize();
   const [view, setView] = useState<ViewMode>('pretty');
   const [tab, setTab] = useState<TabId>('preview');
-  const showGraph = isRoot && graph.nodes.length > 0;
-  const activeTab: TabId = tab === 'graph' && !showGraph ? 'preview' : tab;
+  const activeTab: TabId = tab;
 
   const { inputMessages, outputMessages } = useMemo(() => {
     if (!node) return { inputMessages: [], outputMessages: [] };
@@ -177,7 +169,9 @@ export function TraceDetailPane({
           <TypeIcon type={node ? node.type : 'trace'} isRoot={isRoot} />
           <span className="truncate font-medium text-(--cui-color-text-default)">{title}</span>
         </div>
-        <div className="text-sm text-(--cui-color-text-muted)">{formatTime(trace.timestamp)}</div>
+        <div className="text-sm text-(--cui-color-text-muted)">
+          {formatTimestampLong(trace.timestamp)}
+        </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge>
             {localize('com_traces_col_latency')}: {formatLatency(latencyMs)}
@@ -193,7 +187,7 @@ export function TraceDetailPane({
           {trace.userId ? (
             <Badge dark>
               <span className="inline-flex items-center gap-1">
-                {localize('com_traces_col_user')}: {trace.userId}
+                {localize('com_traces_user_id')}: {trace.userId}
                 <ExternalLink className="size-3 shrink-0" />
               </span>
             </Badge>
@@ -201,6 +195,16 @@ export function TraceDetailPane({
           {trace.environment ? (
             <Badge>
               {localize('com_traces_environment')}: {trace.environment}
+            </Badge>
+          ) : null}
+          {trace.release ? (
+            <Badge>
+              {localize('com_traces_col_release')}: {trace.release}
+            </Badge>
+          ) : null}
+          {trace.version ? (
+            <Badge>
+              {localize('com_traces_col_version')}: {trace.version}
             </Badge>
           ) : null}
           {node?.model ? <Badge>{node.model}</Badge> : null}
@@ -224,23 +228,21 @@ export function TraceDetailPane({
       {/* tabs + view toggle */}
       <div className="flex shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) px-3">
         <div className="flex items-center gap-3">
-          {(['preview', 'log', 'scores', 'graph'] as const)
-            .filter((id) => id !== 'graph' || showGraph)
-            .map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setTab(id)}
-                className={cn(
-                  'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium',
-                  activeTab === id
-                    ? 'border-(--cui-color-stroke-intense) text-(--cui-color-text-default)'
-                    : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
-                )}
-              >
-                {localize(TAB_LABEL_KEYS[id])}
-              </button>
-            ))}
+          {TAB_IDS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={cn(
+                'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium',
+                activeTab === id
+                  ? 'border-(--cui-color-stroke-intense) text-(--cui-color-text-default)'
+                  : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+              )}
+            >
+              {localize(TAB_LABEL_KEYS[id])}
+            </button>
+          ))}
         </div>
         {activeTab === 'preview' ? (
           <div className="flex items-center gap-0.5 rounded-md bg-(--cui-color-background-muted) p-0.5 text-xs">
@@ -263,11 +265,6 @@ export function TraceDetailPane({
         ) : null}
       </div>
 
-      {activeTab === 'graph' ? (
-        <div className="min-h-0 flex-1 overflow-auto">
-          <TraceGraph graph={graph} />
-        </div>
-      ) : null}
       {activeTab === 'log' ? (
         <div className="min-h-0 flex-1 overflow-auto">
           <LogViewTab node={node} trace={trace} isRoot={isRoot} />

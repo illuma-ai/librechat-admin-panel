@@ -11,6 +11,18 @@ export function formatTime(value: string): string {
   return Number.isNaN(d.getTime()) ? value : d.toLocaleString();
 }
 
+/** Langfuse detail timestamp — local `YYYY-MM-DD HH:mm:ss.SSS` with millisecond precision. */
+export function formatTimestampLong(value: string): string {
+  if (!value) return '—';
+  const d = parseChDate(value);
+  if (Number.isNaN(d.getTime())) return value;
+  const p = (n: number, len = 2) => String(n).padStart(len, '0');
+  return (
+    `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ` +
+    `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`
+  );
+}
+
 /** Langfuse `usdFormatter` — USD currency, 2–6 fraction digits. */
 export function usdFormatter(
   n: number,

@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { Select } from '@clickhouse/click-ui';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from 'lucide-react';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
-import { Pagination, SearchInput } from '@/components/shared';
+import { SearchInput } from '@/components/shared';
 import { AutoRefreshControl, type RefreshInterval } from './AutoRefreshControl';
 import { SearchTypeSelect, type SearchType } from './SearchTypeSelect';
 
@@ -15,6 +22,10 @@ const RANGE_OPTIONS: { value: t.TraceRange; labelKey: string }[] = [
   { value: '30d', labelKey: 'com_traces_range_30d' },
   { value: 'all', labelKey: 'com_traces_range_all' },
 ];
+
+/** Langfuse-parity rows-per-page options. */
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50] as const;
+const DEFAULT_PAGE_SIZE = 50;
 
 interface TracingShellProps {
   tenant: string;
@@ -27,6 +38,13 @@ interface TracingShellProps {
   page: number;
   totalPages: number;
   onPage: (page: number) => void;
+  /**
+   * Rows-per-page value for the Langfuse-parity pagination bar. Presentational:
+   * when omitted the bar shows the default page size and the selector is a no-op,
+   * so existing callers that don't paginate by size keep working unchanged.
+   */
+  pageSize?: number;
+  onPageSize?: (pageSize: number) => void;
   searchPlaceholder: string;
   /**
    * Search-scope mode shown in the SearchTypeSelect next to the search box.
@@ -64,6 +82,8 @@ export function TracingShell({
   page,
   totalPages,
   onPage,
+  pageSize,
+  onPageSize,
   searchPlaceholder,
   searchType,
   onSearchType,
@@ -80,11 +100,16 @@ export function TracingShell({
     useIsFetching({ queryKey: ['traces'] }) +
     useIsFetching({ queryKey: ['observations'] }) +
     useIsFetching({ queryKey: ['sessions'] });
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<RefreshInterval>(null);
   const [internalSearchType, setInternalSearchType] = useState<SearchType>('metadata');
   const activeSearchType = searchType ?? internalSearchType;
   const handleSearchType = onSearchType ?? setInternalSearchType;
+
+  const activePageSize = pageSize ?? DEFAULT_PAGE_SIZE;
+  const lastPage = Math.max(totalPages, 1);
+  const isFirstPage = page <= 1;
+  const isLastPage = page >= lastPage;
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['traces'] });
@@ -163,8 +188,65 @@ export function TracingShell({
         <div className="flex min-h-0 flex-1 flex-col overflow-auto">{children}</div>
       </div>
 
-      <div className="flex shrink-0 justify-end border-t border-(--cui-color-stroke-default) px-3 py-1.5">
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPage} />
+      {/* Pagination (Langfuse parity): rows-per-page · page X of Y · «‹›» */}
+      <div className="flex shrink-0 items-center justify-end gap-6 border-t border-(--cui-color-stroke-default) px-3 py-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium whitespace-nowrap text-(--cui-color-text-muted)">
+            {localize('com_traces_rows_per_page')}
+          </span>
+          <div className="w-17.5">
+            <Select
+              value={`${activePageSize}`}
+              onSelect={(value) => onPageSize?.(Number(value))}
+              disabled={!onPageSize}
+              options={PAGE_SIZE_OPTIONS.map((size) => ({
+                value: `${size}`,
+                label: `${size}`,
+              }))}
+            />
+          </div>
+        </div>
+        <span className="text-sm font-medium whitespace-nowrap text-(--cui-color-text-default)">
+          {localize('com_traces_page_of', { page, total: lastPage })}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onPage(1)}
+            disabled={isFirstPage}
+            aria-label={localize('com_traces_first_page')}
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronsLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onPage(page - 1)}
+            disabled={isFirstPage}
+            aria-label={localize('com_traces_prev_page')}
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onPage(page + 1)}
+            disabled={isLastPage}
+            aria-label={localize('com_traces_next_page')}
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onPage(lastPage)}
+            disabled={isLastPage}
+            aria-label={localize('com_traces_last_page')}
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronsRight className="size-4" />
+          </button>
+        </div>
       </div>
       {drawer}
     </div>
