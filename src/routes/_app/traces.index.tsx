@@ -2,7 +2,8 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type * as t from '@/types';
 import { TracesPage } from '@/components/traces';
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50];
+const DEFAULT_PAGE_SIZE = 50;
 const RANGES: t.TraceRange[] = ['24h', '7d', '30d', 'all'];
 
 interface TracesSearch {
@@ -10,6 +11,8 @@ interface TracesSearch {
   q: string;
   range: t.TraceRange;
   page: number;
+  /** Optional in navigation (defaults to DEFAULT_PAGE_SIZE); always set by validateSearch. */
+  size?: number;
   trace: string;
   env: string[];
   name: string[];
@@ -19,6 +22,11 @@ interface TracesSearch {
 
 function parseRange(value: unknown): t.TraceRange {
   return RANGES.includes(value as t.TraceRange) ? (value as t.TraceRange) : 'all';
+}
+
+function parsePageSize(value: unknown): number {
+  const n = Number(value);
+  return PAGE_SIZE_OPTIONS.includes(n) ? n : DEFAULT_PAGE_SIZE;
 }
 
 function parseStrArray(value: unknown): string[] {
@@ -33,6 +41,7 @@ export const Route = createFileRoute('/_app/traces/')({
     q: typeof search.q === 'string' ? search.q : '',
     range: parseRange(search.range),
     page: Math.max(1, Number(search.page) || 1),
+    size: parsePageSize(search.size),
     trace: typeof search.trace === 'string' ? search.trace : '',
     env: parseStrArray(search.env),
     name: parseStrArray(search.name),
@@ -43,7 +52,7 @@ export const Route = createFileRoute('/_app/traces/')({
 });
 
 function TracesRoute() {
-  const { tenant, q, range, page, trace, env, name, user, tags } = Route.useSearch();
+  const { tenant, q, range, page, size, trace, env, name, user, tags } = Route.useSearch();
   const navigate = useNavigate({ from: '/traces/' });
 
   return (
@@ -52,7 +61,7 @@ function TracesRoute() {
       search={q}
       range={range}
       page={page}
-      pageSize={PAGE_SIZE}
+      pageSize={size ?? DEFAULT_PAGE_SIZE}
       selectedTraceId={trace || null}
       filters={{ environment: env, name, userId: user, tags }}
       onTenant={(value) =>
@@ -73,6 +82,7 @@ function TracesRoute() {
       onSearch={(value) => navigate({ search: (prev) => ({ ...prev, q: value, page: 1 }) })}
       onRange={(value) => navigate({ search: (prev) => ({ ...prev, range: value, page: 1 }) })}
       onPage={(value) => navigate({ search: (prev) => ({ ...prev, page: value }) })}
+      onPageSize={(value) => navigate({ search: (prev) => ({ ...prev, size: value, page: 1 }) })}
       onOpenTrace={(value) => navigate({ search: (prev) => ({ ...prev, trace: value }) })}
       onCloseTrace={() => navigate({ search: (prev) => ({ ...prev, trace: '' }) })}
       onFilters={(patch) =>

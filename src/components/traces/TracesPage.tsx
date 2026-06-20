@@ -37,6 +37,7 @@ interface TracesPageProps {
   onSearch: (search: string) => void;
   onRange: (range: t.TraceRange) => void;
   onPage: (page: number) => void;
+  onPageSize: (pageSize: number) => void;
   onOpenTrace: (traceId: string) => void;
   onCloseTrace: () => void;
   onFilters: (patch: Partial<t.TraceFacetFilters>) => void;
@@ -54,6 +55,7 @@ export function TracesPage({
   onSearch,
   onRange,
   onPage,
+  onPageSize,
   onOpenTrace,
   onCloseTrace,
   onFilters,
@@ -262,6 +264,8 @@ export function TracesPage({
       page={page}
       totalPages={totalPages}
       onPage={onPage}
+      pageSize={pageSize}
+      onPageSize={onPageSize}
       searchPlaceholder={localize('com_traces_search_placeholder')}
       activeFilterCount={
         filters.environment.length +
