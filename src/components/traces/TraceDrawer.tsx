@@ -20,9 +20,9 @@ export function TraceDrawer({ tenant, traceId, onClose }: TraceDrawerProps) {
       }}
     >
       <Flyout.Content strategy="fixed" width="min(1180px, 96vw)" closeOnInteractOutside showOverlay>
-        <Flyout.Header title={localize('com_traces_detail')} showClose showSeparator />
+        <Flyout.Header title={localize('com_traces_detail')} showClose />
         <Flyout.Body>
-          <div className="-mx-4 -mb-4 flex h-full min-h-0 flex-col">
+          <div className="flex h-full min-h-0 flex-col">
             {traceId ? <TraceDetailContent tenant={tenant} traceId={traceId} /> : null}
           </div>
         </Flyout.Body>

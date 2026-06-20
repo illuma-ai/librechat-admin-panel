@@ -1,17 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Icon, Select, Table } from '@clickhouse/click-ui';
+import { Select, Table } from '@clickhouse/click-ui';
 import { useQuery } from '@tanstack/react-query';
 import type { TUser } from 'librechat-data-provider';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { EmptyState, Pagination, SearchInput } from '@/components/shared';
-import {
-  tenantsQueryOptions,
-  traceMetricsQueryOptions,
-  tracesQueryOptions,
-  usersQueryOptions,
-} from '@/server';
+import { tenantsQueryOptions, tracesQueryOptions, usersQueryOptions } from '@/server';
 import { formatCost, formatLatency, formatTime, formatTokenCounts, formatTokens } from './format';
 import { TraceDrawer } from './TraceDrawer';
 import { UserCell } from './UserCell';
@@ -37,20 +32,6 @@ const RANGE_OPTIONS: { value: t.TraceRange; labelKey: string }[] = [
   { value: '30d', labelKey: 'com_traces_range_30d' },
   { value: 'all', labelKey: 'com_traces_range_all' },
 ];
-
-function MetricCard({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) p-4">
-      <div className="flex items-center gap-1 text-xs font-medium text-(--cui-color-text-muted)">
-        <span>{label}</span>
-        <span title={hint} aria-label={hint} className="inline-flex cursor-help">
-          <Icon name="information" size="sm" />
-        </span>
-      </div>
-      <div className="text-2xl font-semibold text-(--cui-color-text-default)">{value}</div>
-    </div>
-  );
-}
 
 function EnvBadge({ value }: { value: string }) {
   if (!value) return <>—</>;
@@ -126,7 +107,6 @@ export function TracesPage({
     if (!tenant && tenants.length > 0) onTenant(tenants[0]);
   }, [tenant, tenants, onTenant]);
 
-  const metricsQuery = useQuery(traceMetricsQueryOptions(effectiveTenant));
   const tracesQuery = useQuery(
     tracesQueryOptions({ tenantId: effectiveTenant, search, range, page, pageSize }),
   );
@@ -139,7 +119,6 @@ export function TracesPage({
     return map;
   }, [usersQuery.data]);
 
-  const metrics = metricsQuery.data;
   const total = tracesQuery.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -187,29 +166,6 @@ export function TracesPage({
       className="flex flex-1 flex-col gap-6 overflow-auto p-6"
     >
       <TenantTopNav tenant={effectiveTenant} tenants={tenants} onTenant={onTenant} />
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <MetricCard
-          label={localize('com_traces_metric_traces')}
-          value={formatTokens(metrics?.traces ?? 0)}
-          hint={localize('com_traces_metric_traces_hint')}
-        />
-        <MetricCard
-          label={localize('com_traces_metric_observations')}
-          value={formatTokens(metrics?.observations ?? 0)}
-          hint={localize('com_traces_metric_observations_hint')}
-        />
-        <MetricCard
-          label={localize('com_traces_metric_tokens')}
-          value={formatTokens(metrics?.totalTokens ?? 0)}
-          hint={localize('com_traces_metric_tokens_hint')}
-        />
-        <MetricCard
-          label={localize('com_traces_metric_cost')}
-          value={formatCost(metrics?.totalCost ?? 0)}
-          hint={localize('com_traces_metric_cost_hint')}
-        />
-      </div>
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex-1" style={{ minWidth: 240 }}>
