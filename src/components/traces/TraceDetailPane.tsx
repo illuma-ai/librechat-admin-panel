@@ -26,7 +26,7 @@ interface TraceDetailPaneProps {
   observations: t.ObservationNode[];
   /** Whether the left nav panel is collapsed (drives the header panel-toggle icon). */
   navCollapsed?: boolean;
-  /** Collapse/expand the left nav panel (Langfuse header panel-toggle). */
+  /** Collapse/expand the left nav panel (the reference UI header panel-toggle). */
   onToggleNav?: () => void;
   /** Feedback/eval scores for the trace; defaults to [] until getTraceScoresFn is wired. */
   scores?: TraceScore[];
@@ -34,7 +34,7 @@ interface TraceDetailPaneProps {
 
 type ViewMode = 'pretty' | 'json';
 
-/** Langfuse `variant="tertiary"` badge — light gray pill. */
+/** the reference `variant="tertiary"` badge — light gray pill. */
 function Badge({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
     <span
@@ -108,10 +108,10 @@ function metadataRows(
   return rows;
 }
 
-/** Langfuse trace/observation detail pane: badges → Preview (Tags, Input, Output, Metadata). */
+/** reference trace/observation detail pane: badges → Preview (Tags, Input, Output, Metadata). */
 type TabId = 'preview' | 'scores' | 'log';
 
-/** Tab order mirrors Langfuse: Preview, Scores, Log View. */
+/** Tab order mirrors reference: Preview, Scores, Log View. */
 const TAB_IDS: readonly TabId[] = ['preview', 'scores', 'log'];
 
 /** i18n key per tab — keeps the underline tab bar declarative. */
@@ -156,7 +156,7 @@ export function TraceDetailPane({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* header: title + timestamp + badges (Langfuse TraceDetailViewHeader: p-2 space-y-2 gap-1) */}
+      {/* header: title + timestamp + badges (the reference detail header: p-2 space-y-2 gap-1) */}
       <div className="shrink-0 space-y-2 border-b border-(--cui-color-stroke-default) p-2">
         <div className="flex w-full flex-row items-center gap-1">
           {onToggleNav ? (

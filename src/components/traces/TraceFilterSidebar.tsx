@@ -10,7 +10,7 @@ import { traceFilterOptionsQueryOptions } from '@/server';
 import { TypeIcon } from './traceIcons';
 import { formatTokens } from './format';
 
-/** Array-membership operator for the tags facet (Langfuse SOME/ALL/NONE). */
+/** Array-membership operator for the tags facet (the reference UI SOME/ALL/NONE). */
 type TagOperator = 'any of' | 'all of' | 'none of';
 
 /** Categorical facet display mode: pick from options, or free-text contains rules. */
@@ -59,7 +59,7 @@ function extraOptions(
 
 /**
  * Info-icon popover used next to facet labels that warrant a short description
- * (Langfuse renders a ⓘ next to several facets). Built on the click-ui Tooltip
+ * (the reference UI renders a ⓘ next to several facets). Built on the click-ui Tooltip
  * compound component; the codebase convention is an info-icon popover, never
  * plain inline description text.
  */
@@ -200,7 +200,7 @@ function TextRuleSection({
 }
 
 /**
- * A categorical facet: collapsible header + checkbox list with counts (Langfuse).
+ * A categorical facet: collapsible header + checkbox list with counts (reference).
  * Optionally renders a SELECT/TEXT mode switch and a SOME/ALL/NONE operator toggle
  * (the operator toggle is meaningful only for the multi-valued `tags` column).
  */
@@ -407,9 +407,9 @@ interface TraceFilterSidebarProps {
 }
 
 /**
- * Langfuse left filter sidebar: "Filters" header + Clear all + categorical facets.
+ * the reference UI left filter sidebar: "Filters" header + Clear all + categorical facets.
  *
- * Facet order mirrors Langfuse traces-config: Environment, Name, User, Session ID,
+ * Facet order mirrors reference traces-config: Environment, Name, User, Session ID,
  * Release, Version, Tags. Environment/Name/User/Tags persist through the parent's
  * `onChange(patch)` (backed by `TraceFacetFilters`). Session ID / Release / Version,
  * the tags operator, and TEXT-mode rules are LOCAL state for now — see the report

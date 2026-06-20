@@ -8,7 +8,7 @@ interface TypeVisual {
 }
 
 /**
- * Observation type → icon + color, mirroring Langfuse's `ItemBadge` map:
+ * Observation type → icon + color, mirroring the reference's `ItemBadge` map:
  * TRACE = ListTree/dark-green, GENERATION = Fan/magenta, SPAN = MoveHorizontal/blue,
  * EVENT = CircleDot/green, TOOL = Wrench/orange, AGENT = Bot/purple.
  */
@@ -29,7 +29,7 @@ export function typeVisual(type: string, isRoot = false): TypeVisual {
 }
 
 /**
- * Langfuse `ItemBadge` — a bordered box (neutral border, page background) holding
+ * the reference `ItemBadge` — a bordered box (neutral border, page background) holding
  * a colored type icon. `isSmall` renders the compact tree variant (icon only).
  */
 export function TypeIcon({

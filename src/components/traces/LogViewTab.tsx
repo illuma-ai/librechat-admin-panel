@@ -21,7 +21,7 @@ interface FlatLogRow {
 
 /**
  * Depth-first flatten of the observation forest, preserving tree order and capturing
- * per-row indent depth + ancestor guide lines (mirrors Langfuse `flattenTreeOrder`).
+ * per-row indent depth + ancestor guide lines (mirrors the reference `flattenTreeOrder`).
  */
 function flattenForest(
   nodes: t.ObservationNode[],
@@ -49,7 +49,7 @@ function prettyJson(value: string): string {
   }
 }
 
-/** Level chip — only rendered for ERROR/WARNING (Langfuse `level` highlight). */
+/** Level chip — only rendered for ERROR/WARNING (the reference `level` highlight). */
 function LevelChip({ level }: { level: string }) {
   const upper = level.toUpperCase();
   if (upper !== 'ERROR' && upper !== 'WARNING') return null;
@@ -209,7 +209,7 @@ function LogRow({ row }: { row: FlatLogRow }) {
 }
 
 /**
- * Langfuse "Log View" tab — a flattened chronological/tree-order log of ALL observations
+ * the reference "Log View" tab — a flattened chronological/tree-order log of ALL observations
  * in the trace. Each row shows the type icon, name, level, and latency; expanding a row
  * reveals that observation's Input then Output (chat-message list or pretty JSON).
  */

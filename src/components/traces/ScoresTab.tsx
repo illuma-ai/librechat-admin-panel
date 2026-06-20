@@ -3,7 +3,7 @@ import { formatTimestamp } from './format';
 
 /**
  * A feedback/eval score attached to a trace.
- * Mirrors Langfuse's `ScoreDomain` projection used by the trace Scores tab:
+ * Mirrors the reference's `ScoreDomain` projection used by the trace Scores tab:
  * numeric scores carry `value`, categorical/boolean scores carry `stringValue`.
  */
 export interface TraceScore {
@@ -32,7 +32,7 @@ function displayValue(score: TraceScore): string {
   );
 }
 
-/** Langfuse trace Scores tab — a flat table of feedback/eval scores. */
+/** reference trace Scores tab — a flat table of feedback/eval scores. */
 export function ScoresTab({ scores }: ScoresTabProps) {
   const localize = useLocalize();
 

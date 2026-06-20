@@ -104,7 +104,7 @@ export function TracesPage({
   const nextTrace =
     selectedIndex >= 0 && selectedIndex < rows.length - 1 ? rows[selectedIndex + 1] : undefined;
 
-  // Langfuse column order + default visibility (defaultHidden columns appear in
+  // the reference UI column order + default visibility (defaultHidden columns appear in
   // the Columns menu but are hidden until enabled).
   const columns: DataTableColumn<t.TraceListItem>[] = [
     {

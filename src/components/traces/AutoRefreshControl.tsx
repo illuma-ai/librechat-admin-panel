@@ -4,7 +4,7 @@ import { RefreshCw, ChevronDown } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 
-/** Auto-refresh interval options, mirroring Langfuse: Off / 30s / 1m / 5m / 15m. */
+/** Auto-refresh interval options, mirroring reference: Off / 30s / 1m / 5m / 15m. */
 export type RefreshInterval = null | 30_000 | 60_000 | 300_000 | 900_000;
 
 const REFRESH_INTERVALS: { value: RefreshInterval; labelKey: string }[] = [
@@ -24,7 +24,7 @@ interface AutoRefreshControlProps {
 
 /**
  * Split control: a manual Refresh icon button joined to a dropdown that selects
- * an auto-refresh interval (Off/30s/1m/5m/15m), mirroring Langfuse's
+ * an auto-refresh interval (Off/30s/1m/5m/15m), mirroring the reference's
  * `DataTableRefreshButton`. While an interval is active, `onRefresh` fires on a
  * timer; the timer is cleared on interval change and on unmount.
  */

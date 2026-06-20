@@ -3,7 +3,7 @@ import { Rows4, Rows3, Rows2 } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 
-/** Row density values, mirroring Langfuse's `s | m | l` row-height switch. */
+/** Row density values, mirroring the reference's `s | m | l` row-height switch. */
 export type RowHeight = 's' | 'm' | 'l';
 
 const ROW_ICONS = { s: Rows4, m: Rows3, l: Rows2 } as const;
@@ -21,7 +21,7 @@ interface RowHeightSwitchProps {
 
 /**
  * Compact row-height control (lucide `Rows3` trigger → Small/Medium/Large menu),
- * matching Langfuse's `DataTableRowHeightSwitch`. Controlled via `value`/`onChange`.
+ * matching the reference's `DataTableRowHeightSwitch`. Controlled via `value`/`onChange`.
  */
 export function RowHeightSwitch({ value, onChange }: RowHeightSwitchProps) {
   const localize = useLocalize();

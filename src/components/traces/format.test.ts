@@ -30,7 +30,7 @@ describe('formatTime', () => {
   });
 });
 
-describe('formatTimestamp (Langfuse table date)', () => {
+describe('formatTimestamp (reference table date)', () => {
   it('renders local `YYYY-MM-DD HH:mm:ss` with no milliseconds', () => {
     expect(formatTimestamp('2026-06-19 04:37:35.123')).toMatch(
       /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
@@ -43,7 +43,7 @@ describe('formatTimestamp (Langfuse table date)', () => {
   });
 });
 
-describe('formatTimestampLong (Langfuse detail date)', () => {
+describe('formatTimestampLong (reference detail date)', () => {
   it('renders local `YYYY-MM-DD HH:mm:ss.SSS` with millisecond precision', () => {
     expect(formatTimestampLong('2026-06-19 04:37:35.007')).toMatch(
       /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$/,
@@ -63,7 +63,7 @@ describe('usdFormatter', () => {
   });
 });
 
-describe('formatCost (Langfuse costFormatter)', () => {
+describe('formatCost (the reference UI costFormatter)', () => {
   it('renders $0.00 for zero/falsy cost', () => {
     expect(formatCost(0)).toBe('$0.00');
   });
@@ -116,7 +116,7 @@ describe('formatLatency', () => {
     expect(formatLatency(-5)).toBe('—');
   });
 
-  it('converts milliseconds to Langfuse second formatting', () => {
+  it('converts milliseconds to the reference UI second formatting', () => {
     expect(formatLatency(450)).toBe('0.45s');
     expect(formatLatency(3000)).toBe('3.00s');
   });

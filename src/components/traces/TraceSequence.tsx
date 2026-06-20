@@ -78,7 +78,7 @@ function collectIds(nodes: t.ObservationNode[], out: string[] = []): string[] {
 
 /**
  * Keep a node if its name matches the filter, or if any descendant matches —
- * so ancestors of a hit stay visible (mirrors Langfuse tree search).
+ * so ancestors of a hit stay visible (mirrors the reference tree search).
  */
 function matchesFilter(node: t.ObservationNode, needle: string): boolean {
   if (!needle) return true;
@@ -103,7 +103,7 @@ interface TraceSequenceProps {
   expandAllSignal?: number;
   /** Case-insensitive name filter; non-matching branches are hidden. */
   filter?: string;
-  /** Timeline (waterfall) mode — render a duration bar lane per node (Langfuse `view=timeline`). */
+  /** Timeline (waterfall) mode — render a duration bar lane per node (the reference `view=timeline`). */
   timeline?: boolean;
 }
 
@@ -133,7 +133,7 @@ function TimelineBar({ node, bounds }: { node: t.ObservationNode; bounds: TimeBo
   );
 }
 
-/** Langfuse observation tree — connector lines, colored type icons, per-node metrics. */
+/** reference observation tree — connector lines, colored type icons, per-node metrics. */
 export function TraceSequence({
   observations,
   selectedId,

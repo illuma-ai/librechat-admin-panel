@@ -23,7 +23,7 @@ const RANGE_OPTIONS: { value: t.TraceRange; labelKey: string }[] = [
   { value: 'all', labelKey: 'com_traces_range_all' },
 ];
 
-/** Langfuse-parity rows-per-page options. */
+/** the reference UI-parity rows-per-page options. */
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50] as const;
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -39,7 +39,7 @@ interface TracingShellProps {
   totalPages: number;
   onPage: (page: number) => void;
   /**
-   * Rows-per-page value for the Langfuse-parity pagination bar. Presentational:
+   * Rows-per-page value for the the reference UI-parity pagination bar. Presentational:
    * when omitted the bar shows the default page size and the selector is a no-op,
    * so existing callers that don't paginate by size keep working unchanged.
    */
@@ -57,7 +57,7 @@ interface TracingShellProps {
   tabs?: ReactNode;
   /** Extra toolbar controls (columns menu, …). */
   toolbarExtra?: ReactNode;
-  /** Left filter sidebar (Langfuse facet panel); a "Hide filters" toggle is shown when set. */
+  /** Left filter sidebar (the reference UI facet panel); a "Hide filters" toggle is shown when set. */
   filterSidebar?: ReactNode;
   /** Number of active filters, shown on the toggle. */
   activeFilterCount?: number;
@@ -66,7 +66,7 @@ interface TracingShellProps {
 }
 
 /**
- * Shared Tracing page layout (Langfuse): tabs → toolbar (Hide-filters + search +
+ * Shared Tracing page layout (reference): tabs → toolbar (Hide-filters + search +
  * tenant + range + extras) → [filter sidebar | full-width table] → pagination.
  * The page title lives in the top-nav header. Presentational; the page owns
  * tenant resolution and the query.
@@ -188,7 +188,7 @@ export function TracingShell({
         <div className="flex min-h-0 flex-1 flex-col overflow-auto">{children}</div>
       </div>
 
-      {/* Pagination (Langfuse parity): rows-per-page · page X of Y · «‹›» */}
+      {/* Pagination (reference parity): rows-per-page · page X of Y · «‹›» */}
       <div className="flex shrink-0 items-center justify-end gap-6 border-t border-(--cui-color-stroke-default) px-3 py-1.5">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium whitespace-nowrap text-(--cui-color-text-muted)">

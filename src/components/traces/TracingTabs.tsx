@@ -6,7 +6,7 @@ import { useLocalize } from '@/hooks';
 type TracingTab = 'traces' | 'observations';
 
 /**
- * Langfuse Tracing tab bar (Traces / Observations) using the admin panel's
+ * the reference UI Tracing tab bar (Traces / Observations) using the admin panel's
  * click-ui Tabs — same component/styling as the Configuration page. Each tab is a
  * route; switching navigates (Sessions is a separate page, not a tab here).
  */

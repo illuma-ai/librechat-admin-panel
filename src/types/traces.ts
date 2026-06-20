@@ -193,10 +193,10 @@ export interface TraceFacetFilters {
   tags: string[];
 }
 
-/** Direction for a sortable column (Langfuse: ▼ desc / ▲ asc). */
+/** Direction for a sortable column (reference: ▼ desc / ▲ asc). */
 export type SortDir = 'asc' | 'desc';
 
-/** Search scope (Langfuse): `metadata` = ids/names; `fullText` = also input/output content. */
+/** Search scope (reference): `metadata` = ids/names; `fullText` = also input/output content. */
 export type TraceSearchType = 'metadata' | 'fullText';
 
 /** A requested sort: which logical column and which direction. */
@@ -223,7 +223,7 @@ export interface TracesQuery {
   orderBy?: TracesOrderBy;
 }
 
-/** A facet value with its occurrence count (Langfuse shows counts per option). */
+/** A facet value with its occurrence count (the reference UI shows counts per option). */
 export interface FacetOption {
   value: string;
   count: number;

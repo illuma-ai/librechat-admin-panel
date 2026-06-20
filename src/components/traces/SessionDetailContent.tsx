@@ -23,7 +23,7 @@ interface MetricProps {
   value: string;
 }
 
-/** A single labelled metric tile in the session header (Langfuse session stats). */
+/** A single labelled metric tile in the session header (reference session stats). */
 function Metric({ icon, label, value }: MetricProps) {
   return (
     <div className="flex flex-col gap-1 rounded-md border border-(--cui-color-stroke-default) px-3 py-2">
@@ -36,7 +36,7 @@ function Metric({ icon, label, value }: MetricProps) {
   );
 }
 
-/** Langfuse session detail: metrics header + the session's traces list (shared by drawer + page). */
+/** reference session detail: metrics header + the session's traces list (shared by drawer + page). */
 export function SessionDetailContent({
   tenant,
   sessionId,

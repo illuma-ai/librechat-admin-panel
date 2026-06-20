@@ -10,7 +10,7 @@ interface SessionDrawerProps {
   onOpenTrace?: (traceId: string) => void;
 }
 
-/** Right-side drawer showing a session's metrics header + its traces (Langfuse-style). */
+/** Right-side drawer showing a session's metrics header + its traces (reference-style). */
 export function SessionDrawer({ tenant, sessionId, onClose, onOpenTrace }: SessionDrawerProps) {
   const localize = useLocalize();
   const title = sessionId

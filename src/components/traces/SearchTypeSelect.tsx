@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 
-/** Search-scope modes, mirroring Langfuse's "IDs / Names" vs "Full Text" selector. */
+/** Search-scope modes, mirroring the reference's "IDs / Names" vs "Full Text" selector. */
 export type SearchType = 'metadata' | 'fullText';
 
 const SEARCH_TYPE_OPTIONS: { value: SearchType; labelKey: string }[] = [
@@ -18,7 +18,7 @@ interface SearchTypeSelectProps {
 
 /**
  * Search-scope dropdown attached to the right of the search box, mirroring
- * Langfuse's "IDs / Names" vs "Full Text" selector. Wired to the `searchType` URL
+ * the reference's "IDs / Names" vs "Full Text" selector. Wired to the `searchType` URL
  * param: `fullText` extends the server search into observation input/output.
  */
 export function SearchTypeSelect({ value, onChange }: SearchTypeSelectProps) {

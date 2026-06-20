@@ -51,7 +51,7 @@ function downloadTraceJson(traceId: string, data: t.TraceDetail) {
   URL.revokeObjectURL(url);
 }
 
-/** Langfuse trace detail: left observation tree + right detail pane (shared by drawer + page). */
+/** reference trace detail: left observation tree + right detail pane (shared by drawer + page). */
 export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps) {
   const localize = useLocalize();
   const { data, isLoading } = useQuery(traceDetailQueryOptions(tenant, traceId));
@@ -84,7 +84,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
     storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
   });
 
-  // Programmatic collapse of the nav panel (Langfuse's header panel-toggle). The
+  // Programmatic collapse of the nav panel (the reference's header panel-toggle). The
   // toggle lives in the right detail pane so it stays reachable when collapsed.
   const navPanelRef = usePanelRef();
   const [navCollapsed, setNavCollapsed] = useState(false);
@@ -110,7 +110,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
       onLayoutChanged={onLayoutChanged}
       className="h-full min-h-0 w-full"
     >
-      {/* Left navigation panel — draggable + collapsible, mirroring Langfuse TraceLayoutDesktop. */}
+      {/* Left navigation panel — draggable + collapsible, mirroring the reference layout. */}
       <Panel
         id="trace-nav"
         panelRef={navPanelRef}
@@ -187,7 +187,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             {localize('com_traces_timeline')}
           </button>
         </div>
-        {/* Langfuse renders the agent graph as toggleable secondary content above the
+        {/* the reference UI renders the agent graph as toggleable secondary content above the
             observation tree in the left navigation panel (not as a right-pane tab). */}
         {showGraph && graphAvailable ? (
           <div className="h-2/5 min-h-0 shrink-0 overflow-hidden border-b border-(--cui-color-stroke-default)">
@@ -206,7 +206,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
           />
         </div>
       </Panel>
-      {/* Draggable resize handle (double-click to collapse), mirroring Langfuse. A wide
+      {/* Draggable resize handle (double-click to collapse), mirroring the reference. A wide
           transparent `after` overlay makes the 1px divider easy to grab. */}
       <Separator className="relative z-10 w-px shrink-0 cursor-col-resize touch-none bg-(--cui-color-stroke-default) transition-colors select-none after:absolute after:inset-y-0 after:-left-1.5 after:z-10 after:w-4 after:content-[''] hover:bg-(--cui-color-primary-default) data-resize-handle-active:bg-(--cui-color-primary-default)" />
       <Panel id="trace-detail" minSize="40%" defaultSize="60%" className="flex min-h-0 flex-col">

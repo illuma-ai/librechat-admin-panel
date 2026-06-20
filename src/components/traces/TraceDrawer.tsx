@@ -24,7 +24,7 @@ function tracePath(tenant: string, traceId: string): string {
   return `/traces/${traceId}?${search}`;
 }
 
-/** Small keyboard-shortcut chip, mirroring Langfuse's `KeyboardShortcut`. */
+/** Small keyboard-shortcut chip, mirroring the reference's `KeyboardShortcut`. */
 function ShortcutKey({ children }: { children: string }) {
   return (
     <kbd className="rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-1 font-mono text-[10px] leading-4 text-(--cui-color-text-muted)">
@@ -33,7 +33,7 @@ function ShortcutKey({ children }: { children: string }) {
   );
 }
 
-/** Langfuse `DetailPageNav` button: outline, icon + visible shortcut chip, disabled when at an end. */
+/** the reference `DetailPageNav` button: outline, icon + visible shortcut chip, disabled when at an end. */
 function NavButton({
   icon: Icon,
   shortcut,
@@ -94,7 +94,7 @@ function ExpandButton({
 }
 
 /**
- * Langfuse peek-drawer header (TablePeekView SheetHeader): a full-width thin bar —
+ * reference peek-drawer header (TablePeekView SheetHeader): a full-width thin bar —
  * ItemBadge + "name: id" title on the left; prev/next (K/J), open-in-tab, and close
  * on the right. Rendered edge-to-edge (not via Flyout.Header, which insets 24px).
  */
@@ -166,9 +166,9 @@ function DrawerHeader({
   );
 }
 
-/** Right-side drawer showing a trace's detail + observation tree (Langfuse peek view). */
+/** Right-side drawer showing a trace's detail + observation tree (reference peek view). */
 export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceDrawerProps) {
-  // Langfuse DetailPageNav: lowercase k/j navigate prev/next unless typing in a field.
+  // the reference UI DetailPageNav: lowercase k/j navigate prev/next unless typing in a field.
   useEffect(() => {
     if (!traceId) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -192,7 +192,7 @@ export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceD
         if (!open) onClose();
       }}
     >
-      {/* Langfuse peek keeps the drawer open during resize/drag: it closes only via
+      {/* reference peek keeps the drawer open during resize/drag: it closes only via
           the X button or Escape, never on an outside pointer-down (which a panel-resize
           pointer-capture can otherwise trigger). closeOnInteractOutside={false}. */}
       <Flyout.Content
@@ -202,7 +202,7 @@ export function TraceDrawer({ tenant, traceId, onClose, onPrev, onNext }: TraceD
         showOverlay
       >
         {/* Header lives INSIDE Flyout.Body (which has no horizontal padding and keeps
-            the 60vw width), not Flyout.Header (which insets 24px). Langfuse's peek
+            the 60vw width), not Flyout.Header (which insets 24px). the reference's peek
             header is an edge-to-edge bar. */}
         <Flyout.Body>
           <div className="flex h-full min-h-0 w-full flex-col">

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { DataTableColumn } from './DataTable';
 
 /**
- * Manage column visibility for a table (Langfuse "Columns N/M" menu). Initializes
+ * Manage column visibility for a table (the reference "Columns N/M" menu). Initializes
  * from each column's `defaultHidden`, then restores any saved preference from
  * localStorage on the client (avoids SSR hydration mismatch).
  */

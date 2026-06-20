@@ -11,7 +11,7 @@ interface ColumnsMenuProps<T> {
   total: number;
 }
 
-/** Langfuse "Columns N/M" menu — toggle column visibility (fixed columns excluded). */
+/** the reference "Columns N/M" menu — toggle column visibility (fixed columns excluded). */
 export function ColumnsMenu<T>({
   columns,
   hidden,

@@ -15,7 +15,7 @@ export interface DataTableColumn<T> {
   id: string;
   header: ReactNode;
   width?: number;
-  /** Hidden by default until enabled in the Columns menu (Langfuse defaultHidden). */
+  /** Hidden by default until enabled in the Columns menu (the reference UI defaultHidden). */
   defaultHidden?: boolean;
   /** Cannot be hidden/reordered (e.g. select, action). */
   fixed?: boolean;
@@ -42,18 +42,18 @@ interface DataTableProps<T> {
   orderBy?: OrderBy | null;
   /** Sort handler — receives the column's sortKey (or id). */
   onSort?: (key: string) => void;
-  /** Row density: `s` single-line nowrap, `m` taller, `l` tallest (Langfuse parity). */
+  /** Row density: `s` single-line nowrap, `m` taller, `l` tallest (reference parity). */
   rowHeight?: RowHeight;
 }
 
-/** Tailwind row-height classes per density, mirroring Langfuse defaults. */
+/** Tailwind row-height classes per density, mirroring reference defaults. */
 const ROW_HEIGHT_CLASS: Record<RowHeight, string> = {
   s: 'h-7',
   m: 'h-24',
   l: 'h-64',
 };
 
-/** ▼ for DESC, ▲ for ASC — matches Langfuse `renderOrderingIndicator`. */
+/** ▼ for DESC, ▲ for ASC — matches the reference `renderOrderingIndicator`. */
 function OrderingIndicator({ dir }: { dir: SortDirection }) {
   return (
     <span className="ml-1" title="Sort by this column">
@@ -63,7 +63,7 @@ function OrderingIndicator({ dir }: { dir: SortDirection }) {
 }
 
 /**
- * Faithful port of Langfuse's `DataTable` markup (table-fixed, border-separate,
+ * Faithful port of the reference's `DataTable` markup (table-fixed, border-separate,
  * sticky header, dense rows) using the admin theme tokens. Adds sortable headers,
  * per-column header info popups, and `s|m|l` row density. Full-width, edge to edge.
  */
@@ -87,7 +87,7 @@ export function DataTable<T>({
   const isSmall = rowHeight === 's';
   const rowHeightClass = ROW_HEIGHT_CLASS[rowHeight];
 
-  // Langfuse sizes the table to the SUM of explicit per-column pixel widths and
+  // the reference UI sizes the table to the SUM of explicit per-column pixel widths and
   // lets it scroll horizontally — columns honor their exact size instead of being
   // squeezed to fit. `min-w-full` keeps it edge-to-edge when the sum is narrow.
   const DEFAULT_COL_WIDTH = 150;

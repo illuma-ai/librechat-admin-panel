@@ -15,7 +15,7 @@ export function toNumber(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Array-membership operator for a multi-valued column (tags). Mirrors Langfuse SOME/ALL/NONE. */
+/** Array-membership operator for a multi-valued column (tags). Mirrors the reference SOME/ALL/NONE. */
 export type TagOperator = 'any of' | 'all of' | 'none of';
 
 /**
@@ -111,7 +111,7 @@ export function buildTraceFilters(filters: TraceFilters): {
 }
 
 /**
- * Build the parameterized free-text search predicate (Langfuse search scopes).
+ * Build the parameterized free-text search predicate (reference search scopes).
  * `metadata` matches trace id/name/user; `fullText` additionally matches traces
  * whose observations contain the term in their input/output. The literal is bound
  * via the `s` param (caller supplies `%term%`) — never interpolated into SQL.
@@ -198,7 +198,7 @@ function graphNodeName(raw: string): string {
 
 /**
  * Derive the agent execution graph from observations' LangGraph metadata,
- * mirroring Langfuse's step-based graph builder: nodes are the distinct
+ * mirroring the reference step-based graph builder: nodes are the distinct
  * `langgraph_node` values; edges connect every node at step N to every node at
  * step N+1 (parallel branches included); a terminal `End` node closes the graph.
  * Returns an empty graph when the trace carries no LangGraph step metadata.

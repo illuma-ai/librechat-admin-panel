@@ -33,7 +33,7 @@ function previewText(raw: string): string {
 /**
  * Input/Output preview cell — Input renders plain (no background), Output renders
  * with the light-green tint (`--trace-output-bg`). Both single-line truncate with
- * a hover title, matching Langfuse density.
+ * a hover title, matching reference density.
  */
 export function IOPreviewCell({ raw, variant }: { raw: string; variant: 'input' | 'output' }) {
   const text = previewText(raw);
@@ -54,7 +54,7 @@ export function IOPreviewCell({ raw, variant }: { raw: string; variant: 'input' 
   );
 }
 
-/** Observation levels — error/warning counts as colored chips (Langfuse). */
+/** Observation levels — error/warning counts as colored chips (reference). */
 export function LevelCountsCell({ errors, warnings }: { errors: number; warnings: number }) {
   if (errors === 0 && warnings === 0) return <>—</>;
   return (
@@ -104,7 +104,7 @@ export function MetadataCell({ metadata }: { metadata: Record<string, string> })
   );
 }
 
-/** Environment chip (Langfuse secondary badge). */
+/** Environment chip (reference secondary badge). */
 export function EnvBadge({ value }: { value: string }) {
   if (!value) return <>—</>;
   return (
@@ -114,7 +114,7 @@ export function EnvBadge({ value }: { value: string }) {
   );
 }
 
-/** Langfuse token badge — "in → out (∑ total)" in monospace. */
+/** reference token badge — "in → out (∑ total)" in monospace. */
 export function TokenBadge({
   input,
   output,
@@ -129,7 +129,7 @@ export function TokenBadge({
   return <span className="font-mono text-xs whitespace-nowrap">{text}</span>;
 }
 
-/** Observation type cell — colored type icon + label (Langfuse ItemBadge). */
+/** Observation type cell — colored type icon + label (the reference UI ItemBadge). */
 export function TypeCell({ type }: { type: string }) {
   return (
     <span className="inline-flex items-center">

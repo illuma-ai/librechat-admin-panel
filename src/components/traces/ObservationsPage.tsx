@@ -51,7 +51,7 @@ export function ObservationsPage({
   const total = query.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  // Langfuse observation column order + default visibility (defaultHidden columns
+  // reference observation column order + default visibility (defaultHidden columns
   // appear in the Columns menu but stay hidden until enabled). Input/Output/Metadata
   // are not yet on ObservationListItem — they render '—' until the backend adds them.
   const columns: DataTableColumn<t.ObservationListItem>[] = [

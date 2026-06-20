@@ -1082,7 +1082,7 @@ body > div:has(+ .modal-frost) {
   }
 }
 
-/* Langfuse Output panel tint (assistant/output = light green). */
+/* reference Output panel tint (assistant/output = light green). */
 :root {
   --trace-output-bg: #f0fdf4;
 }

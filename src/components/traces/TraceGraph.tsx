@@ -13,7 +13,7 @@ interface NodeColor {
 }
 
 /**
- * Observation-type → node border color, mirroring Langfuse's `getNodeStyle`
+ * Observation-type → node border color, mirroring the reference's `getNodeStyle`
  * (gray-100 fill, type-colored border). Keys are our lowercase observation types.
  */
 const TYPE_COLORS: Record<string, string> = {
@@ -52,7 +52,7 @@ interface VisNode {
   y?: number;
 }
 
-/** vis-network options, copied from Langfuse's TraceGraphCanvas (hierarchical UD, boxed nodes). */
+/** vis-network options, copied from the reference's TraceGraphCanvas (hierarchical UD, boxed nodes). */
 const NETWORK_OPTIONS = {
   autoResize: true,
   layout: {
@@ -109,7 +109,7 @@ function ZoomButton({ icon: Icon, title, onClick }: ZoomButtonProps) {
 }
 
 /**
- * Langfuse agent-graph view: an interactive vis-network DAG (top-down hierarchical
+ * reference agent-graph view: an interactive vis-network DAG (top-down hierarchical
  * layout, type-colored boxed nodes, green Start / red End, arrow edges) with
  * hover zoom controls.
  */

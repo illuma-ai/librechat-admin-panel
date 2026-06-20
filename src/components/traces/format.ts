@@ -13,7 +13,7 @@ export function formatTime(value: string): string {
 
 const pad = (n: number, len = 2) => String(n).padStart(len, '0');
 
-/** Langfuse table timestamp — local `YYYY-MM-DD HH:mm:ss` (no milliseconds). */
+/** reference table timestamp — local `YYYY-MM-DD HH:mm:ss` (no milliseconds). */
 export function formatTimestamp(value: string): string {
   if (!value) return '—';
   const d = parseChDate(value);
@@ -24,7 +24,7 @@ export function formatTimestamp(value: string): string {
   );
 }
 
-/** Langfuse detail timestamp — local `YYYY-MM-DD HH:mm:ss.SSS` with millisecond precision. */
+/** reference detail timestamp — local `YYYY-MM-DD HH:mm:ss.SSS` with millisecond precision. */
 export function formatTimestampLong(value: string): string {
   if (!value) return '—';
   const d = parseChDate(value);
@@ -32,7 +32,7 @@ export function formatTimestampLong(value: string): string {
   return `${formatTimestamp(value)}.${pad(d.getMilliseconds(), 3)}`;
 }
 
-/** Langfuse `usdFormatter` — USD currency, 2–6 fraction digits. */
+/** the reference `usdFormatter` — USD currency, 2–6 fraction digits. */
 export function usdFormatter(
   n: number,
   minimumFractionDigits = 2,
@@ -46,13 +46,13 @@ export function usdFormatter(
   }).format(n ?? 0);
 }
 
-/** Langfuse `costFormatter` — more precision for sub-$5 amounts. */
+/** the reference `costFormatter` — more precision for sub-$5 amounts. */
 export function formatCost(n: number): string {
   if (!n) return usdFormatter(0, 2, 2);
   return n < 5 ? usdFormatter(n, 2, 6) : usdFormatter(n, 2, 2);
 }
 
-/** Integer with grouping, no decimals (Langfuse `numberFormatter(n, 0)`). */
+/** Integer with grouping, no decimals (the reference `numberFormatter(n, 0)`). */
 export function formatTokens(n: number): string {
   return new Intl.NumberFormat('en-US', { useGrouping: true, maximumFractionDigits: 0 }).format(
     n ?? 0,
@@ -60,7 +60,7 @@ export function formatTokens(n: number): string {
 }
 
 /**
- * Langfuse `formatTokenCounts` — "686 → 148 (∑ 834)" (compact) or
+ * the reference `formatTokenCounts` — "686 → 148 (∑ 834)" (compact) or
  * "686 prompt → 148 completion (∑ 834)" (labelled).
  */
 export function formatTokenCounts(
@@ -75,7 +75,7 @@ export function formatTokenCounts(
     : `${formatTokens(input)} → ${formatTokens(output)} (∑ ${formatTokens(total)})`;
 }
 
-/** Langfuse `formatIntervalSeconds` — input is SECONDS (h/m/s or `N.NNs`). */
+/** the reference `formatIntervalSeconds` — input is SECONDS (h/m/s or `N.NNs`). */
 export function formatIntervalSeconds(seconds: number, scale = 2): string {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
@@ -86,7 +86,7 @@ export function formatIntervalSeconds(seconds: number, scale = 2): string {
   return `${seconds.toFixed(scale)}s`;
 }
 
-/** Our latency is stored in milliseconds; render Langfuse-style from seconds. */
+/** Our latency is stored in milliseconds; render reference-style from seconds. */
 export function formatLatency(ms: number): string {
   if (!ms || ms <= 0) return '—';
   return formatIntervalSeconds(ms / 1000);
