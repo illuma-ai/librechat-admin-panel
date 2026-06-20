@@ -1,5 +1,6 @@
 import { TypeIcon } from './traceIcons';
-import { formatTokenCounts, formatTokens } from './format';
+import { MetricBreakdown } from './MetricBreakdown';
+import { formatCost, formatTokens } from './format';
 
 /** Best-effort readable preview of a serialized message/IO payload. */
 function previewText(raw: string): string {
@@ -114,7 +115,12 @@ export function EnvBadge({ value }: { value: string }) {
   );
 }
 
-/** reference token badge — "in → out (∑ total)" in monospace. */
+/**
+ * Token badge — "in → out (∑ total)" in monospace, with the prompt (input) and
+ * completion (output) counts color-coded (info / accent-user, matching the
+ * cost/usage breakdown) so the split reads at a glance. Wrapped in the usage
+ * breakdown popover when an input/output split is available.
+ */
 export function TokenBadge({
   input,
   output,
@@ -124,9 +130,41 @@ export function TokenBadge({
   output: number;
   total: number;
 }) {
-  const text = formatTokenCounts(input, output, total);
-  if (!text) return <>—</>;
-  return <span className="font-mono text-xs whitespace-nowrap">{text}</span>;
+  if (!input && !output && !total) return <>—</>;
+  const badge = (
+    <span className="font-mono text-xs whitespace-nowrap">
+      <span className="text-(--ui-color-accent-info)">{formatTokens(input)}</span>
+      <span className="text-(--ui-color-text-muted)"> → </span>
+      <span className="text-(--ui-color-accent-user)">{formatTokens(output)}</span>
+      <span className="text-(--ui-color-text-muted)"> (∑ {formatTokens(total)})</span>
+    </span>
+  );
+  if (!input && !output) return badge;
+  return (
+    <MetricBreakdown details={{ input_tokens: input, output_tokens: output }} isCost={false}>
+      {badge}
+    </MetricBreakdown>
+  );
+}
+
+/** Cost cell with the click-to-open cost breakdown popover (input/output split). */
+export function CostCell({
+  total,
+  input,
+  output,
+}: {
+  total: number;
+  input: number;
+  output: number;
+}) {
+  if (!total) return <>—</>;
+  const text = <span className="font-mono text-xs whitespace-nowrap">{formatCost(total)}</span>;
+  if (!input && !output) return text;
+  return (
+    <MetricBreakdown details={{ input, output }} isCost>
+      {text}
+    </MetricBreakdown>
+  );
 }
 
 /** Observation type cell — colored type icon + label (the reference UI ItemBadge). */

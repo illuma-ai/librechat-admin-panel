@@ -77,7 +77,13 @@ export function MetricBreakdown({
   return (
     <Popover>
       <Popover.Trigger>
-        <button type="button" className="inline-flex cursor-pointer">
+        {/* stopPropagation so opening the breakdown inside a table row does not
+            also fire the row click (which opens the trace drawer). */}
+        <button
+          type="button"
+          className="inline-flex cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        >
           {children}
         </button>
       </Popover.Trigger>

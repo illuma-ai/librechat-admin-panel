@@ -15,6 +15,7 @@ import { UserCell } from './UserCell';
 import { useTracingTenant } from './useTracingTenant';
 import { useColumnVisibility } from './useColumnVisibility';
 import {
+  CostCell,
   EnvBadge,
   IOPreviewCell,
   LevelCountsCell,
@@ -172,7 +173,7 @@ export function TracesPage({
       header: localize('com_traces_col_cost'),
       width: 130,
       sortable: true,
-      render: (r) => formatCost(r.cost),
+      render: (r) => <CostCell total={r.cost} input={r.inputCost} output={r.outputCost} />,
     },
     {
       id: 'env',
