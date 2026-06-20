@@ -4,6 +4,7 @@ import { Network } from 'vis-network/standalone';
 import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
+import { typePalette } from './observationPalette';
 
 /** vis-network node color spec (border + fill + highlight). */
 interface NodeColor {
@@ -13,23 +14,13 @@ interface NodeColor {
 }
 
 /**
- * Observation-type → node border color, mirroring the reference's `getNodeStyle`
- * (gray-100 fill, type-colored border). Keys are our lowercase observation types.
+ * Observation-type → node style, mirroring the reference's `getNodeStyle`
+ * (gray-100 fill, type-colored border). The border shade comes from the shared
+ * `observationPalette` (single source of truth shared with the type icons); the
+ * canvas cannot read CSS variables, so the palette intentionally lives in JS.
  */
-const TYPE_COLORS: Record<string, string> = {
-  agent: '#c4b5fd', // purple-300
-  tool: '#fed7aa', // orange-300
-  generation: '#f0abfc', // fuchsia-300
-  span: '#93c5fd', // blue-300
-  chain: '#f9a8d4', // pink-300
-  retriever: '#5eead4', // teal-300
-  event: '#6ee7b7', // green-300
-  embedding: '#fbbf24', // amber-300
-  guardrail: '#fca5a5', // red-300
-};
-
 function nodeColor(type: string): NodeColor {
-  const border = TYPE_COLORS[type] ?? TYPE_COLORS.span;
+  const border = typePalette(type).node;
   return { border, background: '#f3f4f6', highlight: { border, background: '#e5e7eb' } };
 }
 

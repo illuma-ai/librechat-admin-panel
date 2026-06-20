@@ -1,5 +1,6 @@
 import { Bot, CircleDot, Fan, ListTree, MoveHorizontal, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { typePalette } from './observationPalette';
 
 interface TypeVisual {
   icon: LucideIcon;
@@ -8,17 +9,18 @@ interface TypeVisual {
 }
 
 /**
- * Observation type → icon + color, mirroring the reference's `ItemBadge` map:
- * TRACE = ListTree/dark-green, GENERATION = Fan/magenta, SPAN = MoveHorizontal/blue,
- * EVENT = CircleDot/green, TOOL = Wrench/orange, AGENT = Bot/purple.
+ * Observation type → icon + label, mirroring the reference's `ItemBadge` map:
+ * TRACE = ListTree, GENERATION = Fan, SPAN = MoveHorizontal, EVENT = CircleDot,
+ * TOOL = Wrench, AGENT = Bot. Colors come from the shared `observationPalette`
+ * (single source of truth shared with the agent graph) — never hardcoded here.
  */
 const TYPE_VISUALS: Record<string, TypeVisual> = {
-  trace: { icon: ListTree, color: '#15803d', label: 'Trace' },
-  generation: { icon: Fan, color: '#be185d', label: 'Generation' },
-  span: { icon: MoveHorizontal, color: '#2563eb', label: 'Span' },
-  event: { icon: CircleDot, color: '#16a34a', label: 'Event' },
-  tool: { icon: Wrench, color: '#ea580c', label: 'Tool' },
-  agent: { icon: Bot, color: '#9333ea', label: 'Agent' },
+  trace: { icon: ListTree, color: typePalette('trace').icon, label: 'Trace' },
+  generation: { icon: Fan, color: typePalette('generation').icon, label: 'Generation' },
+  span: { icon: MoveHorizontal, color: typePalette('span').icon, label: 'Span' },
+  event: { icon: CircleDot, color: typePalette('event').icon, label: 'Event' },
+  tool: { icon: Wrench, color: typePalette('tool').icon, label: 'Tool' },
+  agent: { icon: Bot, color: typePalette('agent').icon, label: 'Agent' },
 };
 
 const DEFAULT_VISUAL = TYPE_VISUALS.span;
