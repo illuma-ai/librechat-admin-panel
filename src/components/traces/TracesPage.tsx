@@ -10,9 +10,19 @@ import { TracingShell } from './TracingShell';
 import { TracingTabs } from './TracingTabs';
 import { TraceFilterSidebar } from './TraceFilterSidebar';
 import { TraceDrawer } from './TraceDrawer';
+import { ColumnsMenu } from './ColumnsMenu';
 import { UserCell } from './UserCell';
 import { useTracingTenant } from './useTracingTenant';
-import { EnvBadge, ModelCell, TokenBadge } from './cells';
+import { useColumnVisibility } from './useColumnVisibility';
+import {
+  EnvBadge,
+  IOPreviewCell,
+  LevelCountsCell,
+  MetadataCell,
+  ModelCell,
+  TagsCell,
+  TokenBadge,
+} from './cells';
 import { formatCost, formatLatency, formatTime, formatTokens } from './format';
 
 interface TracesPageProps {
@@ -74,6 +84,8 @@ export function TracesPage({
   const total = tracesQuery.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
+  // Langfuse column order + default visibility (defaultHidden columns appear in
+  // the Columns menu but are hidden until enabled).
   const columns: DataTableColumn<t.TraceListItem>[] = [
     {
       id: 'timestamp',
@@ -84,20 +96,26 @@ export function TracesPage({
     {
       id: 'name',
       header: localize('com_traces_col_name'),
-      width: 180,
+      width: 160,
       render: (r) => r.name || '—',
     },
     {
-      id: 'user',
-      header: localize('com_traces_col_user'),
-      width: 210,
-      render: (r) => <UserCell user={userMap.get(r.userId)} fallback={r.userId} />,
+      id: 'input',
+      header: localize('com_traces_input'),
+      width: 240,
+      render: (r) => <IOPreviewCell raw={r.input} variant="input" />,
     },
     {
-      id: 'env',
-      header: localize('com_traces_environment'),
+      id: 'output',
+      header: localize('com_traces_output'),
+      width: 240,
+      render: (r) => <IOPreviewCell raw={r.output} variant="output" />,
+    },
+    {
+      id: 'levels',
+      header: localize('com_traces_col_levels'),
       width: 120,
-      render: (r) => <EnvBadge value={r.environment} />,
+      render: (r) => <LevelCountsCell errors={r.errors} warnings={r.warnings} />,
     },
     {
       id: 'latency',
@@ -108,7 +126,7 @@ export function TracesPage({
     {
       id: 'tokens',
       header: localize('com_traces_col_tokens'),
-      width: 180,
+      width: 170,
       render: (r) => <TokenBadge input={r.inputTokens} output={r.outputTokens} total={r.tokens} />,
     },
     {
@@ -118,18 +136,111 @@ export function TracesPage({
       render: (r) => formatCost(r.cost),
     },
     {
+      id: 'env',
+      header: localize('com_traces_environment'),
+      width: 110,
+      render: (r) => <EnvBadge value={r.environment} />,
+    },
+    {
+      id: 'tags',
+      header: localize('com_traces_tags'),
+      width: 130,
+      render: (r) => <TagsCell tags={r.tags} />,
+    },
+    {
+      id: 'metadata',
+      header: localize('com_traces_metadata'),
+      width: 110,
+      render: (r) => <MetadataCell metadata={r.metadata} />,
+    },
+    {
+      id: 'user',
+      header: localize('com_traces_col_user'),
+      width: 200,
+      defaultHidden: true,
+      render: (r) => <UserCell user={userMap.get(r.userId)} fallback={r.userId} />,
+    },
+    {
+      id: 'session',
+      header: localize('com_traces_session'),
+      width: 160,
+      defaultHidden: true,
+      render: (r) => (
+        <span className="truncate font-mono text-xs" title={r.sessionId}>
+          {r.sessionId || '—'}
+        </span>
+      ),
+    },
+    {
       id: 'model',
       header: localize('com_traces_col_model'),
       width: 200,
+      defaultHidden: true,
       render: (r) => <ModelCell model={r.model} />,
     },
     {
       id: 'obs',
       header: localize('com_traces_metric_observations'),
       width: 110,
+      defaultHidden: true,
       render: (r) => formatTokens(r.observations),
     },
+    {
+      id: 'inputTokens',
+      header: localize('com_traces_col_input_tokens'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => formatTokens(r.inputTokens),
+    },
+    {
+      id: 'outputTokens',
+      header: localize('com_traces_col_output_tokens'),
+      width: 120,
+      defaultHidden: true,
+      render: (r) => formatTokens(r.outputTokens),
+    },
+    {
+      id: 'inputCost',
+      header: localize('com_traces_col_input_cost'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => formatCost(r.inputCost),
+    },
+    {
+      id: 'outputCost',
+      header: localize('com_traces_col_output_cost'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => formatCost(r.outputCost),
+    },
+    {
+      id: 'release',
+      header: localize('com_traces_col_release'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => r.release || '—',
+    },
+    {
+      id: 'version',
+      header: localize('com_traces_col_version'),
+      width: 100,
+      defaultHidden: true,
+      render: (r) => r.version || '—',
+    },
+    {
+      id: 'id',
+      header: localize('com_traces_col_trace_id'),
+      width: 110,
+      defaultHidden: true,
+      render: (r) => (
+        <span className="truncate font-mono text-xs" title={r.id}>
+          {r.id.slice(0, 8)}
+        </span>
+      ),
+    },
   ];
+
+  const columnVisibility = useColumnVisibility('traces', columns);
 
   return (
     <TracingShell
@@ -154,12 +265,22 @@ export function TracesPage({
       filterSidebar={
         <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />
       }
+      toolbarExtra={
+        <ColumnsMenu
+          columns={columns}
+          hidden={columnVisibility.hidden}
+          onToggle={columnVisibility.toggle}
+          visibleCount={columnVisibility.visibleCount}
+          total={columnVisibility.total}
+        />
+      }
       drawer={
         <TraceDrawer tenant={effectiveTenant} traceId={selectedTraceId} onClose={onCloseTrace} />
       }
     >
       <DataTable
         columns={columns}
+        hiddenColumnIds={columnVisibility.hidden}
         rows={tracesQuery.data?.rows ?? []}
         rowKey={(r) => r.id}
         onRowClick={(r) => onOpenTrace(r.id)}

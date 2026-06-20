@@ -9,13 +9,23 @@ export interface TraceListItem {
   timestamp: string;
   model: string;
   environment: string;
+  release: string;
+  version: string;
+  input: string;
+  output: string;
+  tags: string[];
+  metadata: Record<string, string>;
   cost: number;
+  inputCost: number;
+  outputCost: number;
   tokens: number;
   inputTokens: number;
   outputTokens: number;
   observations: number;
   generations: number;
   tools: number;
+  errors: number;
+  warnings: number;
   latencyMs: number;
 }
 

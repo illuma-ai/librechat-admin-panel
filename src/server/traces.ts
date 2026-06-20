@@ -124,12 +124,15 @@ export const getTracesFn = createServerFn({ method: 'GET' })
 
     const rows = await chQuery<Record<string, unknown>>(
       `SELECT t.id AS id, t.name AS name, t.user_id AS userId, t.session_id AS sessionId,
-              t.environment AS environment, toString(t.timestamp) AS timestamp,
-              o.model AS model, o.cost AS cost, o.tokens AS tokens,
-              o.inTok AS inputTokens, o.outTok AS outputTokens, o.obs AS observations,
-              o.gens AS generations, o.tools AS tools, o.latency AS latencyMs
+              t.environment AS environment, t.release AS release, t.version AS version,
+              t.tags AS tags, t.metadata AS metadata, toString(t.timestamp) AS timestamp,
+              o.model AS model, o.cost AS cost, o.inCost AS inputCost, o.outCost AS outputCost,
+              o.tokens AS tokens, o.inTok AS inputTokens, o.outTok AS outputTokens,
+              o.obs AS observations, o.gens AS generations, o.tools AS tools,
+              o.errs AS errors, o.warns AS warnings, o.latency AS latencyMs,
+              o.rootInput AS input, o.rootOutput AS output
        FROM (
-         SELECT id, name, user_id, session_id, environment, timestamp
+         SELECT id, name, user_id, session_id, environment, release, version, tags, metadata, timestamp
          FROM traces FINAL
          WHERE ${where}
          ORDER BY timestamp DESC
@@ -137,10 +140,14 @@ export const getTracesFn = createServerFn({ method: 'GET' })
        ) AS t
        LEFT JOIN (
          SELECT trace_id,
-                sum(total_cost) AS cost, sum(total_tokens) AS tokens,
+                sum(total_cost) AS cost, sum(input_cost) AS inCost, sum(output_cost) AS outCost,
+                sum(total_tokens) AS tokens,
                 sum(input_tokens) AS inTok, sum(output_tokens) AS outTok, count() AS obs,
                 countIf(type = 'generation') AS gens, countIf(type = 'tool') AS tools,
+                countIf(level = 'ERROR') AS errs, countIf(level = 'WARNING') AS warns,
                 arrayStringConcat(arrayFilter(x -> x != '', groupUniqArray(model)), ', ') AS model,
+                anyIf(input, parent_observation_id = '' AND input != '') AS rootInput,
+                anyIf(output, parent_observation_id = '' AND output != '') AS rootOutput,
                 dateDiff('millisecond', min(start_time), max(end_time)) AS latency
          FROM observations FINAL
          WHERE tenant_id = {t:String} AND is_deleted = 0
@@ -160,13 +167,23 @@ export const getTracesFn = createServerFn({ method: 'GET' })
         timestamp: String(r.timestamp ?? ''),
         model: String(r.model ?? ''),
         environment: String(r.environment ?? ''),
+        release: String(r.release ?? ''),
+        version: String(r.version ?? ''),
+        input: String(r.input ?? ''),
+        output: String(r.output ?? ''),
+        tags: Array.isArray(r.tags) ? (r.tags as string[]) : [],
+        metadata: (r.metadata as Record<string, string>) ?? {},
         cost: toNumber(r.cost),
+        inputCost: toNumber(r.inputCost),
+        outputCost: toNumber(r.outputCost),
         tokens: toNumber(r.tokens),
         inputTokens: toNumber(r.inputTokens),
         outputTokens: toNumber(r.outputTokens),
         observations: toNumber(r.observations),
         generations: toNumber(r.generations),
         tools: toNumber(r.tools),
+        errors: toNumber(r.errors),
+        warnings: toNumber(r.warnings),
         latencyMs: toNumber(r.latencyMs),
       })),
     };

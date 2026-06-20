@@ -5,6 +5,10 @@ export interface DataTableColumn<T> {
   id: string;
   header: ReactNode;
   width?: number;
+  /** Hidden by default until enabled in the Columns menu (Langfuse defaultHidden). */
+  defaultHidden?: boolean;
+  /** Cannot be hidden/reordered (e.g. select, action). */
+  fixed?: boolean;
   render: (row: T) => ReactNode;
 }
 
@@ -16,6 +20,8 @@ interface DataTableProps<T> {
   selectedId?: string | null;
   loading?: boolean;
   emptyMessage: ReactNode;
+  /** Column ids to hide (from the Columns menu). When omitted, all columns show. */
+  hiddenColumnIds?: Set<string>;
 }
 
 /**
@@ -24,18 +30,18 @@ interface DataTableProps<T> {
  * edge — no outer padding.
  */
 export function DataTable<T>({
-  columns,
+  columns: allColumns,
   rows,
   rowKey,
   onRowClick,
   selectedId,
   loading,
   emptyMessage,
+  hiddenColumnIds,
 }: DataTableProps<T>) {
-  const colVars: Record<string, string> = {};
-  for (const col of columns) {
-    if (col.width) colVars[`--col-${col.id}-size`] = `${col.width}px`;
-  }
+  const columns = hiddenColumnIds
+    ? allColumns.filter((c) => c.fixed || !hiddenColumnIds.has(c.id))
+    : allColumns;
 
   return (
     <div className="flex w-full max-w-full flex-1 flex-col overflow-auto">
