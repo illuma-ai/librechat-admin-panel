@@ -197,7 +197,13 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
           transparent `after` overlay makes the 1px divider easy to grab. */}
       <Separator className="relative z-10 w-px shrink-0 cursor-col-resize touch-none bg-(--cui-color-stroke-default) transition-colors select-none after:absolute after:inset-y-0 after:-left-1.5 after:z-10 after:w-4 after:content-[''] hover:bg-(--cui-color-primary-default) data-resize-handle-active:bg-(--cui-color-primary-default)" />
       <Panel id="trace-detail" minSize="40%" defaultSize="60%" className="flex min-h-0 flex-col">
-        <TraceDetailPane trace={data.trace} totals={totals} node={selectedNode} isRoot={isRoot} />
+        <TraceDetailPane
+          trace={data.trace}
+          totals={totals}
+          node={selectedNode}
+          isRoot={isRoot}
+          observations={data.observations}
+        />
       </Panel>
     </Group>
   );

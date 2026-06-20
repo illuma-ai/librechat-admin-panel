@@ -3,9 +3,8 @@ import { ExternalLink, Info } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
-import { Markdown } from '@/components/shared';
 import { ScoresTab } from './ScoresTab';
-import { LogViewTab } from './LogViewTab';
+import { LogViewTab, MessageList } from './LogViewTab';
 import { TypeIcon } from './traceIcons';
 import type { TraceScore } from './ScoresTab';
 import { formatCost, formatLatency, formatTimestampLong, formatTokenCounts } from './format';
@@ -23,20 +22,13 @@ interface TraceDetailPaneProps {
   totals: TraceTotals;
   node: t.ObservationNode | null;
   isRoot: boolean;
+  /** The whole observation forest — needed by the Log View (not just the selected node). */
+  observations: t.ObservationNode[];
   /** Feedback/eval scores for the trace; defaults to [] until getTraceScoresFn is wired. */
   scores?: TraceScore[];
 }
 
 type ViewMode = 'pretty' | 'json';
-
-function prettyJson(value: string): string {
-  if (!value) return '';
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-  } catch {
-    return value;
-  }
-}
 
 /** Langfuse `variant="tertiary"` badge — light gray pill. */
 function Badge({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
@@ -54,39 +46,27 @@ function Badge({ children, dark }: { children: React.ReactNode; dark?: boolean }
   );
 }
 
-/** A titled IO panel — Output/assistant gets the green tint, Input/system gray. */
+/**
+ * A titled IO panel — renders the payload as a role-labeled chat-message list when
+ * messages exist (assistant/output tinted, user/system muted), else pretty JSON.
+ * The Formatted/JSON toggle forces the JSON fallback.
+ */
 function IOPanel({
   title,
   messages,
   raw,
   view,
-  variant,
 }: {
   title: string;
   messages: t.TraceMessage[];
   raw: string;
   view: ViewMode;
-  variant: 'input' | 'output';
 }) {
-  const hasContent = messages.length > 0 || raw;
-  if (!hasContent) return null;
-  const text = messages.map((m) => m.text).join('\n\n');
+  if (messages.length === 0 && !raw) return null;
   return (
     <div className="flex flex-col gap-1 px-2 pt-2">
       <div className="text-sm font-medium text-(--cui-color-text-default)">{title}</div>
-      <div
-        className={cn(
-          'rounded-sm border border-(--cui-color-stroke-default) p-3 text-xs wrap-break-word',
-          variant === 'input' && 'bg-(--cui-color-background-muted)',
-        )}
-        style={variant === 'output' ? { backgroundColor: 'var(--trace-output-bg)' } : undefined}
-      >
-        {view === 'json' || !text ? (
-          <pre className="trace-markdown overflow-auto whitespace-pre-wrap">{prettyJson(raw)}</pre>
-        ) : (
-          <Markdown>{text}</Markdown>
-        )}
-      </div>
+      <MessageList messages={messages} raw={raw} preferJson={view === 'json'} />
     </div>
   );
 }
@@ -137,7 +117,14 @@ const TAB_LABEL_KEYS: Record<TabId, string> = {
   log: 'com_traces_tab_log',
 };
 
-export function TraceDetailPane({ trace, totals, node, isRoot, scores = [] }: TraceDetailPaneProps) {
+export function TraceDetailPane({
+  trace,
+  totals,
+  node,
+  isRoot,
+  observations,
+  scores = [],
+}: TraceDetailPaneProps) {
   const localize = useLocalize();
   const [view, setView] = useState<ViewMode>('pretty');
   const [tab, setTab] = useState<TabId>('preview');
@@ -271,7 +258,7 @@ export function TraceDetailPane({ trace, totals, node, isRoot, scores = [] }: Tr
 
       {activeTab === 'log' ? (
         <div className="min-h-0 flex-1 overflow-auto">
-          <LogViewTab node={node} trace={trace} isRoot={isRoot} />
+          <LogViewTab observations={observations} />
         </div>
       ) : null}
       {activeTab === 'scores' ? (
@@ -305,14 +292,12 @@ export function TraceDetailPane({ trace, totals, node, isRoot, scores = [] }: Tr
             messages={inputMessages}
             raw={node?.input ?? ''}
             view={view}
-            variant="input"
           />
           <IOPanel
             title={localize('com_traces_output')}
             messages={outputMessages}
             raw={node?.output ?? ''}
             view={view}
-            variant="output"
           />
 
           {rows.length > 0 ? (
