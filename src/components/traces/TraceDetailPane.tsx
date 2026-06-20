@@ -6,7 +6,6 @@ import { cn } from '@/utils';
 import { ScoresTab } from './ScoresTab';
 import { LogViewTab, MessageList } from './LogViewTab';
 import { TypeIcon } from './traceIcons';
-import type { TraceScore } from './ScoresTab';
 import { formatCost, formatLatency, formatTimestampLong, formatTokenCounts } from './format';
 
 interface TraceTotals {
@@ -28,8 +27,8 @@ interface TraceDetailPaneProps {
   navCollapsed?: boolean;
   /** Collapse/expand the left nav panel (the reference UI header panel-toggle). */
   onToggleNav?: () => void;
-  /** Feedback/eval scores for the trace; defaults to [] until getTraceScoresFn is wired. */
-  scores?: TraceScore[];
+  /** Feedback/eval scores for the trace (trace-level + observation-level). */
+  scores?: t.TraceScore[];
 }
 
 type ViewMode = 'pretty' | 'json';

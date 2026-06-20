@@ -257,9 +257,14 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
         .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.cnt) }))
         .filter((o) => o.value);
 
-    // `type` lives on observations, not traces, so it is counted separately.
+    // `type` lives on observations, but this facet scopes the TRACES list, so
+    // the count must be the number of distinct TRACES that contain an
+    // observation of each type (matching how the filter is applied — a
+    // "traces containing type X" subquery — and consistent with the other
+    // trace-scoped facets above). Counting observations would overcount
+    // (one trace with 5 tool calls is still 1 matching trace row).
     const typeRows = await chQuery<Record<string, unknown>>(
-      `SELECT type AS value, count() AS count FROM observations FINAL
+      `SELECT type AS value, uniqExact(trace_id) AS count FROM observations FINAL
          WHERE tenant_id = {t:String} AND is_deleted = 0 AND type != ''
        GROUP BY type
        ORDER BY count DESC`,
@@ -453,11 +458,41 @@ export const getTraceFn = createServerFn({ method: 'GET' })
       params,
     );
 
+    // Feedback/eval scores for this trace. Each score links to the trace and
+    // optionally to a specific observation (observation_id). Node chips come
+    // from per-observation scores; trace-level scores (empty observation_id)
+    // attach to the root node and all appear in the Scores tab.
+    const scoreRows = await chQuery<Record<string, unknown>>(
+      `SELECT observation_id AS observationId, name, value, string_value AS stringValue,
+              data_type AS dataType, source, comment, toString(timestamp) AS timestamp
+       FROM scores FINAL
+       WHERE tenant_id = {t:String} AND trace_id = {id:String} AND is_deleted = 0
+       ORDER BY timestamp ASC`,
+      params,
+    );
+    const allScores: t.TraceScore[] = scoreRows.map((r) => ({
+      name: String(r.name ?? ''),
+      value: r.value === null || r.value === undefined ? null : toNumber(r.value),
+      stringValue: r.stringValue ? String(r.stringValue) : null,
+      dataType: String(r.dataType ?? ''),
+      source: String(r.source ?? ''),
+      comment: r.comment ? String(r.comment) : null,
+      timestamp: String(r.timestamp ?? ''),
+    }));
+    const scoresByObservation = new Map<string, t.TraceScore[]>();
+    scoreRows.forEach((r, i) => {
+      const obsId = String(r.observationId ?? '');
+      const bucket = scoresByObservation.get(obsId);
+      if (bucket) bucket.push(allScores[i]);
+      else scoresByObservation.set(obsId, [allScores[i]]);
+    });
+
     const flat: t.ObservationNode[] = obsRows.map((r) => {
       const input = String(r.input ?? '');
       const output = String(r.output ?? '');
+      const id = String(r.id ?? '');
       return {
-        id: String(r.id ?? ''),
+        id,
         parentId: String(r.parentId ?? ''),
         type: String(r.type ?? 'span'),
         name: String(r.name ?? ''),
@@ -477,11 +512,17 @@ export const getTraceFn = createServerFn({ method: 'GET' })
         metadata: (r.metadata as Record<string, string>) ?? {},
         usageDetails: (r.usageDetails as Record<string, number>) ?? {},
         costDetails: (r.costDetails as Record<string, number>) ?? {},
+        scores: scoresByObservation.get(id) ?? [],
         children: [],
       };
     });
 
     const roots = buildTree(flat);
+    // Trace-level scores (no observation_id) surface as chips on the root node.
+    const traceLevelScores = scoresByObservation.get('');
+    if (roots[0] && traceLevelScores) {
+      roots[0].scores = [...roots[0].scores, ...traceLevelScores];
+    }
     const traceInput = String(trace.input ?? '');
     const traceOutput = String(trace.output ?? '');
     // Producers leave trace-level I/O empty; the root observation's output holds the
@@ -519,6 +560,7 @@ export const getTraceFn = createServerFn({ method: 'GET' })
       observationCount: flat.length,
       totalCost: flat.reduce((sum, o) => sum + o.totalCost, 0),
       totalTokens: flat.reduce((sum, o) => sum + o.totalTokens, 0),
+      scores: allScores,
     };
   });
 

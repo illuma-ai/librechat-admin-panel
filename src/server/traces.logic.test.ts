@@ -39,6 +39,7 @@ function node(id: string, parentId = ''): t.ObservationNode {
     metadata: {},
     usageDetails: {},
     costDetails: {},
+    scores: [],
     children: [],
   };
 }

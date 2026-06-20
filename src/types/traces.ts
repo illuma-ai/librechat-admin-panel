@@ -95,6 +95,20 @@ export interface TraceMessage {
   text: string;
 }
 
+/**
+ * A feedback/eval score attached to a trace or one of its observations.
+ * Numeric scores carry `value`; categorical/boolean scores carry `stringValue`.
+ */
+export interface TraceScore {
+  name: string;
+  value: number | null;
+  stringValue: string | null;
+  dataType: string;
+  source: string;
+  comment: string | null;
+  timestamp: string;
+}
+
 /** One observation in a trace, as a node in the span tree. */
 export interface ObservationNode {
   id: string;
@@ -118,6 +132,8 @@ export interface ObservationNode {
   metadata: Record<string, string>;
   usageDetails: Record<string, number>;
   costDetails: Record<string, number>;
+  /** Feedback/eval scores attached to this observation (rendered as chips). */
+  scores: TraceScore[];
   children: ObservationNode[];
 }
 
@@ -172,6 +188,8 @@ export interface TraceDetail {
   totalCost: number;
   totalTokens: number;
   observationCount: number;
+  /** All feedback/eval scores for the trace (trace-level + observation-level). */
+  scores: TraceScore[];
 }
 
 /** Headline metrics for the selected tenant. */

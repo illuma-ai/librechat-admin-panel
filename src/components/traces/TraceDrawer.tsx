@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Flyout } from '@clickhouse/click-ui';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { ArrowDown, ArrowUp, Expand, ExternalLink, X } from 'lucide-react';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
@@ -16,12 +16,6 @@ interface TraceDrawerProps {
   /** Prev/next navigation across the current page's trace-id list (K/J). Hidden when absent. */
   onPrev?: () => void;
   onNext?: () => void;
-}
-
-/** Build the `/traces/$traceId?tenant=` path the "open in new tab" button opens. */
-function tracePath(tenant: string, traceId: string): string {
-  const search = new URLSearchParams({ tenant }).toString();
-  return `/traces/${traceId}?${search}`;
 }
 
 /** Small keyboard-shortcut chip, mirroring the reference's `KeyboardShortcut`. */
@@ -113,13 +107,21 @@ function DrawerHeader({
 }) {
   const localize = useLocalize();
   const navigate = useNavigate();
+  const router = useRouter();
   const { data } = useQuery({
     ...traceDetailQueryOptions(tenant, traceId),
     enabled: tenant.length > 0 && traceId.length > 0,
   });
   const name = data?.trace.name;
   const canNavigate = Boolean(onPrev || onNext);
-  const path = tracePath(tenant, traceId);
+  // Build the deep link through the router so it honours the configured
+  // `basepath` (window.open on a hand-built "/traces/..." string would 404
+  // when the app is mounted under a non-root base).
+  const href = router.buildLocation({
+    to: '/traces/$traceId',
+    params: { traceId },
+    search: { tenant },
+  }).href;
 
   return (
     <div className="flex min-h-11 shrink-0 flex-row flex-nowrap items-center justify-between gap-2 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-2 py-1">
@@ -157,7 +159,7 @@ function DrawerHeader({
           <ExpandButton
             icon={ExternalLink}
             title={localize('com_traces_open_new_tab')}
-            onClick={() => window.open(path, '_blank', 'noopener,noreferrer')}
+            onClick={() => window.open(href, '_blank', 'noopener,noreferrer')}
           />
         </div>
         <ExpandButton icon={X} title={localize('com_traces_close')} onClick={onClose} />

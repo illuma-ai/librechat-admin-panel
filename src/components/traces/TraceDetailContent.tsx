@@ -216,6 +216,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
           node={selectedNode}
           isRoot={isRoot}
           observations={data.observations}
+          scores={data.scores}
           navCollapsed={navCollapsed}
           onToggleNav={toggleNav}
         />

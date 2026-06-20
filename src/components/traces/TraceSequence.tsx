@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
-import { formatLatency, formatTokenCounts, usdFormatter } from './format';
+import { formatLatency, formatTokenCounts, scoreDisplayValue, usdFormatter } from './format';
 import { TypeIcon, typeVisual } from './traceIcons';
 
 /** Parse a CH (`YYYY-MM-DD HH:MM:SS.mmm`) or ISO timestamp to epoch ms (NaN if absent). */
@@ -255,6 +255,23 @@ export function TraceSequence({
                       {usdFormatter(node.totalCost)}
                     </span>
                   ) : null}
+                </div>
+              ) : null}
+              {/* Feedback/eval score chips (Langfuse-style), e.g. `name: value`. */}
+              {node.scores.length > 0 ? (
+                <div className="mt-0.5 flex flex-wrap gap-1">
+                  {node.scores.map((score, i) => (
+                    <span
+                      key={`${score.name}-${i}`}
+                      title={score.comment ?? undefined}
+                      className="inline-flex items-center gap-1 rounded-sm border border-(--cui-color-stroke-success,var(--cui-color-stroke-default)) bg-(--cui-color-background-muted) px-1 text-[10px] leading-4 text-(--cui-color-text-muted)"
+                    >
+                      <span className="font-medium text-(--cui-color-text-default)">
+                        {score.name}
+                      </span>
+                      <span>{scoreDisplayValue(score)}</span>
+                    </span>
+                  ))}
                 </div>
               ) : null}
             </div>

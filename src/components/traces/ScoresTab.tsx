@@ -1,35 +1,9 @@
+import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
-import { formatTimestamp } from './format';
-
-/**
- * A feedback/eval score attached to a trace.
- * Mirrors the reference's `ScoreDomain` projection used by the trace Scores tab:
- * numeric scores carry `value`, categorical/boolean scores carry `stringValue`.
- */
-export interface TraceScore {
-  name: string;
-  value: number | null;
-  stringValue: string | null;
-  dataType: string;
-  source: string;
-  comment: string | null;
-  timestamp: string;
-}
+import { formatTimestamp, scoreDisplayValue } from './format';
 
 interface ScoresTabProps {
-  scores: TraceScore[];
-}
-
-/** Numeric scores show their number; categorical/boolean show the string label. */
-function displayValue(score: TraceScore): string {
-  const isNumeric = score.dataType?.toUpperCase() === 'NUMERIC';
-  if (isNumeric && score.value !== null && score.value !== undefined) {
-    return String(score.value);
-  }
-  return (
-    score.stringValue ??
-    (score.value !== null && score.value !== undefined ? String(score.value) : '')
-  );
+  scores: t.TraceScore[];
 }
 
 /** reference trace Scores tab — a flat table of feedback/eval scores. */
@@ -71,7 +45,7 @@ export function ScoresTab({ scores }: ScoresTabProps) {
               {score.name}
             </span>
             <span className="w-1/5 truncate text-(--cui-color-text-default)">
-              {displayValue(score)}
+              {scoreDisplayValue(score)}
             </span>
             <span className="w-1/5 truncate text-(--cui-color-text-muted)">{score.source}</span>
             <span className="flex-1 wrap-break-word text-(--cui-color-text-muted)">

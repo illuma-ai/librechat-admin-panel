@@ -1,4 +1,5 @@
 /** Display formatters for telemetry values. Single source of truth for the views. */
+import type * as t from '@/types';
 
 /** ClickHouse emits `YYYY-MM-DD HH:MM:SS.mmm` (UTC, no zone) — parse as UTC. */
 export function parseChDate(value: string): Date {
@@ -104,4 +105,16 @@ export function observationBadgeState(type: string): 'info' | 'warning' | 'succe
     default:
       return 'neutral';
   }
+}
+
+/** A score's display value: numeric scores show the number; categorical/boolean show the label. */
+export function scoreDisplayValue(score: t.TraceScore): string {
+  const isNumeric = score.dataType?.toUpperCase() === 'NUMERIC';
+  if (isNumeric && score.value !== null && score.value !== undefined) {
+    return String(score.value);
+  }
+  return (
+    score.stringValue ??
+    (score.value !== null && score.value !== undefined ? String(score.value) : '')
+  );
 }
