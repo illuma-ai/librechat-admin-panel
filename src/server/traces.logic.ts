@@ -23,11 +23,11 @@ export type TagOperator = 'any of' | 'all of' | 'none of';
  * on the `traces` table are represented here:
  *   environment, name, user_id, session_id, tags, release, version.
  *
- * NUMERIC/AGGREGATE FACETS (latency, total/input/output cost & tokens, level)
- * are intentionally NOT part of this interface: those values are rolled up from
- * the joined `observations` table and cannot be filtered on the bare `traces`
- * row. Supporting them requires moving the predicate onto the observations-
- * joined subquery (a follow-up — see the integration note in the task report).
+ * Aggregate numeric facets (latency, total cost & tokens) and observation
+ * `level` are also supported here, but they live on the joined `observations`
+ * table rather than the bare `traces` row, so they are applied via subqueries:
+ * `level` and `type` via a membership subquery, and the numeric ranges via a
+ * GROUP BY ... HAVING subquery over the trace's rolled-up aggregate.
  */
 export interface TraceFilters {
   environment: string[];
@@ -39,6 +39,11 @@ export interface TraceFilters {
    * than a bare column predicate.
    */
   type?: string[];
+  /**
+   * Observation level the trace must contain (DEBUG/DEFAULT/WARNING/ERROR).
+   * Lives on `observations`; applied via a membership subquery like `type`.
+   */
+  level?: string[];
   tags: string[];
   /** session_id IN (...) */
   sessionId?: string[];
@@ -48,6 +53,58 @@ export interface TraceFilters {
   version?: string[];
   /** Array-membership mode for `tags`. Defaults to 'any of' (hasAny). */
   tagOperator?: TagOperator;
+  /** Minimum trace latency in SECONDS (converted to ms in the bound param). */
+  latencyMin?: number;
+  /** Maximum trace latency in SECONDS (converted to ms in the bound param). */
+  latencyMax?: number;
+  /** Minimum trace total cost in USD. */
+  costMin?: number;
+  /** Maximum trace total cost in USD. */
+  costMax?: number;
+  /** Minimum trace total tokens. */
+  tokensMin?: number;
+  /** Maximum trace total tokens. */
+  tokensMax?: number;
+}
+
+/** One aggregate-range numeric facet: the per-trace HAVING expression + its optional bounds. */
+interface NumericRangeFacet {
+  /** Trusted ClickHouse aggregate over the trace's observations (never user input). */
+  agg: string;
+  /** Lower bound value (already in the aggregate's unit) and its param name. */
+  min?: number;
+  minParam: string;
+  /** Upper bound value (already in the aggregate's unit) and its param name. */
+  max?: number;
+  maxParam: string;
+  /** ClickHouse param type for the bound (e.g. 'Float64', 'UInt64'). */
+  paramType: string;
+}
+
+/**
+ * Build a parameterized GROUP BY ... HAVING membership subquery for one aggregate
+ * numeric range facet. Returns null when neither bound is set. Both the aggregate
+ * expression and the bound param types are fixed/trusted; only the numeric bound
+ * VALUES are bound as params — never interpolated into SQL.
+ */
+function numericRangeClause(
+  facet: NumericRangeFacet,
+  params: Record<string, unknown>,
+): string | null {
+  const conditions: string[] = [];
+  if (facet.min !== undefined) {
+    conditions.push(`${facet.agg} >= {${facet.minParam}:${facet.paramType}}`);
+    params[facet.minParam] = facet.min;
+  }
+  if (facet.max !== undefined) {
+    conditions.push(`${facet.agg} <= {${facet.maxParam}:${facet.paramType}}`);
+    params[facet.maxParam] = facet.max;
+  }
+  if (conditions.length === 0) return null;
+  return (
+    'id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0' +
+    ` GROUP BY trace_id HAVING ${conditions.join(' AND ')})`
+  );
 }
 
 /** Build the parameterized `tags` predicate for the chosen array operator. */
@@ -91,6 +148,12 @@ export function buildTraceFilters(filters: TraceFilters): {
     );
     params.fType = filters.type;
   }
+  if (filters.level && filters.level.length > 0) {
+    clauses.push(
+      'id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 AND level IN {fLevel:Array(String)})',
+    );
+    params.fLevel = filters.level;
+  }
   if (filters.sessionId && filters.sessionId.length > 0) {
     clauses.push('session_id IN {fSession:Array(String)}');
     params.fSession = filters.sessionId;
@@ -106,6 +169,36 @@ export function buildTraceFilters(filters: TraceFilters): {
   if (filters.tags.length > 0) {
     clauses.push(tagsClause(filters.tagOperator ?? 'any of'));
     params.fTags = filters.tags;
+  }
+  const numericFacets: NumericRangeFacet[] = [
+    {
+      agg: "dateDiff('millisecond', min(start_time), max(end_time))",
+      min: filters.latencyMin === undefined ? undefined : filters.latencyMin * 1000,
+      minParam: 'fLatencyMin',
+      max: filters.latencyMax === undefined ? undefined : filters.latencyMax * 1000,
+      maxParam: 'fLatencyMax',
+      paramType: 'Float64',
+    },
+    {
+      agg: 'sum(total_cost)',
+      min: filters.costMin,
+      minParam: 'fCostMin',
+      max: filters.costMax,
+      maxParam: 'fCostMax',
+      paramType: 'Float64',
+    },
+    {
+      agg: 'sum(total_tokens)',
+      min: filters.tokensMin,
+      minParam: 'fTokensMin',
+      max: filters.tokensMax,
+      maxParam: 'fTokensMax',
+      paramType: 'Float64',
+    },
+  ];
+  for (const facet of numericFacets) {
+    const clause = numericRangeClause(facet, params);
+    if (clause) clauses.push(clause);
   }
   return { clause: clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : '', params };
 }

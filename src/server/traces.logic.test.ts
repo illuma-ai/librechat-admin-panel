@@ -242,6 +242,93 @@ describe('buildTraceFilters', () => {
     expect(out).toEqual({ clause: '', params: {} });
   });
 
+  it('builds a parameterized observations subquery for the level facet', () => {
+    const out = buildTraceFilters({ ...empty, level: ['ERROR', 'WARNING'] });
+    expect(out.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 AND level IN {fLevel:Array(String)})',
+    );
+    expect(out.params).toEqual({ fLevel: ['ERROR', 'WARNING'] });
+  });
+
+  it('omits the level facet when empty', () => {
+    const out = buildTraceFilters({ ...empty, level: [] });
+    expect(out).toEqual({ clause: '', params: {} });
+  });
+
+  it('builds a min-only latency HAVING subquery (seconds → ms in the param)', () => {
+    const out = buildTraceFilters({ ...empty, latencyMin: 2 });
+    expect(out.clause).toBe(
+      "AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING dateDiff('millisecond', min(start_time), max(end_time)) >= {fLatencyMin:Float64})",
+    );
+    expect(out.params).toEqual({ fLatencyMin: 2000 });
+  });
+
+  it('builds a max-only latency HAVING subquery', () => {
+    const out = buildTraceFilters({ ...empty, latencyMax: 5 });
+    expect(out.clause).toBe(
+      "AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING dateDiff('millisecond', min(start_time), max(end_time)) <= {fLatencyMax:Float64})",
+    );
+    expect(out.params).toEqual({ fLatencyMax: 5000 });
+  });
+
+  it('builds a both-bound latency HAVING subquery', () => {
+    const out = buildTraceFilters({ ...empty, latencyMin: 1, latencyMax: 3 });
+    expect(out.clause).toBe(
+      "AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING dateDiff('millisecond', min(start_time), max(end_time)) >= {fLatencyMin:Float64} AND dateDiff('millisecond', min(start_time), max(end_time)) <= {fLatencyMax:Float64})",
+    );
+    expect(out.params).toEqual({ fLatencyMin: 1000, fLatencyMax: 3000 });
+  });
+
+  it('builds min-only, max-only, and both-bound cost HAVING subqueries', () => {
+    const min = buildTraceFilters({ ...empty, costMin: 0.5 });
+    expect(min.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING sum(total_cost) >= {fCostMin:Float64})',
+    );
+    expect(min.params).toEqual({ fCostMin: 0.5 });
+
+    const max = buildTraceFilters({ ...empty, costMax: 2 });
+    expect(max.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING sum(total_cost) <= {fCostMax:Float64})',
+    );
+    expect(max.params).toEqual({ fCostMax: 2 });
+
+    const both = buildTraceFilters({ ...empty, costMin: 0.5, costMax: 2 });
+    expect(both.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING sum(total_cost) >= {fCostMin:Float64} AND sum(total_cost) <= {fCostMax:Float64})',
+    );
+    expect(both.params).toEqual({ fCostMin: 0.5, fCostMax: 2 });
+  });
+
+  it('builds min-only, max-only, and both-bound tokens HAVING subqueries', () => {
+    const min = buildTraceFilters({ ...empty, tokensMin: 100 });
+    expect(min.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING sum(total_tokens) >= {fTokensMin:Float64})',
+    );
+    expect(min.params).toEqual({ fTokensMin: 100 });
+
+    const max = buildTraceFilters({ ...empty, tokensMax: 5000 });
+    expect(max.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING sum(total_tokens) <= {fTokensMax:Float64})',
+    );
+    expect(max.params).toEqual({ fTokensMax: 5000 });
+
+    const both = buildTraceFilters({ ...empty, tokensMin: 100, tokensMax: 5000 });
+    expect(both.clause).toBe(
+      'AND id IN (SELECT trace_id FROM observations WHERE tenant_id = {t:String} AND is_deleted = 0 GROUP BY trace_id HAVING sum(total_tokens) >= {fTokensMin:Float64} AND sum(total_tokens) <= {fTokensMax:Float64})',
+    );
+    expect(both.params).toEqual({ fTokensMin: 100, fTokensMax: 5000 });
+  });
+
+  it('omits numeric range facets when no bound is set', () => {
+    const out = buildTraceFilters({
+      ...empty,
+      latencyMin: undefined,
+      costMax: undefined,
+      tokensMin: undefined,
+    });
+    expect(out).toEqual({ clause: '', params: {} });
+  });
+
   it('uses hasAny for the default tag operator', () => {
     const out = buildTraceFilters({ ...empty, tags: ['agent'] });
     expect(out.clause).toBe('AND hasAny(tags, {fTags:Array(String)})');

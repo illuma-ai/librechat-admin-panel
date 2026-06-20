@@ -46,7 +46,14 @@ const tracesQuerySchema = z.object({
   name: z.array(z.string()).default([]),
   userId: z.array(z.string()).default([]),
   type: z.array(z.string()).default([]),
+  level: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  latencyMin: z.number().nonnegative().optional(),
+  latencyMax: z.number().nonnegative().optional(),
+  costMin: z.number().nonnegative().optional(),
+  costMax: z.number().nonnegative().optional(),
+  tokensMin: z.number().nonnegative().optional(),
+  tokensMax: z.number().nonnegative().optional(),
   searchType: z.enum(['metadata', 'fullText']).default('metadata'),
   orderBy: orderBySchema,
 });
@@ -152,7 +159,14 @@ export const getTracesFn = createServerFn({ method: 'GET' })
       name: data.name,
       userId: data.userId,
       type: data.type,
+      level: data.level,
       tags: data.tags,
+      latencyMin: data.latencyMin,
+      latencyMax: data.latencyMax,
+      costMin: data.costMin,
+      costMax: data.costMax,
+      tokensMin: data.tokensMin,
+      tokensMax: data.tokensMax,
     });
     const params: Record<string, unknown> = {
       t: data.tenantId,
@@ -282,23 +296,51 @@ export const getTraceFilterOptionsFn = createServerFn({ method: 'GET' })
     // "traces containing type X" subquery — and consistent with the other
     // trace-scoped facets above). Counting observations would overcount
     // (one trace with 5 tool calls is still 1 matching trace row).
-    const typeRows = await chQuery<Record<string, unknown>>(
-      `SELECT type AS value, uniqExact(trace_id) AS count FROM observations FINAL
-         WHERE tenant_id = {t:String} AND is_deleted = 0 AND type != ''
-       GROUP BY type
+    // Both `type` and `level` scope the TRACES list (a trace matches if it
+    // contains a matching observation), so each count is the number of distinct
+    // TRACES per value, not the number of observations. One query, two facets.
+    const facetRows = await chQuery<Record<string, unknown>>(
+      `SELECT facet, value, uniqExact(trace_id) AS count FROM (
+         SELECT 'type' AS facet, type AS value, trace_id FROM observations FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 AND type != ''
+         UNION ALL
+         SELECT 'level', level, trace_id FROM observations FINAL
+           WHERE tenant_id = {t:String} AND is_deleted = 0 AND level != ''
+       )
+       GROUP BY facet, value
        ORDER BY count DESC`,
       { t: data.tenantId },
     );
-    const type: t.FacetOption[] = typeRows
-      .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.count) }))
-      .filter((o) => o.value);
+    const pickFacet = (facet: string): t.FacetOption[] =>
+      facetRows
+        .filter((r) => r.facet === facet)
+        .map((r) => ({ value: String(r.value ?? ''), count: toNumber(r.count) }))
+        .filter((o) => o.value);
+
+    // Aggregate bounds for the numeric range facets — the max trace-level rolled-up
+    // latency (seconds), total cost (USD), and total tokens. Drives the input ranges.
+    const [bounds] = await chQuery<Record<string, unknown>>(
+      `SELECT max(latencyMs) / 1000 AS latencyMax, max(cost) AS costMax, max(tokens) AS tokensMax
+       FROM (
+         SELECT dateDiff('millisecond', min(start_time), max(end_time)) AS latencyMs,
+                sum(total_cost) AS cost, sum(total_tokens) AS tokens
+         FROM observations FINAL
+         WHERE tenant_id = {t:String} AND is_deleted = 0
+         GROUP BY trace_id
+       )`,
+      { t: data.tenantId },
+    );
 
     return {
       environments: pick('env'),
       names: pick('name'),
       userIds: pick('user'),
-      type,
+      type: pickFacet('type'),
+      level: pickFacet('level'),
       tags: pick('tag'),
+      latencyMax: toNumber(bounds?.latencyMax),
+      costMax: toNumber(bounds?.costMax),
+      tokensMax: toNumber(bounds?.tokensMax),
     };
   });
 

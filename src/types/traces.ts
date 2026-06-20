@@ -209,13 +209,35 @@ export interface TraceMetricsSummary {
 /** Supported time-range filters. */
 export type TraceRange = '24h' | '7d' | '30d' | 'all';
 
-/** Categorical facet filters for the traces/observations list. */
-export interface TraceFacetFilters {
+/**
+ * Numeric range filters for the traces list. Each bound is optional and applies
+ * to the trace's rolled-up aggregate over its observations (latency in seconds,
+ * total cost in USD, total tokens). Applied server-side as HAVING-style predicates.
+ */
+export interface TraceNumericFilters {
+  /** Minimum trace latency in seconds (converted to ms server-side). */
+  latencyMin?: number;
+  /** Maximum trace latency in seconds (converted to ms server-side). */
+  latencyMax?: number;
+  /** Minimum trace total cost in USD. */
+  costMin?: number;
+  /** Maximum trace total cost in USD. */
+  costMax?: number;
+  /** Minimum trace total tokens. */
+  tokensMin?: number;
+  /** Maximum trace total tokens. */
+  tokensMax?: number;
+}
+
+/** Categorical + numeric facet filters for the traces/observations list. */
+export interface TraceFacetFilters extends TraceNumericFilters {
   environment: string[];
   name: string[];
   userId: string[];
   /** Observation type (span/generation/tool/agent/event) the trace must contain. */
   type: string[];
+  /** Observation level (DEBUG/DEFAULT/WARNING/ERROR) the trace must contain. */
+  level: string[];
   tags: string[];
 }
 
@@ -232,7 +254,7 @@ export interface TracesOrderBy {
 }
 
 /** Query input for the paginated traces list. */
-export interface TracesQuery {
+export interface TracesQuery extends TraceNumericFilters {
   tenantId: string;
   search: string;
   range: TraceRange;
@@ -242,6 +264,7 @@ export interface TracesQuery {
   name?: string[];
   userId?: string[];
   type?: string[];
+  level?: string[];
   tags?: string[];
   /** Search scope; `fullText` extends the search into observation input/output. */
   searchType?: TraceSearchType;
@@ -262,5 +285,13 @@ export interface TraceFilterOptions {
   userIds: FacetOption[];
   /** Per observation-type counts (span/generation/tool/agent/event). */
   type: FacetOption[];
+  /** Per observation-level distinct-trace counts (DEBUG/DEFAULT/WARNING/ERROR). */
+  level: FacetOption[];
   tags: FacetOption[];
+  /** Max trace latency in seconds across all traces (drives the numeric input range). */
+  latencyMax: number;
+  /** Max trace total cost in USD across all traces. */
+  costMax: number;
+  /** Max trace total tokens across all traces. */
+  tokensMax: number;
 }

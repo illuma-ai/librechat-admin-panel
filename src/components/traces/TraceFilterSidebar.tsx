@@ -42,6 +42,31 @@ function TypeOptionLabel({ value }: { value: string }) {
 }
 
 /**
+ * Observation level → dot color, mirroring the reference's severity palette:
+ * ERROR red, WARNING amber, DEFAULT neutral, DEBUG muted. Uses click-ui feedback
+ * tokens with hex fallbacks (consistent with `LevelCountsCell`).
+ */
+const LEVEL_DOT_COLORS: Record<string, string> = {
+  ERROR: 'var(--cui-color-feedback-danger-fg, #b91c1c)',
+  WARNING: 'var(--cui-color-feedback-warning-fg, #92400e)',
+  DEFAULT: 'var(--cui-color-text-default, #475569)',
+  DEBUG: 'var(--cui-color-text-muted, #94a3b8)',
+};
+
+/** Render an observation-level option: a small severity-colored dot + the level label. */
+function LevelOptionLabel({ value }: { value: string }) {
+  const color = LEVEL_DOT_COLORS[value] ?? LEVEL_DOT_COLORS.DEFAULT;
+  return (
+    <span className="flex min-w-0 flex-1 items-center gap-1.5">
+      <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+      <span className="min-w-0 flex-1 truncate text-xs" title={value}>
+        {value}
+      </span>
+    </span>
+  );
+}
+
+/**
  * Read a not-yet-typed facet option list off the filter-options payload.
  * `getTraceFilterOptionsFn` does not return sessionIds/releases/versions yet, so
  * these are absent at runtime and resolve to `[]`. Once `TraceFilterOptions` is
@@ -400,6 +425,102 @@ function CategoricalFacet({
   );
 }
 
+/**
+ * A numeric range facet: collapsible header + min/max number inputs with a label
+ * and clear. Both bounds are optional; an empty input means "unbounded". `max`
+ * (from the filter-options payload) seeds the placeholder so users see the data's
+ * upper bound. Emits `undefined` for a cleared bound so the caller can drop it.
+ */
+function NumericRangeFacet({
+  label,
+  info,
+  unit,
+  bound,
+  min,
+  max,
+  onChange,
+}: {
+  label: string;
+  info?: ReactNode;
+  unit?: string;
+  /** Data-driven upper bound used as the max input's placeholder. */
+  bound?: number;
+  min?: number;
+  max?: number;
+  onChange: (next: { min?: number; max?: number }) => void;
+}) {
+  const localize = useLocalize();
+  const [open, setOpen] = useState(true);
+  const isActive = min !== undefined || max !== undefined;
+  const ChevronIcon = open ? ChevronUp : ChevronDown;
+
+  const parse = (raw: string): number | undefined => {
+    if (raw.trim().length === 0) return undefined;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+  };
+
+  return (
+    <div className="border-b border-(--cui-color-stroke-default)">
+      <div className="flex w-full items-center justify-between px-3 py-1.5 text-sm text-(--cui-color-text-muted)">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-(--cui-color-text-default)">{label}</span>
+          {info}
+          {isActive ? (
+            <button
+              type="button"
+              onClick={() => onChange({ min: undefined, max: undefined })}
+              className="inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-(--cui-color-stroke-default) px-2 text-xs hover:bg-(--cui-color-background-muted)"
+            >
+              {localize('com_traces_clear')} <X className="size-3" />
+            </button>
+          ) : null}
+        </span>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? localize('com_traces_collapse') : localize('com_traces_expand')}
+          className="shrink-0 hover:text-(--cui-color-text-default)"
+        >
+          <ChevronIcon className="size-4" />
+        </button>
+      </div>
+      {open ? (
+        <div className="flex items-center gap-2 px-3 pb-2">
+          <input
+            type="number"
+            min={0}
+            inputMode="decimal"
+            value={min ?? ''}
+            onChange={(e) => onChange({ min: parse(e.target.value), max })}
+            placeholder={localize('com_traces_filter_min')}
+            aria-label={`${label} ${localize('com_traces_filter_min')}`}
+            className="h-7 w-full rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-xs text-(--cui-color-text-default)"
+          />
+          <span className="shrink-0 text-xs text-(--cui-color-text-muted)">–</span>
+          <input
+            type="number"
+            min={0}
+            inputMode="decimal"
+            value={max ?? ''}
+            onChange={(e) => onChange({ min, max: parse(e.target.value) })}
+            placeholder={
+              bound !== undefined && bound > 0
+                ? formatTokens(Math.ceil(bound))
+                : localize('com_traces_filter_max')
+            }
+            aria-label={`${label} ${localize('com_traces_filter_max')}`}
+            className="h-7 w-full rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-xs text-(--cui-color-text-default)"
+          />
+          {unit ? (
+            <span className="shrink-0 text-xs text-(--cui-color-text-muted)">{unit}</span>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 interface TraceFilterSidebarProps {
   tenant: string;
   filters: t.TraceFacetFilters;
@@ -429,9 +550,16 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
   const isFiltered =
     filters.environment.length > 0 ||
     filters.type.length > 0 ||
+    filters.level.length > 0 ||
     filters.name.length > 0 ||
     filters.userId.length > 0 ||
     filters.tags.length > 0 ||
+    filters.latencyMin !== undefined ||
+    filters.latencyMax !== undefined ||
+    filters.costMin !== undefined ||
+    filters.costMax !== undefined ||
+    filters.tokensMin !== undefined ||
+    filters.tokensMax !== undefined ||
     sessionId.length > 0 ||
     release.length > 0 ||
     version.length > 0 ||
@@ -439,7 +567,20 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
     userTextRules.length > 0;
 
   const clearAll = () => {
-    onChange({ environment: [], type: [], name: [], userId: [], tags: [] });
+    onChange({
+      environment: [],
+      type: [],
+      level: [],
+      name: [],
+      userId: [],
+      tags: [],
+      latencyMin: undefined,
+      latencyMax: undefined,
+      costMin: undefined,
+      costMax: undefined,
+      tokensMin: undefined,
+      tokensMax: undefined,
+    });
     setSessionId([]);
     setRelease([]);
     setVersion([]);
@@ -489,6 +630,40 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
         value={filters.type}
         onChange={(v) => onChange({ type: v })}
         renderOptionLabel={(value) => <TypeOptionLabel value={value} />}
+      />
+      <CategoricalFacet
+        label={localize('com_traces_col_level')}
+        info={<InfoTooltip description={localize('com_traces_filter_level_info')} />}
+        options={data?.level ?? []}
+        value={filters.level}
+        onChange={(v) => onChange({ level: v })}
+        renderOptionLabel={(value) => <LevelOptionLabel value={value} />}
+      />
+      <NumericRangeFacet
+        label={localize('com_traces_col_latency')}
+        info={<InfoTooltip description={localize('com_traces_filter_latency_info')} />}
+        unit={localize('com_traces_unit_seconds')}
+        bound={data?.latencyMax}
+        min={filters.latencyMin}
+        max={filters.latencyMax}
+        onChange={({ min, max }) => onChange({ latencyMin: min, latencyMax: max })}
+      />
+      <NumericRangeFacet
+        label={localize('com_traces_col_cost')}
+        info={<InfoTooltip description={localize('com_traces_filter_cost_info')} />}
+        unit={localize('com_traces_unit_usd')}
+        bound={data?.costMax}
+        min={filters.costMin}
+        max={filters.costMax}
+        onChange={({ min, max }) => onChange({ costMin: min, costMax: max })}
+      />
+      <NumericRangeFacet
+        label={localize('com_traces_col_tokens')}
+        info={<InfoTooltip description={localize('com_traces_filter_tokens_info')} />}
+        bound={data?.tokensMax}
+        min={filters.tokensMin}
+        max={filters.tokensMax}
+        onChange={({ min, max }) => onChange({ tokensMin: min, tokensMax: max })}
       />
       <CategoricalFacet
         label={localize('com_traces_col_name')}

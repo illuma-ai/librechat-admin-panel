@@ -82,7 +82,14 @@ export function TracesPage({
       name: filters.name,
       userId: filters.userId,
       type: filters.type,
+      level: filters.level,
       tags: filters.tags,
+      latencyMin: filters.latencyMin,
+      latencyMax: filters.latencyMax,
+      costMin: filters.costMin,
+      costMax: filters.costMax,
+      tokensMin: filters.tokensMin,
+      tokensMax: filters.tokensMax,
       searchType,
       orderBy: orderBy ? { column: orderBy.id, dir: orderBy.dir } : undefined,
     }),
@@ -297,7 +304,11 @@ export function TracesPage({
         filters.name.length +
         filters.userId.length +
         filters.type.length +
-        filters.tags.length
+        filters.level.length +
+        filters.tags.length +
+        (filters.latencyMin !== undefined || filters.latencyMax !== undefined ? 1 : 0) +
+        (filters.costMin !== undefined || filters.costMax !== undefined ? 1 : 0) +
+        (filters.tokensMin !== undefined || filters.tokensMax !== undefined ? 1 : 0)
       }
       filterSidebar={
         <TraceFilterSidebar tenant={effectiveTenant} filters={filters} onChange={onFilters} />

@@ -28,6 +28,7 @@ export function TraceDetailPage({ tenant, traceId }: TraceDetailPageProps) {
             trace: '',
             env: [],
             type: [],
+            level: [],
             name: [],
             user: [],
             tags: [],

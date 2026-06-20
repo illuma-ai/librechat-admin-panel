@@ -52,6 +52,7 @@ function SessionDetailRoute() {
                 trace: traceId,
                 env: [],
                 type: [],
+                level: [],
                 name: [],
                 user: [],
                 tags: [],

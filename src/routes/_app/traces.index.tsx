@@ -17,9 +17,16 @@ interface TracesSearch {
   trace: string;
   env: string[];
   type: string[];
+  level: string[];
   name: string[];
   user: string[];
   tags: string[];
+  latencyMin?: number;
+  latencyMax?: number;
+  costMin?: number;
+  costMax?: number;
+  tokensMin?: number;
+  tokensMax?: number;
   /** Sort encoded as "<column>.<dir>" (e.g. "timestamp.desc"); optional. */
   sort?: string;
   /** Search scope: `metadata` (ids/names) or `fullText` (also input/output). */
@@ -54,6 +61,13 @@ function parseStrArray(value: unknown): string[] {
   return [];
 }
 
+/** Parse a non-negative finite number from a search param; undefined when absent/invalid. */
+function parseNum(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
 export const Route = createFileRoute('/_app/traces/')({
   validateSearch: (search: Record<string, unknown>): TracesSearch => ({
     tenant: typeof search.tenant === 'string' ? search.tenant : '',
@@ -64,9 +78,16 @@ export const Route = createFileRoute('/_app/traces/')({
     trace: typeof search.trace === 'string' ? search.trace : '',
     env: parseStrArray(search.env),
     type: parseStrArray(search.type),
+    level: parseStrArray(search.level),
     name: parseStrArray(search.name),
     user: parseStrArray(search.user),
     tags: parseStrArray(search.tags),
+    latencyMin: parseNum(search.latencyMin),
+    latencyMax: parseNum(search.latencyMax),
+    costMin: parseNum(search.costMin),
+    costMax: parseNum(search.costMax),
+    tokensMin: parseNum(search.tokensMin),
+    tokensMax: parseNum(search.tokensMax),
     sort: typeof search.sort === 'string' ? search.sort : undefined,
     searchType: search.searchType === 'fullText' ? 'fullText' : 'metadata',
   }),
@@ -74,8 +95,28 @@ export const Route = createFileRoute('/_app/traces/')({
 });
 
 function TracesRoute() {
-  const { tenant, q, range, page, size, trace, env, type, name, user, tags, sort, searchType } =
-    Route.useSearch();
+  const {
+    tenant,
+    q,
+    range,
+    page,
+    size,
+    trace,
+    env,
+    type,
+    level,
+    name,
+    user,
+    tags,
+    latencyMin,
+    latencyMax,
+    costMin,
+    costMax,
+    tokensMin,
+    tokensMax,
+    sort,
+    searchType,
+  } = Route.useSearch();
   const navigate = useNavigate({ from: '/traces/' });
   const orderBy = parseSort(sort);
 
@@ -87,7 +128,20 @@ function TracesRoute() {
       page={page}
       pageSize={size ?? DEFAULT_PAGE_SIZE}
       selectedTraceId={trace || null}
-      filters={{ environment: env, type, name, userId: user, tags }}
+      filters={{
+        environment: env,
+        type,
+        level,
+        name,
+        userId: user,
+        tags,
+        latencyMin,
+        latencyMax,
+        costMin,
+        costMax,
+        tokensMin,
+        tokensMax,
+      }}
       orderBy={orderBy}
       searchType={searchType ?? 'metadata'}
       onSort={(key) => {
@@ -106,9 +160,16 @@ function TracesRoute() {
             trace: '',
             env: [],
             type: [],
+            level: [],
             name: [],
             user: [],
             tags: [],
+            latencyMin: undefined,
+            latencyMax: undefined,
+            costMin: undefined,
+            costMax: undefined,
+            tokensMin: undefined,
+            tokensMax: undefined,
           },
         })
       }
@@ -124,9 +185,16 @@ function TracesRoute() {
             ...prev,
             env: patch.environment ?? prev.env,
             type: patch.type ?? prev.type,
+            level: patch.level ?? prev.level,
             name: patch.name ?? prev.name,
             user: patch.userId ?? prev.user,
             tags: patch.tags ?? prev.tags,
+            latencyMin: 'latencyMin' in patch ? patch.latencyMin : prev.latencyMin,
+            latencyMax: 'latencyMax' in patch ? patch.latencyMax : prev.latencyMax,
+            costMin: 'costMin' in patch ? patch.costMin : prev.costMin,
+            costMax: 'costMax' in patch ? patch.costMax : prev.costMax,
+            tokensMin: 'tokensMin' in patch ? patch.tokensMin : prev.tokensMin,
+            tokensMax: 'tokensMax' in patch ? patch.tokensMax : prev.tokensMax,
             page: 1,
           }),
         })
