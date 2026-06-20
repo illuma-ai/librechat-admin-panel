@@ -175,7 +175,7 @@ export const getTraceFn = createServerFn({ method: 'GET' })
 
     const [trace] = await chQuery<Record<string, unknown>>(
       `SELECT id, name, user_id AS userId, session_id AS sessionId, toString(timestamp) AS timestamp,
-              environment, release, version, tags, input, output
+              environment, release, version, tags, input, output, metadata
        FROM traces FINAL
        WHERE tenant_id = {t:String} AND id = {id:String} AND is_deleted = 0
        LIMIT 1`,
@@ -188,8 +188,8 @@ export const getTraceFn = createServerFn({ method: 'GET' })
               toString(start_time) AS startTime, toString(end_time) AS endTime,
               dateDiff('millisecond', start_time, end_time) AS latencyMs,
               input_tokens AS inputTokens, output_tokens AS outputTokens, total_tokens AS totalTokens,
-              total_cost AS totalCost, level, input, output, usage_details AS usageDetails,
-              cost_details AS costDetails
+              total_cost AS totalCost, level, input, output, metadata,
+              usage_details AS usageDetails, cost_details AS costDetails
        FROM observations FINAL
        WHERE tenant_id = {t:String} AND trace_id = {id:String} AND is_deleted = 0
        ORDER BY start_time ASC`,
@@ -217,6 +217,7 @@ export const getTraceFn = createServerFn({ method: 'GET' })
         output,
         inputMessages: extractMessages(input),
         outputMessages: extractMessages(output),
+        metadata: (r.metadata as Record<string, string>) ?? {},
         usageDetails: (r.usageDetails as Record<string, number>) ?? {},
         costDetails: (r.costDetails as Record<string, number>) ?? {},
         children: [],
@@ -251,6 +252,7 @@ export const getTraceFn = createServerFn({ method: 'GET' })
         tags,
         input: traceInput,
         output: traceOutput,
+        metadata: (trace.metadata as Record<string, string>) ?? {},
       },
       observations: roots,
       conversation,

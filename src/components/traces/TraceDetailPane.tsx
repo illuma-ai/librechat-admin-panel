@@ -91,13 +91,22 @@ interface MetaRow {
   value: string;
 }
 
-/** Build a Path/Value metadata table from the available node/trace fields. */
-function metadataRows(trace: t.TraceHeader, node: t.ObservationNode | null): MetaRow[] {
+/** Build a Path/Value metadata table from the captured node/trace fields. */
+function metadataRows(
+  trace: t.TraceHeader,
+  node: t.ObservationNode | null,
+  isRoot: boolean,
+): MetaRow[] {
   const rows: MetaRow[] = [];
+  const seen = new Set<string>();
   const push = (path: string, value: unknown) => {
-    if (value === undefined || value === null || value === '') return;
+    if (value === undefined || value === null || value === '' || seen.has(path)) return;
+    seen.add(path);
     rows.push({ path, value: String(value) });
   };
+  // Producer-captured metadata (incl. OTel resourceAttributes.*) first.
+  const meta = isRoot ? trace.metadata : (node?.metadata ?? {});
+  for (const [k, v] of Object.entries(meta ?? {})) push(k, v);
   push('environment', trace.environment);
   push('release', trace.release);
   push('version', trace.version);
@@ -131,7 +140,7 @@ export function TraceDetailPane({ trace, totals, node, isRoot }: TraceDetailPane
   const totalTok = isRoot ? totals.totalTokens : (node?.totalTokens ?? 0);
   const tokenText = formatTokenCounts(inputTok, outputTok, totalTok, true);
   const title = node ? node.name || node.type : trace.name || trace.id;
-  const rows = metadataRows(trace, node);
+  const rows = metadataRows(trace, node, isRoot);
 
   return (
     <div className="flex h-full min-h-0 flex-col">

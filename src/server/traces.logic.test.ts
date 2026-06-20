@@ -28,6 +28,7 @@ function node(id: string, parentId = ''): t.ObservationNode {
     output: '',
     inputMessages: [],
     outputMessages: [],
+    metadata: {},
     usageDetails: {},
     costDetails: {},
     children: [],

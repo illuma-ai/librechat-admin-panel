@@ -51,6 +51,7 @@ export interface ObservationNode {
   /** Server-parsed chat messages from `input`/`output` (empty when not chat-shaped). */
   inputMessages: TraceMessage[];
   outputMessages: TraceMessage[];
+  metadata: Record<string, string>;
   usageDetails: Record<string, number>;
   costDetails: Record<string, number>;
   children: ObservationNode[];
@@ -69,6 +70,7 @@ export interface TraceHeader {
   tags: string[];
   input: string;
   output: string;
+  metadata: Record<string, string>;
 }
 
 /** Full trace detail: header + observation tree + rolled-up totals. */
