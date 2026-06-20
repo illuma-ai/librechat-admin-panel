@@ -12,21 +12,11 @@ import { queryOptions } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import type * as t from '@/types';
 import { rangeClause, toNumber } from './traces.logic';
+import { bucketExpr, mergeMetricBuckets } from './dashboard.logic';
 import { chQuery } from './utils/clickhouse';
 
 const rangeSchema = z.enum(['24h', '7d', '30d', 'all']).default('7d');
 const dashboardSchema = z.object({ tenantId: z.string().min(1), range: rangeSchema });
-
-/**
- * ClickHouse bucket expression for a range — fine buckets for short windows, daily
- * for long ones, keeping every chart to a readable point count. Trusted/fixed (never
- * user input).
- */
-function bucketExpr(range: t.TraceRange, column: string): string {
-  if (range === '24h') return `toStartOfHour(${column})`;
-  if (range === '7d') return `toStartOfInterval(${column}, INTERVAL 6 HOUR)`;
-  return `toStartOfDay(${column})`;
-}
 
 const LIST_QUERY_REFETCH = {
   refetchOnWindowFocus: false,
@@ -93,22 +83,15 @@ export const getDashboardTimeseriesFn = createServerFn({ method: 'GET' })
       params,
     );
 
-    const byBucket = new Map<string, t.MetricBucket>();
-    const ensure = (bucket: string): t.MetricBucket => {
-      const existing = byBucket.get(bucket);
-      if (existing) return existing;
-      const fresh: t.MetricBucket = { bucket, traces: 0, observations: 0, cost: 0, tokens: 0 };
-      byBucket.set(bucket, fresh);
-      return fresh;
-    };
-    for (const r of traceRows) ensure(String(r.bucket ?? '')).traces = toNumber(r.traces);
-    for (const r of obsRows) {
-      const b = ensure(String(r.bucket ?? ''));
-      b.observations = toNumber(r.observations);
-      b.cost = toNumber(r.cost);
-      b.tokens = toNumber(r.tokens);
-    }
-    return [...byBucket.values()].sort((a, b) => a.bucket.localeCompare(b.bucket));
+    return mergeMetricBuckets(
+      traceRows.map((r) => ({ bucket: String(r.bucket ?? ''), traces: r.traces })),
+      obsRows.map((r) => ({
+        bucket: String(r.bucket ?? ''),
+        observations: r.observations,
+        cost: r.cost,
+        tokens: r.tokens,
+      })),
+    );
   });
 
 export const dashboardTimeseriesQueryOptions = (tenantId: string, range: t.TraceRange) =>
@@ -167,6 +150,17 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
       params,
     );
 
+    // Per-model observation-latency percentiles (seconds) for the Model latencies table.
+    const modelLatRows = await chQuery<Record<string, unknown>>(
+      `SELECT model AS model,
+              quantile(0.5)(lat) AS p50, quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
+       FROM (SELECT model, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
+             FROM observations FINAL
+             WHERE tenant_id = {t:String} AND is_deleted = 0 AND model != '' ${oClause})
+       GROUP BY model ORDER BY p95 DESC LIMIT 20`,
+      params,
+    );
+
     return {
       modelUsage: modelRows.map((r) => ({
         model: String(r.model ?? ''),
@@ -191,7 +185,51 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
         p95: toNumber(lat?.p95),
         p99: toNumber(lat?.p99),
       },
+      modelLatency: modelLatRows.map((r) => ({
+        model: String(r.model ?? ''),
+        p50: toNumber(r.p50),
+        p95: toNumber(r.p95),
+        p99: toNumber(r.p99),
+      })),
     };
+  });
+
+// ── Latency percentiles over time (multi-line chart) ─────────────────
+
+export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
+  .inputValidator(dashboardSchema)
+  .handler(async ({ data }): Promise<t.LatencyBucket[]> => {
+    const params = { t: data.tenantId };
+    // Per-trace span bucketed on the trace's first observation start; quantiles per bucket.
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT toString(${bucketExpr(data.range, 'startT')}) AS bucket,
+              quantile(0.5)(lat) AS p50, quantile(0.9)(lat) AS p90,
+              quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
+       FROM (
+         SELECT min(start_time) AS startT,
+                dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
+         FROM observations FINAL
+         WHERE tenant_id = {t:String} AND is_deleted = 0 ${rangeClause(data.range, 'start_time')}
+         GROUP BY trace_id
+       )
+       GROUP BY bucket ORDER BY bucket ASC`,
+      params,
+    );
+    return rows.map((r) => ({
+      bucket: String(r.bucket ?? ''),
+      p50: toNumber(r.p50),
+      p90: toNumber(r.p90),
+      p95: toNumber(r.p95),
+      p99: toNumber(r.p99),
+    }));
+  });
+
+export const dashboardLatencySeriesQueryOptions = (tenantId: string, range: t.TraceRange) =>
+  queryOptions({
+    queryKey: ['dashboard', 'latencySeries', tenantId, range],
+    queryFn: () => getDashboardLatencySeriesFn({ data: { tenantId, range } }),
+    ...LIST_QUERY_REFETCH,
+    enabled: tenantId.length > 0,
   });
 
 export const dashboardBreakdownsQueryOptions = (tenantId: string, range: t.TraceRange) =>

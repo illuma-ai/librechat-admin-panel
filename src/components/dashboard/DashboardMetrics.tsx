@@ -1,8 +1,7 @@
 import { Select } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
-import { formatCost, formatTokens, useTracingTenant } from '@/components/traces';
-import { StatCard } from './cards';
+import { useTracingTenant } from '@/components/traces';
 import { useDashboardData, WIDGET_CATALOG, CatalogWidget } from './widgetCatalog';
 
 interface DashboardMetricsProps {
@@ -20,16 +19,15 @@ const RANGE_KEYS: { value: t.TraceRange; labelKey: string }[] = [
 ];
 
 /**
- * Observability dashboard (reference Home parity): tenant + time-range controls, a
- * KPI row, and the full widget catalog (time-series + breakdowns). Both the KPIs and
- * widgets derive from the existing telemetry via tenant-scoped aggregates; custom
+ * Observability dashboard (reference Home parity): tenant + time-range controls over
+ * a grid of the full widget catalog (time-series bars, latency-percentile lines, and
+ * breakdown tables). All metrics derive from tenant-scoped server aggregates; custom
  * dashboards reuse the same catalog.
  */
 export function DashboardMetrics({ tenant, range, onTenant, onRange }: DashboardMetricsProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const data = useDashboardData(effectiveTenant, range);
-  const s = data.summary;
 
   return (
     <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-4">
@@ -49,17 +47,6 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
             options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <StatCard label={localize('com_dash_kpi_traces')} value={(s?.traces ?? 0).toLocaleString()} />
-        <StatCard
-          label={localize('com_dash_kpi_observations')}
-          value={(s?.observations ?? 0).toLocaleString()}
-        />
-        <StatCard label={localize('com_dash_kpi_users')} value={(s?.users ?? 0).toLocaleString()} />
-        <StatCard label={localize('com_dash_kpi_cost')} value={formatCost(s?.cost ?? 0)} />
-        <StatCard label={localize('com_dash_kpi_tokens')} value={formatTokens(s?.tokens ?? 0)} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">

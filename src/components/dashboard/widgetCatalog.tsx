@@ -4,19 +4,21 @@ import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import {
   dashboardBreakdownsQueryOptions,
+  dashboardLatencySeriesQueryOptions,
   dashboardSummaryQueryOptions,
   dashboardTimeseriesQueryOptions,
 } from '@/server';
 import { formatCost, formatTokens, parseChDate } from '@/components/traces';
-import { Widget, StatCard } from './cards';
-import { TimeSeriesChart } from './charts/TimeSeriesChart';
-import { BarList } from './charts/BarList';
+import { Widget } from './cards';
+import { BarTimeChart, LatencyLineChart } from './charts/recharts';
+import { MetricTable } from './charts/MetricTable';
 
 /** Resolved data bundle shared by every dashboard widget for a tenant + range. */
 export interface DashboardData {
   summary?: t.DashboardSummary;
   breakdowns?: t.DashboardBreakdowns;
   points: (t.MetricBucket & { label: string })[];
+  latencyPoints: (t.LatencyBucket & { label: string })[];
   isLoading: boolean;
 }
 
@@ -37,85 +39,125 @@ function bucketLabel(bucket: string, range: t.TraceRange): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-/** Run the three dashboard aggregate queries and derive the shared data bundle. */
+/** Run the dashboard aggregate queries and derive the shared, labelled data bundle. */
 export function useDashboardData(tenant: string, range: t.TraceRange): DashboardData {
   const summary = useQuery(dashboardSummaryQueryOptions(tenant, range));
   const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range));
   const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range));
+  const latency = useQuery(dashboardLatencySeriesQueryOptions(tenant, range));
 
   const points = useMemo(
     () => (series.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
     [series.data, range],
+  );
+  const latencyPoints = useMemo(
+    () => (latency.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
+    [latency.data, range],
   );
 
   return {
     summary: summary.data,
     breakdowns: breakdowns.data,
     points,
-    isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading,
+    latencyPoints,
+    isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading || latency.isLoading,
   };
 }
 
-const seriesPoints = (d: DashboardData, key: 'traces' | 'cost' | 'tokens' | 'observations') =>
+const barPoints = (d: DashboardData, key: 'traces' | 'cost' | 'tokens' | 'observations') =>
   d.points.map((p) => ({ label: p.label, value: p[key] }));
 
-const modelRows = (d: DashboardData): t.BarRow[] =>
-  (d.breakdowns?.modelUsage ?? []).map((m) => ({
-    label: m.model,
-    value: m.cost,
-    display: formatCost(m.cost),
-  }));
-
-const scoreRows = (d: DashboardData): t.BarRow[] =>
-  (d.breakdowns?.scoreDistribution ?? []).map((sc) => ({
-    label: sc.average === null ? sc.name : `${sc.name} (avg ${sc.average.toFixed(2)})`,
-    value: sc.count,
-    display: sc.count.toLocaleString(),
-  }));
-
-const userRows = (d: DashboardData): t.BarRow[] =>
-  (d.breakdowns?.userConsumption ?? []).map((u) => ({
-    label: u.userId,
-    value: u.cost,
-    display: formatCost(u.cost),
-  }));
-
-const seconds = (n: number) => `${n.toFixed(2)}s`;
-
 /**
- * The curated widget catalog — the building blocks for both the Home dashboard and
- * any custom dashboard. Each widget renders from the shared `DashboardData` so a
- * custom dashboard just runs the same queries once and renders a chosen subset.
+ * Widget catalog mirroring the reference dashboard: time-series bar charts, a
+ * multi-line latency-percentile chart, and breakdown tables (model costs, model
+ * latencies, scores, user consumption). Each renders from the shared `DashboardData`
+ * so a custom dashboard runs the queries once and renders a chosen subset.
  */
 export const WIDGET_CATALOG: WidgetDef[] = [
-  { id: 'traces', titleKey: 'com_dash_w_traces', render: (d) => <TimeSeriesChart points={seriesPoints(d, 'traces')} /> },
   {
-    id: 'cost',
-    titleKey: 'com_dash_w_cost',
-    render: (d) => <TimeSeriesChart points={seriesPoints(d, 'cost')} formatValue={formatCost} />,
-  },
-  {
-    id: 'tokens',
-    titleKey: 'com_dash_w_tokens',
-    render: (d) => <TimeSeriesChart points={seriesPoints(d, 'tokens')} formatValue={formatTokens} />,
+    id: 'traces',
+    titleKey: 'com_dash_w_traces',
+    render: (d) => <BarTimeChart points={barPoints(d, 'traces')} valueName="Traces" />,
   },
   {
     id: 'observations',
     titleKey: 'com_dash_w_observations',
-    render: (d) => <TimeSeriesChart points={seriesPoints(d, 'observations')} />,
+    render: (d) => <BarTimeChart points={barPoints(d, 'observations')} valueName="Observations" />,
   },
-  { id: 'model_usage', titleKey: 'com_dash_w_model_usage', render: (d) => <BarList rows={modelRows(d)} /> },
-  { id: 'scores', titleKey: 'com_dash_w_scores', render: (d) => <BarList rows={scoreRows(d)} /> },
-  { id: 'user_consumption', titleKey: 'com_dash_w_user_consumption', render: (d) => <BarList rows={userRows(d)} /> },
   {
-    id: 'latency',
+    id: 'cost',
+    titleKey: 'com_dash_w_cost',
+    render: (d) => <BarTimeChart points={barPoints(d, 'cost')} valueName="Cost" formatValue={formatCost} />,
+  },
+  {
+    id: 'trace_latency',
     titleKey: 'com_dash_w_latency',
+    render: (d) => <LatencyLineChart points={d.latencyPoints} />,
+  },
+  {
+    id: 'model_costs',
+    titleKey: 'com_dash_w_model_costs',
     render: (d) => (
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard label="p50" value={seconds(d.breakdowns?.latency.p50 ?? 0)} />
-        <StatCard label="p95" value={seconds(d.breakdowns?.latency.p95 ?? 0)} />
-        <StatCard label="p99" value={seconds(d.breakdowns?.latency.p99 ?? 0)} />
-      </div>
+      <MetricTable
+        rows={d.breakdowns?.modelUsage ?? []}
+        rowKey={(r) => r.model}
+        columns={[
+          { key: 'model', header: 'Model', render: (r) => r.model },
+          { key: 'tokens', header: 'Tokens', align: 'right', render: (r) => formatTokens(r.tokens) },
+          { key: 'cost', header: 'USD', align: 'right', render: (r) => formatCost(r.cost) },
+        ]}
+      />
+    ),
+  },
+  {
+    id: 'model_latency',
+    titleKey: 'com_dash_w_model_latencies',
+    render: (d) => (
+      <MetricTable
+        rows={d.breakdowns?.modelLatency ?? []}
+        rowKey={(r) => r.model}
+        columns={[
+          { key: 'model', header: 'Model', render: (r) => r.model },
+          { key: 'p50', header: 'p50', align: 'right', render: (r) => `${r.p50.toFixed(2)}s` },
+          { key: 'p95', header: 'p95', align: 'right', render: (r) => `${r.p95.toFixed(2)}s` },
+          { key: 'p99', header: 'p99', align: 'right', render: (r) => `${r.p99.toFixed(2)}s` },
+        ]}
+      />
+    ),
+  },
+  {
+    id: 'scores',
+    titleKey: 'com_dash_w_scores',
+    render: (d) => (
+      <MetricTable
+        rows={d.breakdowns?.scoreDistribution ?? []}
+        rowKey={(r) => r.name}
+        columns={[
+          { key: 'name', header: 'Name', render: (r) => r.name },
+          { key: 'count', header: 'Count', align: 'right', render: (r) => r.count.toLocaleString() },
+          {
+            key: 'avg',
+            header: 'Avg',
+            align: 'right',
+            render: (r) => (r.average === null ? '—' : r.average.toFixed(2)),
+          },
+        ]}
+      />
+    ),
+  },
+  {
+    id: 'user_consumption',
+    titleKey: 'com_dash_w_user_consumption',
+    render: (d) => (
+      <MetricTable
+        rows={d.breakdowns?.userConsumption ?? []}
+        rowKey={(r) => r.userId}
+        columns={[
+          { key: 'user', header: 'User', render: (r) => r.userId },
+          { key: 'traces', header: 'Traces', align: 'right', render: (r) => r.traces.toLocaleString() },
+          { key: 'cost', header: 'Token cost', align: 'right', render: (r) => formatCost(r.cost) },
+        ]}
+      />
     ),
   },
 ];

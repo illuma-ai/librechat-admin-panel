@@ -56,26 +56,30 @@ export interface LatencyPercentiles {
   p99: number;
 }
 
+/** One time bucket of trace-latency percentiles (seconds) — the multi-line chart. */
+export interface LatencyBucket {
+  bucket: string;
+  p50: number;
+  p90: number;
+  p95: number;
+  p99: number;
+}
+
+/** Per-model latency percentiles (seconds) for the Model latencies table. */
+export interface ModelLatencyRow {
+  model: string;
+  p50: number;
+  p95: number;
+  p99: number;
+}
+
 /** Breakdown widgets bundle for the dashboard. */
 export interface DashboardBreakdowns {
   modelUsage: ModelUsageRow[];
   scoreDistribution: ScoreDistributionRow[];
   userConsumption: UserConsumptionRow[];
   latency: LatencyPercentiles;
-}
-
-/** A single plotted point for the time-series chart (label pre-formatted). */
-export interface TimeSeriesPoint {
-  label: string;
-  value: number;
-}
-
-/** A single row of the horizontal bar-list widget. */
-export interface BarRow {
-  label: string;
-  value: number;
-  /** Pre-formatted value display; falls back to value.toLocaleString(). */
-  display?: string;
+  modelLatency: ModelLatencyRow[];
 }
 
 /**

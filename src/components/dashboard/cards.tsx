@@ -24,22 +24,3 @@ export function Widget({
     </section>
   );
 }
-
-/** A KPI stat tile: label over a large value, with an optional sub-line. */
-export function StatCard({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) p-4">
-      <span className="text-xs text-(--ui-color-text-muted)">{label}</span>
-      <span className="text-2xl font-semibold text-(--ui-color-text-default)">{value}</span>
-      {sub && <span className="text-xs text-(--ui-color-text-muted)">{sub}</span>}
-    </div>
-  );
-}
