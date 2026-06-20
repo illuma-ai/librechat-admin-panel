@@ -401,8 +401,48 @@ describe('buildSearchClause', () => {
 });
 
 describe('buildAgentGraph', () => {
-  it('returns an empty graph when there is no LangGraph metadata', () => {
-    expect(buildAgentGraph([node('a'), node('b')])).toEqual({ nodes: [], edges: [] });
+  /** An observation with explicit start/end times, for the timing-based mode. */
+  const timed = (id: string, start: string, end: string, type = 'span'): t.ObservationNode => ({
+    ...node(id),
+    type,
+    startTime: start,
+    endTime: end,
+  });
+
+  it('builds a generalized timing-based graph when there is no LangGraph metadata', () => {
+    // Non-overlapping observations → sequential steps: Start → a → b → End.
+    const graph = buildAgentGraph([
+      timed('a', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:01.000Z'),
+      timed('b', '2024-01-01T00:00:02.000Z', '2024-01-01T00:00:03.000Z'),
+    ]);
+    expect(graph.nodes.map((n) => n.id).sort()).toEqual(['End', 'Start', 'a', 'b']);
+    expect(graph.edges).toEqual([
+      { from: 'Start', to: 'a' },
+      { from: 'a', to: 'b' },
+      { from: 'b', to: 'End' },
+    ]);
+  });
+
+  it('groups time-overlapping observations into the same parallel step', () => {
+    // a and b overlap in time → same step → both fan out from Start to End.
+    const graph = buildAgentGraph([
+      timed('a', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:02.000Z'),
+      timed('b', '2024-01-01T00:00:01.000Z', '2024-01-01T00:00:03.000Z'),
+    ]);
+    expect(graph.edges).toEqual([
+      { from: 'Start', to: 'a' },
+      { from: 'Start', to: 'b' },
+      { from: 'a', to: 'End' },
+      { from: 'b', to: 'End' },
+    ]);
+  });
+
+  it('excludes event observations from the generalized graph', () => {
+    const graph = buildAgentGraph([
+      timed('a', '2024-01-01T00:00:00.000Z', '2024-01-01T00:00:01.000Z'),
+      timed('evt', '2024-01-01T00:00:00.500Z', '2024-01-01T00:00:00.600Z', 'event'),
+    ]);
+    expect(graph.nodes.map((n) => n.id)).not.toContain('evt');
   });
 
   it('maps __start__ to Start, adds End, and links steps in order', () => {

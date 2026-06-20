@@ -289,14 +289,31 @@ function graphNodeName(raw: string): string {
   return raw;
 }
 
+/** True when the trace carries LangGraph step metadata (langgraph_node + langgraph_step). */
+function hasLanggraphSteps(flat: t.ObservationNode[]): boolean {
+  return flat.some((o) => {
+    const node = o.metadata?.['langgraph_node'];
+    const step = o.metadata?.['langgraph_step'];
+    return Boolean(node) && step !== undefined && step !== '' && Number(step) !== 0;
+  });
+}
+
 /**
- * Derive the agent execution graph from observations' LangGraph metadata,
- * mirroring the reference step-based graph builder: nodes are the distinct
- * `langgraph_node` values; edges connect every node at step N to every node at
- * step N+1 (parallel branches included); a terminal `End` node closes the graph.
- * Returns an empty graph when the trace carries no LangGraph step metadata.
+ * Derive the agent execution graph, mirroring Langfuse v4's two-mode builder:
+ *  - **LangGraph mode** when the trace has `langgraph_node`/`langgraph_step`
+ *    metadata: nodes are the distinct langgraph nodes, stepped by that metadata.
+ *  - **Generalized (timing) mode** otherwise: observations are grouped into
+ *    execution steps by start/end-time overlap and a parent-child step
+ *    constraint, with the observation name as the node identity.
+ * Both modes connect every node at step N to every node at step N+1 (parallel
+ * branches included) and close with a terminal `End` node.
  */
 export function buildAgentGraph(flat: t.ObservationNode[]): t.TraceGraph {
+  return hasLanggraphSteps(flat) ? buildLanggraphGraph(flat) : buildTimingGraph(flat);
+}
+
+/** LangGraph-metadata graph: distinct `langgraph_node` values stepped by `langgraph_step`. */
+function buildLanggraphGraph(flat: t.ObservationNode[]): t.TraceGraph {
   const stepToNodes = new Map<number, Set<string>>();
   const typeByNode = new Map<string, string>();
   for (const obs of flat) {
@@ -345,6 +362,180 @@ export function buildAgentGraph(flat: t.ObservationNode[]): t.TraceGraph {
     for (const node of current) {
       if (node === GRAPH_END) continue;
       for (const target of targets) addEdge(node, target);
+    }
+  }
+  return { nodes, edges };
+}
+
+// ── Generalized (timing-based) agent graph ───────────────────────────
+//
+// Ported from Langfuse v4 (`buildStepData` / `buildGraphFromStepData`): when a
+// trace has no LangGraph metadata, derive the step structure purely from
+// observation timing so non-LangGraph agents still render a graph.
+
+interface TimeRange {
+  start: number;
+  end: number;
+}
+
+/**
+ * Group observations into execution steps by start/end-time overlap
+ * (faithful port of Langfuse's `buildStepGroups`). Observations that start
+ * before any member of the current group finishes belong to the same step;
+ * the rest recurse into later steps. Input must be sorted by start time.
+ */
+function buildStepGroups(
+  observations: t.ObservationNode[],
+  ts: Map<string, TimeRange>,
+): t.ObservationNode[][] {
+  if (observations.length === 0) return [];
+  const groups: t.ObservationNode[][] = [];
+  const current = [observations[0]];
+  let maxEnd = ts.get(observations[0].id)!.end;
+  for (const obs of observations.slice(1)) {
+    const start = ts.get(obs.id)!.start;
+    if (start >= maxEnd) break;
+    if (current.some((g) => start < ts.get(g.id)!.end)) {
+      current.push(obs);
+      const end = ts.get(obs.id)!.end;
+      if (end > maxEnd) maxEnd = end;
+    }
+  }
+  // Drop members that actually start after another member finished (cleanup pass).
+  const cleaned: t.ObservationNode[] = [];
+  const processed = new Set<string>();
+  for (const obs of current) {
+    const start = ts.get(obs.id)!.start;
+    const startsAfterAnother = current.some(
+      (other) => other !== obs && start > ts.get(other.id)!.end,
+    );
+    if (!startsAfterAnother) {
+      cleaned.push(obs);
+      processed.add(obs.id);
+    }
+  }
+  // Inverted/invalid ranges can empty the cleaned group → fall back to avoid infinite recursion.
+  if (cleaned.length === 0) {
+    cleaned.push(...current);
+    for (const o of current) processed.add(o.id);
+  }
+  groups.push(cleaned);
+  const unprocessed = observations.filter((o) => !processed.has(o.id));
+  if (unprocessed.length > 0) groups.push(...buildStepGroups(unprocessed, ts));
+  return groups;
+}
+
+/**
+ * Enforce Langfuse's span parent-child step constraint: every child must sit at
+ * least one step after its parent. Violations push the child (and all later
+ * non-ancestor observations) forward, iterating to a fixed point.
+ */
+function applyParentChildStepConstraint(
+  data: t.ObservationNode[],
+  stepById: Map<string, number>,
+): void {
+  const byId = new Map(data.map((o) => [o.id, o]));
+  const ancestorsOf = (id: string): Set<string> => {
+    const out = new Set<string>();
+    let cur = byId.get(id);
+    while (cur?.parentId) {
+      out.add(cur.parentId);
+      cur = byId.get(cur.parentId);
+    }
+    return out;
+  };
+  // SCALE: bounded at 1500 iterations like upstream, a backstop against cyclic/invalid timing.
+  let violations = true;
+  for (let iter = 0; violations && iter < 1500; iter++) {
+    violations = false;
+    const adjustments = new Map<string, number>();
+    for (const obs of data) {
+      const step = stepById.get(obs.id);
+      if (!obs.parentId || step === undefined) continue;
+      const parentStep = stepById.get(obs.parentId);
+      if (parentStep === undefined) continue;
+      const requiredMin = parentStep + 1;
+      if (step < requiredMin) {
+        violations = true;
+        const ancestors = ancestorsOf(obs.id);
+        for (const target of data) {
+          const tStep = stepById.get(target.id);
+          if (tStep === undefined) continue;
+          if (target.id === obs.id) {
+            adjustments.set(target.id, (adjustments.get(target.id) ?? 0) + (requiredMin - step));
+          } else if (tStep >= requiredMin && !ancestors.has(target.id)) {
+            adjustments.set(target.id, (adjustments.get(target.id) ?? 0) + 1);
+          }
+        }
+      }
+    }
+    for (const [id, adj] of adjustments) stepById.set(id, (stepById.get(id) ?? 0) + adj);
+  }
+}
+
+/** Generalized agent graph from observation timing (no LangGraph metadata). */
+function buildTimingGraph(flat: t.ObservationNode[]): t.TraceGraph {
+  // Events are excluded from agent graphs (Langfuse v4).
+  const data = flat.filter((o) => o.type !== 'event');
+  if (data.length === 0) return { nodes: [], edges: [] };
+
+  const ts = new Map<string, TimeRange>();
+  for (const o of data) {
+    const start = Date.parse(o.startTime) || 0;
+    const end = o.endTime ? Date.parse(o.endTime) || start : start;
+    ts.set(o.id, { start, end });
+  }
+  const sorted = [...data].sort((a, b) => ts.get(a.id)!.start - ts.get(b.id)!.start);
+
+  const stepById = new Map<string, number>();
+  buildStepGroups(sorted, ts).forEach((group, i) => {
+    for (const o of group) stepById.set(o.id, i + 1);
+  });
+  applyParentChildStepConstraint(data, stepById);
+
+  // Node identity = observation name; collect the steps each node appears at.
+  const stepToNodes = new Map<number, Set<string>>();
+  const typeByNode = new Map<string, string>();
+  const minStepByNode = new Map<string, number>();
+  for (const o of data) {
+    const step = stepById.get(o.id);
+    if (step === undefined) continue;
+    if (!stepToNodes.has(step)) stepToNodes.set(step, new Set());
+    stepToNodes.get(step)!.add(o.name);
+    if (!typeByNode.has(o.name)) typeByNode.set(o.name, o.type);
+    const prev = minStepByNode.get(o.name);
+    if (prev === undefined || step < prev) minStepByNode.set(o.name, step);
+  }
+  if (stepToNodes.size === 0) return { nodes: [], edges: [] };
+
+  // System Start (step 0) and End (max + 1) nodes bracket the run.
+  const maxStep = Math.max(...stepToNodes.keys());
+  stepToNodes.set(0, new Set([GRAPH_START]));
+  minStepByNode.set(GRAPH_START, 0);
+  stepToNodes.set(maxStep + 1, new Set([GRAPH_END]));
+  minStepByNode.set(GRAPH_END, maxStep + 1);
+
+  const nodes: t.TraceGraphNode[] = [...minStepByNode.entries()].map(([id, step]) => ({
+    id,
+    label: id,
+    type: id === GRAPH_START || id === GRAPH_END ? 'system' : (typeByNode.get(id) ?? 'span'),
+    step,
+  }));
+
+  const sortedSteps = [...stepToNodes.entries()].sort((a, b) => a[0] - b[0]);
+  const edges: t.TraceGraphEdge[] = [];
+  const seen = new Set<string>();
+  const addEdge = (from: string, to: string) => {
+    if (from === to) return;
+    const key = `${from} ${to}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    edges.push({ from, to });
+  };
+  for (let i = 0; i < sortedSteps.length - 1; i++) {
+    for (const from of sortedSteps[i][1]) {
+      if (from === GRAPH_END) continue;
+      for (const to of sortedSteps[i + 1][1]) addEdge(from, to);
     }
   }
   return { nodes, edges };
