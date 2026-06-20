@@ -1,0 +1,6 @@
+# Use the hoisted node_modules layout (a flat node_modules), not bun's isolated
+# (.bun store + symlinks) linker. Enabling workspaces flips bun to isolated by
+# default, which doesn't create the top-level `node_modules/h3-v2` symlink that
+# the npm-aliased h3 (TanStack Start's server runtime) resolves at runtime.
+[install]
+linker = "hoisted"
