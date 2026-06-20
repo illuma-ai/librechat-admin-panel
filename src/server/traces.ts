@@ -251,11 +251,25 @@ export const getTracesFn = createServerFn({ method: 'GET' })
     };
   });
 
+/**
+ * Refetch policy shared by the trace / observation / session LIST queries,
+ * mirroring the reference's table queries. These tables refresh ONLY via the
+ * explicit Refresh button and the auto-refresh timer — both call
+ * `invalidateQueries`, which bypasses `staleTime`. Disabling window-focus and
+ * remount refetches keeps the only background refresh the controlled timer.
+ * SCALE: avoids redundant per-focus refetches across many concurrent users.
+ */
+const LIST_QUERY_REFETCH = {
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  staleTime: Infinity,
+} as const;
+
 export const tracesQueryOptions = (query: t.TracesQuery) =>
   queryOptions({
     queryKey: ['traces', 'list', query],
     queryFn: () => getTracesFn({ data: query }),
-    staleTime: 10_000,
+    ...LIST_QUERY_REFETCH,
     enabled: query.tenantId.length > 0,
   });
 
@@ -427,7 +441,7 @@ export const observationsQueryOptions = (query: t.TracesQuery) =>
   queryOptions({
     queryKey: ['observations', 'list', query],
     queryFn: () => getObservationsFn({ data: query }),
-    staleTime: 10_000,
+    ...LIST_QUERY_REFETCH,
     enabled: query.tenantId.length > 0,
   });
 
@@ -501,7 +515,7 @@ export const sessionsQueryOptions = (query: t.TracesQuery) =>
   queryOptions({
     queryKey: ['sessions', 'list', query],
     queryFn: () => getSessionsFn({ data: query }),
-    staleTime: 10_000,
+    ...LIST_QUERY_REFETCH,
     enabled: query.tenantId.length > 0,
   });
 
