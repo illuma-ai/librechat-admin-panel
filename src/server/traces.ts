@@ -402,6 +402,20 @@ export const getObservationsFn = createServerFn({ method: 'GET' })
     addFacet(data.type, 'type', 'fType');
     addFacet(data.level, 'level', 'fLevel');
     addFacet(data.name, 'name', 'fName');
+
+    // Numeric range filters on the observation's own columns (per-row, not
+    // aggregated) — latency in seconds (vs the ms span), total cost, total tokens.
+    const addRange = (value: number | undefined, expr: string, param: string) => {
+      if (value === undefined) return;
+      facetClauses.push(expr);
+      params[param] = value;
+    };
+    addRange(data.latencyMin, 'dateDiff(\'millisecond\', start_time, end_time) >= {fLatMin:Float64} * 1000', 'fLatMin');
+    addRange(data.latencyMax, 'dateDiff(\'millisecond\', start_time, end_time) <= {fLatMax:Float64} * 1000', 'fLatMax');
+    addRange(data.costMin, 'total_cost >= {fCostMin:Float64}', 'fCostMin');
+    addRange(data.costMax, 'total_cost <= {fCostMax:Float64}', 'fCostMax');
+    addRange(data.tokensMin, 'total_tokens >= {fTokMin:Float64}', 'fTokMin');
+    addRange(data.tokensMax, 'total_tokens <= {fTokMax:Float64}', 'fTokMax');
     const facetClause = facetClauses.length > 0 ? `AND ${facetClauses.join(' AND ')}` : '';
 
     const [countRow] = await chQuery<{ c: string }>(

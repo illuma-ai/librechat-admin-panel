@@ -16,6 +16,13 @@ interface ObservationsSearch {
   type: string[];
   level: string[];
   name: string[];
+  /** Numeric range filters on the observation's own latency / cost / tokens. */
+  latMin?: number;
+  latMax?: number;
+  costMin?: number;
+  costMax?: number;
+  tokMin?: number;
+  tokMax?: number;
 }
 
 function parseRange(value: unknown): t.TraceRange {
@@ -26,6 +33,11 @@ function parseStrArray(value: unknown): string[] {
   if (Array.isArray(value)) return value.map(String).filter(Boolean);
   if (typeof value === 'string' && value) return value.split(',').filter(Boolean);
   return [];
+}
+
+function parseNum(value: unknown): number | undefined {
+  const n = Number(value);
+  return Number.isFinite(n) && value !== '' && value !== null ? n : undefined;
 }
 
 export const Route = createFileRoute('/_app/observations')({
@@ -39,12 +51,19 @@ export const Route = createFileRoute('/_app/observations')({
     type: parseStrArray(search.type),
     level: parseStrArray(search.level),
     name: parseStrArray(search.name),
+    latMin: parseNum(search.latMin),
+    latMax: parseNum(search.latMax),
+    costMin: parseNum(search.costMin),
+    costMax: parseNum(search.costMax),
+    tokMin: parseNum(search.tokMin),
+    tokMax: parseNum(search.tokMax),
   }),
   component: ObservationsRoute,
 });
 
 function ObservationsRoute() {
-  const { tenant, q, range, page, trace, env, type, level, name } = Route.useSearch();
+  const { tenant, q, range, page, trace, env, type, level, name, latMin, latMax, costMin, costMax, tokMin, tokMax } =
+    Route.useSearch();
   const navigate = useNavigate({ from: '/observations' });
 
   return (
@@ -62,6 +81,12 @@ function ObservationsRoute() {
         name,
         userId: [],
         tags: [],
+        latencyMin: latMin,
+        latencyMax: latMax,
+        costMin,
+        costMax,
+        tokensMin: tokMin,
+        tokensMax: tokMax,
       }}
       onTenant={(value) =>
         navigate({
@@ -89,6 +114,12 @@ function ObservationsRoute() {
             type: patch.type ?? prev.type,
             level: patch.level ?? prev.level,
             name: patch.name ?? prev.name,
+            latMin: 'latencyMin' in patch ? patch.latencyMin : prev.latMin,
+            latMax: 'latencyMax' in patch ? patch.latencyMax : prev.latMax,
+            costMin: 'costMin' in patch ? patch.costMin : prev.costMin,
+            costMax: 'costMax' in patch ? patch.costMax : prev.costMax,
+            tokMin: 'tokensMin' in patch ? patch.tokensMin : prev.tokMin,
+            tokMax: 'tokensMax' in patch ? patch.tokensMax : prev.tokMax,
             page: 1,
           }),
         })

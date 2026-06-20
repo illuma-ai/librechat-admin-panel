@@ -63,6 +63,12 @@ export function ObservationsPage({
       type: filters.type,
       level: filters.level,
       name: filters.name,
+      latencyMin: filters.latencyMin,
+      latencyMax: filters.latencyMax,
+      costMin: filters.costMin,
+      costMax: filters.costMax,
+      tokensMin: filters.tokensMin,
+      tokensMax: filters.tokensMax,
     }),
   );
 
@@ -211,6 +217,12 @@ export function ObservationsPage({
             type: filters.type,
             level: filters.level,
             name: filters.name,
+            latMin: filters.latencyMin,
+            latMax: filters.latencyMax,
+            costMin: filters.costMin,
+            costMax: filters.costMax,
+            tokMin: filters.tokensMin,
+            tokMax: filters.tokensMax,
           }}
           onApply={onApplyView}
         />
@@ -229,7 +241,7 @@ export function ObservationsPage({
           tenant={effectiveTenant}
           filters={filters}
           onChange={onFilters}
-          facets={['environment', 'type', 'level', 'name']}
+          facets={['environment', 'type', 'level', 'name', 'latency', 'cost', 'tokens']}
         />
       }
       drawer={
