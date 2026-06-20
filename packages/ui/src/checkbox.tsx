@@ -23,7 +23,7 @@ export function Checkbox({ checked, onCheckedChange, disabled, className }: Chec
       disabled={disabled}
       className={cn(
         'inline-flex size-4 shrink-0 items-center justify-center rounded-sm border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) outline-none',
-        'data-[state=checked]:border-(--ui-color-accent) data-[state=checked]:bg-(--ui-color-accent) data-[state=checked]:text-white',
+        'data-[state=checked]:border-(--ui-color-accent) data-[state=checked]:bg-(--ui-color-accent) data-[state=checked]:text-(--ui-color-text-on-accent)',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}

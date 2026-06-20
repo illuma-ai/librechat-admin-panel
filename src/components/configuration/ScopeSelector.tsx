@@ -237,7 +237,7 @@ export function ScopeSelector({
                 'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                 deleting
                   ? 'cursor-not-allowed text-(--ui-color-text-muted)'
-                  : 'cursor-pointer bg-(--ui-color-accent-danger) text-white hover:opacity-90',
+                  : 'cursor-pointer bg-(--ui-color-accent-danger) text-(--ui-color-text-on-accent) hover:opacity-90',
               )}
             >
               {deleting ? (

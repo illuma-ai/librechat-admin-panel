@@ -202,6 +202,11 @@ html {
 
 body {
   @apply m-0;
+  /* App shell surface — token-mapped, set once at the root so every uncovered
+     region renders the theme background in both light and dark (and from the
+     first SSR paint, before React mounts). Single source for shell theming. */
+  background-color: var(--ui-color-background-default);
+  color: var(--ui-color-text-default);
   font-family:
     'Inter',
     'SF Pro Display',

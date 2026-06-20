@@ -59,6 +59,9 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <ThemeProvider>
+      {/* `isolate` = root stacking context for portals/overlays. The themed
+          shell surface (background + text color) lives on `body` in styles.css,
+          token-mapped and present from the first paint. */}
       <div className="isolate">
         <Outlet />
       </div>
