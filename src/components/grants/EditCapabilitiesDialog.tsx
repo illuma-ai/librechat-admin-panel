@@ -116,7 +116,7 @@ export function EditCapabilitiesDialog({
                   <Icon name={principalConfig.icon} size="xs" />
                   {localize(principalConfig.labelKey)}
                 </span>
-                <span className="text-sm font-medium text-(--cui-color-text-default)">
+                <span className="text-sm font-medium text-(--ui-color-text-default)">
                   {principalName}
                 </span>
               </div>
@@ -127,7 +127,7 @@ export function EditCapabilitiesDialog({
               disabled={saveMutation.isPending}
             />
             {error && (
-              <p role="alert" className="text-sm text-(--cui-color-text-danger)">
+              <p role="alert" className="text-sm text-(--ui-color-text-danger)">
                 {error}
               </p>
             )}

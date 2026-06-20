@@ -59,10 +59,10 @@ export function CommandMenu({ open, onOpenChange }: t.CommandMenuProps) {
         value={search}
         onValueChange={handleSearchChange}
         placeholder={localize('com_cmdk_placeholder')}
-        className="flex w-full border-b border-(--cui-color-stroke-default) bg-transparent px-4 py-3 text-sm text-(--cui-color-text-default) outline-none placeholder:text-(--cui-color-text-muted)"
+        className="flex w-full border-b border-(--ui-color-stroke-default) bg-transparent px-4 py-3 text-sm text-(--ui-color-text-default) outline-none placeholder:text-(--ui-color-text-muted)"
       />
       <Command.List ref={listRef} className="max-h-85 overflow-y-auto p-2">
-        <Command.Empty className="px-4 py-8 text-center text-sm text-(--cui-color-text-muted)">
+        <Command.Empty className="px-4 py-8 text-center text-sm text-(--ui-color-text-muted)">
           {localize('com_cmdk_no_results')}
         </Command.Empty>
 
@@ -163,10 +163,10 @@ function CommandItem({ icon, label, keywords, onSelect }: t.CommandItemProps) {
       value={label}
       keywords={keywords}
       onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-3 rounded-(--cui-radii-sm) px-3 py-2 text-sm text-(--cui-color-text-default) aria-selected:bg-(--cui-color-background-active)"
+      className="flex cursor-pointer items-center gap-3 rounded-(--ui-radii-sm) px-3 py-2 text-sm text-(--ui-color-text-default) aria-selected:bg-(--ui-color-background-active)"
     >
       {icon && (
-        <span aria-hidden="true" className="shrink-0 text-(--cui-color-text-muted)">
+        <span aria-hidden="true" className="shrink-0 text-(--ui-color-text-muted)">
           <Icon name={icon} size="sm" />
         </span>
       )}

@@ -95,7 +95,7 @@ function ZoomButton({ icon: Icon, title, onClick }: ZoomButtonProps) {
       onClick={onClick}
       title={title}
       aria-label={title}
-      className="flex size-7 cursor-pointer items-center justify-center rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) text-(--cui-color-text-muted) shadow-sm hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+      className="flex size-7 cursor-pointer items-center justify-center rounded-sm border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) text-(--ui-color-text-muted) shadow-sm hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
     >
       <Icon className="size-4" />
     </button>
@@ -170,7 +170,7 @@ export function TraceGraph({ graph }: { graph: t.TraceGraph }) {
 
   if (graph.nodes.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-(--cui-color-text-muted)">
+      <div className="flex h-full items-center justify-center text-sm text-(--ui-color-text-muted)">
         {localize('com_traces_no_graph')}
       </div>
     );

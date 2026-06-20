@@ -110,7 +110,7 @@ export function CreateRoleDialog({ open, onClose }: t.CreateRoleDialogProps) {
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="create-role-name"
-                    className="text-sm font-medium text-(--cui-color-text-default)"
+                    className="text-sm font-medium text-(--ui-color-text-default)"
                   >
                     {localize('com_access_col_name')}
                   </label>
@@ -121,13 +121,13 @@ export function CreateRoleDialog({ open, onClose }: t.CreateRoleDialogProps) {
                     onChange={(e) => setName(e.target.value)}
                     placeholder={localize('com_access_role_name_placeholder')}
                     autoFocus
-                    className="rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-3 py-2 text-sm text-(--cui-color-text-default) placeholder:text-(--cui-color-text-disabled)"
+                    className="rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-3 py-2 text-sm text-(--ui-color-text-default) placeholder:text-(--ui-color-text-disabled)"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="create-role-description"
-                    className="text-sm font-medium text-(--cui-color-text-default)"
+                    className="text-sm font-medium text-(--ui-color-text-default)"
                   >
                     {localize('com_config_field_description')}
                   </label>
@@ -137,7 +137,7 @@ export function CreateRoleDialog({ open, onClose }: t.CreateRoleDialogProps) {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder={localize('com_access_role_desc_placeholder')}
-                    className="rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-3 py-2 text-sm text-(--cui-color-text-default) placeholder:text-(--cui-color-text-disabled)"
+                    className="rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-3 py-2 text-sm text-(--ui-color-text-default) placeholder:text-(--ui-color-text-disabled)"
                   />
                 </div>
               </div>
@@ -169,7 +169,7 @@ export function CreateRoleDialog({ open, onClose }: t.CreateRoleDialogProps) {
           </Tabs>
 
           {error && (
-            <p role="alert" className="text-sm text-(--cui-color-text-danger)">
+            <p role="alert" className="text-sm text-(--ui-color-text-danger)">
               {error}
             </p>
           )}

@@ -4,7 +4,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 /**
  * Radix-based popover — a drop-in replacement for the click-ui `Popover`
  * compound (same `Popover` / `Trigger` / `Content` API) styled with the shared
- * `--cui-color-*` theme tokens. Part of the gradual Radix migration of the
+ * `--ui-color-*` theme tokens. Part of the gradual Radix migration of the
  * traces module.
  */
 interface PopoverProps {
@@ -30,7 +30,7 @@ function PopoverContent({ children, align = 'center' }: PopoverContentProps) {
       <PopoverPrimitive.Content
         align={align}
         sideOffset={4}
-        className="z-50 overflow-hidden rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) text-(--cui-color-text-default) shadow-md"
+        className="z-50 overflow-hidden rounded-md border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) text-(--ui-color-text-default) shadow-md"
       >
         {children}
       </PopoverPrimitive.Content>

@@ -5,10 +5,10 @@ import { cn } from './cn';
 /**
  * Radix-based tabs — a drop-in replacement for the click-ui `Tabs` compound
  * (`Tabs` / `Tabs.TriggersList` / `Tabs.Trigger` / `Tabs.Content`) styled with
- * the shared `--cui-color-*` theme tokens. Replaces click-ui's `Tabs`, whose
+ * the shared `--ui-color-*` theme tokens. Replaces click-ui's `Tabs`, whose
  * active-underline color (`#faff69`) is hardcoded inside its styled-component
  * and cannot be re-themed via tokens; here the active underline derives from
- * `--cui-color-accent` (the brand color), the single source of truth.
+ * `--ui-color-accent` (the brand color), the single source of truth.
  */
 interface TabsProps {
   value?: string;
@@ -38,7 +38,7 @@ function TriggersList({ children, className }: { children: ReactNode; className?
   return (
     <TabsPrimitive.List
       className={cn(
-        'flex shrink-0 items-center gap-4 border-b border-(--cui-color-stroke-default)',
+        'flex shrink-0 items-center gap-4 border-b border-(--ui-color-stroke-default)',
         className,
       )}
     >
@@ -55,7 +55,7 @@ interface TriggerProps {
 }
 
 /**
- * The active underline uses `data-[state=active]:border-(--cui-color-accent)`;
+ * The active underline uses `data-[state=active]:border-(--ui-color-accent)`;
  * the attribute selector outranks the base `border-transparent`, so the brand
  * color always wins (no equal-specificity tie that would hide the underline).
  */
@@ -65,9 +65,9 @@ function Trigger({ value, children, className, disabled }: TriggerProps) {
       value={value}
       disabled={disabled}
       className={cn(
-        'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium text-(--cui-color-text-muted) outline-none transition-colors',
-        'hover:text-(--cui-color-text-default)',
-        'data-[state=active]:border-(--cui-color-accent) data-[state=active]:text-(--cui-color-text-default)',
+        'cursor-pointer border-b-2 border-transparent py-2 text-sm font-medium text-(--ui-color-text-muted) outline-none transition-colors',
+        'hover:text-(--ui-color-text-default)',
+        'data-[state=active]:border-(--ui-color-accent) data-[state=active]:text-(--ui-color-text-default)',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}

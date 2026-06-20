@@ -6,7 +6,7 @@ import { cn } from './cn';
 /**
  * Radix-based modal dialog — a drop-in replacement for the click-ui `Dialog`
  * compound (`Dialog` root + `Dialog.Content` with `title` / `showClose` /
- * `onClose`). Centered overlay styled with the shared `--cui-color-*` theme
+ * `onClose`). Centered overlay styled with the shared `--ui-color-*` theme
  * tokens. Consumers override width via `className` (e.g. `max-w-2xl!`).
  */
 interface DialogProps {
@@ -37,14 +37,14 @@ function DialogContent({ children, title, showClose, onClose, className }: Dialo
       <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/40" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) shadow-lg outline-none',
+          'fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) shadow-lg outline-none',
           className,
         )}
       >
         <div className="flex shrink-0 items-center justify-between gap-2 px-6 pt-5 pb-3">
           <DialogPrimitive.Title
             className={cn(
-              'text-lg font-semibold text-(--cui-color-text-default)',
+              'text-lg font-semibold text-(--ui-color-text-default)',
               !title && 'sr-only',
             )}
           >
@@ -55,7 +55,7 @@ function DialogContent({ children, title, showClose, onClose, className }: Dialo
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
             >
               <X className="size-4" />
             </button>

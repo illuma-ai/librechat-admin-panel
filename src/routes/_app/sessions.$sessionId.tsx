@@ -31,13 +31,13 @@ function SessionDetailRoute() {
         <Link
           to="/sessions"
           search={{ tenant, q: '', range: 'all', page: 1, session: '' }}
-          className="inline-flex w-fit items-center gap-1 text-sm text-(--cui-color-text-muted) no-underline hover:text-(--cui-color-text-default)"
+          className="inline-flex w-fit items-center gap-1 text-sm text-(--ui-color-text-muted) no-underline hover:text-(--ui-color-text-default)"
         >
           <Icon name="chevron-left" size="sm" />
           {localize('com_traces_back')}
         </Link>
       </div>
-      <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-(--cui-color-stroke-default)">
+      <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-(--ui-color-stroke-default)">
         <SessionDetailContent
           tenant={tenant}
           sessionId={sessionId}

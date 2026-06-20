@@ -49,13 +49,13 @@ const InputOTPSlot = React.forwardRef<
       ref={ref}
       className={clsx(
         'relative flex h-12 w-11 items-center justify-center',
-        'border-y border-r border-(--cui-color-stroke-default)',
-        'bg-(--cui-color-background-default) text-(--cui-color-text-default)',
+        'border-y border-r border-(--ui-color-stroke-default)',
+        'bg-(--ui-color-background-default) text-(--ui-color-text-default)',
         'text-lg font-medium shadow-sm transition-all',
         'first:rounded-l-lg first:border-l last:rounded-r-lg',
         isActive
-          ? 'z-10 border-(--cui-color-outline) ring-1 ring-(--cui-color-outline)'
-          : 'hover:border-(--cui-color-stroke-intense)',
+          ? 'z-10 border-(--ui-color-outline) ring-1 ring-(--ui-color-outline)'
+          : 'hover:border-(--ui-color-stroke-intense)',
         className,
       )}
       {...props}
@@ -63,7 +63,7 @@ const InputOTPSlot = React.forwardRef<
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-5 w-px animate-pulse bg-(--cui-color-text-default) duration-1000" />
+          <div className="h-5 w-px animate-pulse bg-(--ui-color-text-default) duration-1000" />
         </div>
       )}
     </div>
@@ -75,7 +75,7 @@ const InputOTPSeparator = React.forwardRef<
   React.ElementRef<'div'>,
   React.ComponentPropsWithoutRef<'div'>
 >(({ ...props }, ref) => (
-  <div ref={ref} role="separator" className="text-(--cui-color-text-muted)" {...props}>
+  <div ref={ref} role="separator" className="text-(--ui-color-text-muted)" {...props}>
     <svg width="16" height="2" viewBox="0 0 16 2" fill="none" aria-hidden="true">
       <line x1="0" y1="1" x2="16" y2="1" stroke="currentColor" strokeWidth="2" />
     </svg>

@@ -58,7 +58,7 @@ export function DashboardPage() {
       className="flex flex-1 flex-col gap-8 overflow-auto p-6"
     >
       <section aria-label={localize('com_dash_quick_links')}>
-        <h3 className="mb-3 text-sm font-medium text-(--cui-color-text-muted)">
+        <h3 className="mb-3 text-sm font-medium text-(--ui-color-text-muted)">
           {localize('com_dash_quick_links')}
         </h3>
         <div className="grid grid-cols-2 gap-3">
@@ -66,16 +66,16 @@ export function DashboardPage() {
             <Link
               key={link.path}
               to={link.path}
-              className="flex items-start gap-3 rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) p-4 no-underline transition-colors hover:bg-(--cui-color-background-hover)"
+              className="flex items-start gap-3 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) p-4 no-underline transition-colors hover:bg-(--ui-color-background-hover)"
             >
-              <span aria-hidden="true" className="mt-0.5 text-(--cui-color-text-muted)">
+              <span aria-hidden="true" className="mt-0.5 text-(--ui-color-text-muted)">
                 <Icon name={link.icon} size="sm" />
               </span>
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-(--cui-color-text-default)">
+                <span className="text-sm font-medium text-(--ui-color-text-default)">
                   {localize(link.labelKey)}
                 </span>
-                <span className="text-xs text-(--cui-color-text-muted)">
+                <span className="text-xs text-(--ui-color-text-muted)">
                   {localize(link.descKey)}
                 </span>
               </div>
@@ -86,20 +86,20 @@ export function DashboardPage() {
 
       <section
         aria-label={localize('com_dash_nav_tips')}
-        className="rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) p-5"
+        className="rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) p-5"
       >
-        <h3 className="mb-3 text-sm font-medium text-(--cui-color-text-default)">
+        <h3 className="mb-3 text-sm font-medium text-(--ui-color-text-default)">
           {localize('com_dash_nav_tips')}
         </h3>
-        <ul className="flex flex-col gap-3 text-sm text-(--cui-color-text-muted)">
+        <ul className="flex flex-col gap-3 text-sm text-(--ui-color-text-muted)">
           <li className="flex items-center gap-3">
-            <kbd className="shrink-0 rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--cui-color-text-default)">
+            <kbd className="shrink-0 rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--ui-color-text-default)">
               {isMac ? '⌘B' : 'Ctrl+B'}
             </kbd>
             <span>{localize('com_dash_tip_sidebar')}</span>
           </li>
           <li className="flex items-center gap-3">
-            <kbd className="shrink-0 rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--cui-color-text-default)">
+            <kbd className="shrink-0 rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--ui-color-text-default)">
               {isMac ? '⌘K' : 'Ctrl+K'}
             </kbd>
             <span>{localize('com_dash_tip_cmdk')}</span>

@@ -50,7 +50,7 @@ export function TypeIcon({
   return (
     <span
       title={visual.label}
-      className={`flex max-w-fit shrink-0 items-center gap-1 rounded-sm border-2 border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-1 ${
+      className={`flex max-w-fit shrink-0 items-center gap-1 rounded-sm border-2 border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-1 ${
         isSmall ? 'h-4' : 'h-5'
       }`}
     >
@@ -59,7 +59,7 @@ export function TypeIcon({
         style={{ color: visual.color }}
       />
       {showLabel ? (
-        <span className="truncate text-xs text-(--cui-color-text-default)">{visual.label}</span>
+        <span className="truncate text-xs text-(--ui-color-text-default)">{visual.label}</span>
       ) : null}
     </span>
   );

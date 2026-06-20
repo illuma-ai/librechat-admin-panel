@@ -30,14 +30,14 @@ function Section({
   if (entries.length === 0) return null;
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex justify-between border-b border-(--cui-color-stroke-default) pb-1">
-        <span className="text-xs font-semibold text-(--cui-color-text-default)">{title}</span>
-        <span className="font-mono text-xs font-semibold text-(--cui-color-text-default)">
+      <div className="flex justify-between border-b border-(--ui-color-stroke-default) pb-1">
+        <span className="text-xs font-semibold text-(--ui-color-text-default)">{title}</span>
+        <span className="font-mono text-xs font-semibold text-(--ui-color-text-default)">
           {formatValue(total, isCost)}
         </span>
       </div>
       {entries.map(([key, value]) => (
-        <div key={key} className="flex justify-between text-xs text-(--cui-color-text-muted)">
+        <div key={key} className="flex justify-between text-xs text-(--ui-color-text-muted)">
           <span className="mr-4 truncate">{key}</span>
           <span className="font-mono">{formatValue(value, isCost)}</span>
         </div>
@@ -83,7 +83,7 @@ export function MetricBreakdown({
       </Popover.Trigger>
       <Popover.Content align="start">
         <div className="flex w-64 flex-col gap-3 p-3">
-          <span className="font-semibold text-(--cui-color-text-default)">
+          <span className="font-semibold text-(--ui-color-text-default)">
             {localize(isCost ? 'com_traces_cost_breakdown' : 'com_traces_usage_breakdown')}
           </span>
           <Section
@@ -104,11 +104,11 @@ export function MetricBreakdown({
             total={otherTotal}
             isCost={isCost}
           />
-          <div className="flex justify-between border-t-2 border-double border-(--cui-color-stroke-default) pt-1">
-            <span className="text-xs font-semibold text-(--cui-color-text-default)">
+          <div className="flex justify-between border-t-2 border-double border-(--ui-color-stroke-default) pt-1">
+            <span className="text-xs font-semibold text-(--ui-color-text-default)">
               {localize(isCost ? 'com_traces_total_cost' : 'com_traces_total_usage')}
             </span>
-            <span className="font-mono text-xs font-semibold text-(--cui-color-text-default)">
+            <span className="font-mono text-xs font-semibold text-(--ui-color-text-default)">
               {formatValue(total, isCost)}
             </span>
           </div>

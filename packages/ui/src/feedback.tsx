@@ -3,17 +3,17 @@ import { cn } from './cn';
 
 /**
  * Status surfaces — drop-in replacements for the click-ui `Alert` and `Badge`.
- * The `state` selects a `--cui-color-feedback-*` token pair (bg + fg), the
+ * The `state` selects a `--ui-color-feedback-*` token pair (bg + fg), the
  * single source of truth for status colors — nothing hardcoded.
  */
 type FeedbackState = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
 
 const STATE_CLASS: Record<FeedbackState, string> = {
-  info: 'bg-(--cui-color-feedback-info-bg) text-(--cui-color-feedback-info-fg)',
-  success: 'bg-(--cui-color-feedback-success-bg) text-(--cui-color-feedback-success-fg)',
-  warning: 'bg-(--cui-color-feedback-warning-bg) text-(--cui-color-feedback-warning-fg)',
-  danger: 'bg-(--cui-color-feedback-danger-bg) text-(--cui-color-feedback-danger-fg)',
-  neutral: 'bg-(--cui-color-background-muted) text-(--cui-color-text-default)',
+  info: 'bg-(--ui-color-feedback-info-bg) text-(--ui-color-feedback-info-fg)',
+  success: 'bg-(--ui-color-feedback-success-bg) text-(--ui-color-feedback-success-fg)',
+  warning: 'bg-(--ui-color-feedback-warning-bg) text-(--ui-color-feedback-warning-fg)',
+  danger: 'bg-(--ui-color-feedback-danger-bg) text-(--ui-color-feedback-danger-fg)',
+  neutral: 'bg-(--ui-color-background-muted) text-(--ui-color-text-default)',
 };
 
 interface AlertProps {

@@ -7,7 +7,7 @@ import { cn } from './cn';
  * Radix-free button — a drop-in replacement for the click-ui `Button` (same
  * `type` variant / `label` / `iconLeft` API). click-ui's Button bakes its brand
  * color (`#faff69`) into a styled-component, so it cannot be re-themed via
- * tokens; every color here comes from a `--cui-color-*` theme token (the single
+ * tokens; every color here comes from a `--ui-color-*` theme token (the single
  * source of truth), so the brand accent flows through automatically.
  */
 type ButtonVariant = 'primary' | 'secondary' | 'danger';
@@ -32,11 +32,11 @@ interface ButtonProps {
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    'bg-(--cui-color-accent) text-(--cui-color-text-on-accent) hover:bg-(--cui-color-accent-hover)',
+    'bg-(--ui-color-accent) text-(--ui-color-text-on-accent) hover:bg-(--ui-color-accent-hover)',
   secondary:
-    'border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-hover)',
+    'border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-hover)',
   danger:
-    'bg-(--cui-color-accent-danger) text-(--cui-color-text-on-accent) hover:brightness-95',
+    'bg-(--ui-color-accent-danger) text-(--ui-color-text-on-accent) hover:brightness-95',
 };
 
 export function Button({
@@ -58,7 +58,7 @@ export function Button({
       title={title}
       className={cn(
         'inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 text-sm font-medium outline-none transition-colors',
-        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--cui-color-outline)',
+        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--ui-color-outline)',
         'disabled:cursor-not-allowed disabled:opacity-50',
         VARIANT_CLASSES[type],
         className,

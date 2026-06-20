@@ -8,11 +8,11 @@ export function Header({ title, onSearchClick, children }: t.HeaderProps) {
   const shortcut = isMac ? '⌘K' : 'Ctrl+K';
 
   return (
-    <header className="shrink-0 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-panel)">
+    <header className="shrink-0 border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-panel)">
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="flex shrink-0 flex-col">
           {title ? (
-            <h1 className="text-base font-bold text-(--cui-color-text-default)">{title}</h1>
+            <h1 className="text-base font-bold text-(--ui-color-text-default)">{title}</h1>
           ) : (
             <div />
           )}
@@ -25,10 +25,10 @@ export function Header({ title, onSearchClick, children }: t.HeaderProps) {
               type="button"
               onClick={onSearchClick}
               aria-label={localize('com_cmdk_label')}
-              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-(--cui-color-stroke-default) bg-transparent px-3 py-1.5 text-sm text-(--cui-color-text-muted) transition-colors hover:border-(--cui-color-stroke-intense) hover:text-(--cui-color-text-default)"
+              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-(--ui-color-stroke-default) bg-transparent px-3 py-1.5 text-sm text-(--ui-color-text-muted) transition-colors hover:border-(--ui-color-stroke-intense) hover:text-(--ui-color-text-default)"
             >
               <span>{localize('com_ui_search')}</span>
-              <kbd className="rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--cui-color-text-default)">
+              <kbd className="rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--ui-color-text-default)">
                 {shortcut}
               </kbd>
             </button>

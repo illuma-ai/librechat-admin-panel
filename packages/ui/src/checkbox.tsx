@@ -5,7 +5,7 @@ import { cn } from './cn';
 /**
  * Radix-based checkbox — a drop-in replacement for the click-ui `Checkbox`
  * (same `checked` / `onCheckedChange` API, coerced to a strict boolean) styled
- * with the shared `--cui-color-*` theme tokens. Part of the gradual Radix
+ * with the shared `--ui-color-*` theme tokens. Part of the gradual Radix
  * migration of the traces module.
  */
 interface CheckboxProps {
@@ -22,8 +22,8 @@ export function Checkbox({ checked, onCheckedChange, disabled, className }: Chec
       onCheckedChange={(value) => onCheckedChange(value === true)}
       disabled={disabled}
       className={cn(
-        'inline-flex size-4 shrink-0 items-center justify-center rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) outline-none',
-        'data-[state=checked]:border-(--cui-color-accent) data-[state=checked]:bg-(--cui-color-accent) data-[state=checked]:text-white',
+        'inline-flex size-4 shrink-0 items-center justify-center rounded-sm border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) outline-none',
+        'data-[state=checked]:border-(--ui-color-accent) data-[state=checked]:bg-(--ui-color-accent) data-[state=checked]:text-white',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}

@@ -593,13 +593,13 @@ export function NestedGroup({
       className={cn(depth > 0 ? 'mt-3' : 'mt-4', 'flex flex-col')}
       style={indent ? { paddingLeft: indent } : undefined}
     >
-      <div className="flex items-center gap-2 border-b border-(--cui-color-stroke-default)">
+      <div className="flex items-center gap-2 border-b border-(--ui-color-stroke-default)">
         <button
           type="button"
           aria-expanded={isExpanded}
           data-section-id={sectionId}
           onClick={toggle}
-          className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border-none bg-transparent py-2 pr-0 pl-1 transition-colors outline-none select-none hover:bg-(--cui-color-background-hover) focus-visible:bg-(--cui-color-background-hover)"
+          className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border-none bg-transparent py-2 pr-0 pl-1 transition-colors outline-none select-none hover:bg-(--ui-color-background-hover) focus-visible:bg-(--ui-color-background-hover)"
         >
           <span
             className={cn(
@@ -609,7 +609,7 @@ export function NestedGroup({
           >
             <Icon name="chevron-right" size="xs" />
           </span>
-          <span className="text-sm font-medium text-(--cui-color-text-default)">
+          <span className="text-sm font-medium text-(--ui-color-text-default)">
             {label}
           </span>
           {totalCount > 0 && (
@@ -651,10 +651,10 @@ function CollectionRow({
   return (
     <div className="flex w-full flex-col gap-2">
       <div>
-        <label htmlFor={fieldId} className="text-sm font-medium text-(--cui-color-text-default)">
+        <label htmlFor={fieldId} className="text-sm font-medium text-(--ui-color-text-default)">
           {title}
         </label>
-        {description && <p className="text-xs text-(--cui-color-text-muted)">{description}</p>}
+        {description && <p className="text-xs text-(--ui-color-text-muted)">{description}</p>}
       </div>
       {children}
     </div>
@@ -1119,10 +1119,10 @@ function InlineRow({
     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
       <label
         htmlFor={fieldId}
-        className="shrink-0 text-sm font-medium text-(--cui-color-text-default) sm:w-35"
+        className="shrink-0 text-sm font-medium text-(--ui-color-text-default) sm:w-35"
       >
         {label}
-        {required && <span className="ml-0.5 text-(--cui-color-text-danger)">*</span>}
+        {required && <span className="ml-0.5 text-(--ui-color-text-danger)">*</span>}
       </label>
       <div className="flex-1">{children}</div>
     </div>

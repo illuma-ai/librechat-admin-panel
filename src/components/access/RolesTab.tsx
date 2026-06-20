@@ -107,25 +107,25 @@ export function RolesTab({ onCreateRole }: t.RolesTabProps) {
           {paged.map((role) => (
             <div
               key={role.id}
-              className="mb-2 flex items-center gap-3 rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) px-3 py-3"
+              className="mb-2 flex items-center gap-3 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) px-3 py-3"
             >
               <button
                 type="button"
                 onClick={() => setEditTarget(role)}
-                className="-my-2 -ml-2 min-w-0 flex-1 cursor-pointer rounded py-3 pl-3 text-left outline-none focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-(--cui-color-outline)"
+                className="-my-2 -ml-2 min-w-0 flex-1 cursor-pointer rounded py-3 pl-3 text-left outline-none focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-(--ui-color-outline)"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-(--cui-color-text-default) hover:underline">
+                  <span className="text-sm font-medium text-(--ui-color-text-default) hover:underline">
                     {role.name}
                   </span>
                   {role.isSystemRole && (
-                    <span className="inline-block rounded-full bg-(--cui-color-background-secondary) px-2 py-0.5 text-[10px] font-medium text-(--cui-color-text-default)">
+                    <span className="inline-block rounded-full bg-(--ui-color-background-secondary) px-2 py-0.5 text-[10px] font-medium text-(--ui-color-text-default)">
                       {localize('com_access_system_role')}
                     </span>
                   )}
                 </div>
                 {role.description && (
-                  <div className="truncate text-xs text-(--cui-color-text-muted)">
+                  <div className="truncate text-xs text-(--ui-color-text-muted)">
                     {role.description}
                   </div>
                 )}

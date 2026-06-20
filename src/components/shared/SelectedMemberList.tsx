@@ -9,7 +9,7 @@ export function SelectedMemberList({ users, onRemove, disabled }: t.SelectedMemb
 
   if (users.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-(--cui-color-text-muted)">
+      <p className="py-4 text-center text-sm text-(--ui-color-text-muted)">
         {localize('com_access_no_members')}
       </p>
     );
@@ -17,22 +17,22 @@ export function SelectedMemberList({ users, onRemove, disabled }: t.SelectedMemb
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="max-h-48 overflow-auto rounded-lg border border-(--cui-color-stroke-default)">
+      <div className="max-h-48 overflow-auto rounded-lg border border-(--ui-color-stroke-default)">
         {users.map((user, i) => (
           <div
             key={user.id}
             className={cn(
               'flex items-center justify-between px-3 py-2',
-              i < users.length - 1 && 'border-b border-(--cui-color-stroke-default)',
+              i < users.length - 1 && 'border-b border-(--ui-color-stroke-default)',
             )}
           >
             <div className="flex items-center gap-3">
               <Avatar name={user.name} size="sm" />
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-(--cui-color-text-default)">
+                <span className="text-sm font-medium text-(--ui-color-text-default)">
                   {user.name}
                 </span>
-                <span className="text-xs text-(--cui-color-text-muted)">{user.email}</span>
+                <span className="text-xs text-(--ui-color-text-muted)">{user.email}</span>
               </div>
             </div>
             <button

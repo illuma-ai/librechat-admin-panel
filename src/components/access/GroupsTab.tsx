@@ -71,7 +71,7 @@ export function GroupsTab({ onCreateGroup }: t.GroupsTabProps) {
 
   if (isError && !data) {
     return (
-      <div className="px-4 py-8 text-center text-sm text-(--cui-color-foreground-danger)">
+      <div className="px-4 py-8 text-center text-sm text-(--ui-color-text-danger)">
         {localize('com_error_load_groups')}
       </div>
     );
@@ -107,18 +107,18 @@ export function GroupsTab({ onCreateGroup }: t.GroupsTabProps) {
           {groups.map((group) => (
             <div
               key={group.id}
-              className="mb-2 flex items-center gap-3 rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) px-3 py-3"
+              className="mb-2 flex items-center gap-3 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) px-3 py-3"
             >
               <button
                 type="button"
                 onClick={() => setEditTarget(group)}
-                className="-my-2 -ml-2 min-w-0 flex-1 cursor-pointer rounded py-3 pl-3 text-left outline-none focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-(--cui-color-outline)"
+                className="-my-2 -ml-2 min-w-0 flex-1 cursor-pointer rounded py-3 pl-3 text-left outline-none focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-(--ui-color-outline)"
               >
-                <div className="text-sm font-medium text-(--cui-color-text-default) hover:underline">
+                <div className="text-sm font-medium text-(--ui-color-text-default) hover:underline">
                   {group.name}
                 </div>
                 {group.description && (
-                  <div className="truncate text-xs text-(--cui-color-text-muted)">
+                  <div className="truncate text-xs text-(--ui-color-text-muted)">
                     {group.description}
                   </div>
                 )}

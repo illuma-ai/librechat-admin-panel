@@ -80,7 +80,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
       <aside
         aria-label={localize('com_a11y_admin_panel')}
         className={cn(
-          'sticky top-0 z-(--z-floating) flex h-screen shrink-0 flex-col overflow-hidden border-r border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) transition-[width] duration-200',
+          'sticky top-0 z-(--z-floating) flex h-screen shrink-0 flex-col overflow-hidden border-r border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) transition-[width] duration-200',
           collapsed ? 'w-14' : 'w-63',
         )}
       >
@@ -91,7 +91,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
               alt={localize('com_a11y_logo_alt')}
               className="h-6 w-6 shrink-0"
             />
-            <span className="truncate text-sm font-semibold text-(--cui-color-text-default)">
+            <span className="truncate text-sm font-semibold text-(--ui-color-text-default)">
               {localize('com_auth_title')}
             </span>
           </div>
@@ -109,8 +109,8 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
                 className={cn(
                   'flex h-8 items-center gap-2.5 overflow-hidden rounded-md px-2.5 text-sm whitespace-nowrap no-underline transition-colors duration-100',
                   isActive(item.path)
-                    ? 'bg-(--cui-color-background-active) font-medium text-(--cui-color-text-default)'
-                    : 'font-normal text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)',
+                    ? 'bg-(--ui-color-background-active) font-medium text-(--ui-color-text-default)'
+                    : 'font-normal text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)',
                 )}
               >
                 <span aria-hidden="true" className="shrink-0">
@@ -123,21 +123,21 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
         </nav>
 
         {initials && (
-          <div className="flex shrink-0 items-center border-t border-(--cui-color-stroke-default) px-2 py-3">
+          <div className="flex shrink-0 items-center border-t border-(--ui-color-stroke-default) px-2 py-3">
             <div className="flex items-center gap-2.5 overflow-hidden px-0.5">
               <Dropdown>
                 <Dropdown.Trigger>
                   <button
                     ref={userMenuRef}
                     type="button"
-                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) transition-colors hover:border-(--cui-color-stroke-intense) hover:bg-(--cui-color-background-hover)"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) transition-colors hover:border-(--ui-color-stroke-intense) hover:bg-(--ui-color-background-hover)"
                     aria-label={`${localize('com_nav_user_menu')}, ${user?.name || user?.email || ''}`}
                     aria-haspopup="true"
                     title={user?.name || user?.email || ''}
                   >
                     <span
                       aria-hidden="true"
-                      className="text-xs font-medium text-(--cui-color-text-muted)"
+                      className="text-xs font-medium text-(--ui-color-text-muted)"
                     >
                       {initials}
                     </span>
@@ -147,17 +147,17 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
                   <div className="user-dropdown flex min-w-45 flex-col select-none">
                     {user && (
                       <div className="px-3 pt-3 pb-2">
-                        <span className="block text-sm leading-tight font-medium text-(--cui-color-text-default)">
+                        <span className="block text-sm leading-tight font-medium text-(--ui-color-text-default)">
                           {user.name || ''}
                         </span>
                         {user.email && (
-                          <span className="mt-0.5 block text-xs leading-tight text-(--cui-color-text-muted)">
+                          <span className="mt-0.5 block text-xs leading-tight text-(--ui-color-text-muted)">
                             {user.email}
                           </span>
                         )}
                       </div>
                     )}
-                    <div className="border-t border-(--cui-color-stroke-default)" />
+                    <div className="border-t border-(--ui-color-stroke-default)" />
                     <Dropdown.Item icon="settings" onClick={() => setSettingsOpen(true)}>
                       {localize('com_ui_settings')}
                     </Dropdown.Item>
@@ -169,11 +169,11 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
               </Dropdown>
               {user && (
                 <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm leading-tight font-medium text-(--cui-color-text-default)">
+                  <span className="block truncate text-sm leading-tight font-medium text-(--ui-color-text-default)">
                     {user.name || ''}
                   </span>
                   {user.email && (
-                    <span className="block truncate text-xs leading-tight text-(--cui-color-text-muted)">
+                    <span className="block truncate text-xs leading-tight text-(--ui-color-text-muted)">
                       {user.email}
                     </span>
                   )}
@@ -188,7 +188,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
           onClick={onToggle}
           aria-label={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
           title={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
-          className="flex w-full shrink-0 cursor-pointer items-center justify-center border-t border-(--cui-color-stroke-default) bg-transparent py-3 text-(--cui-color-text-muted) transition-colors hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+          className="flex w-full shrink-0 cursor-pointer items-center justify-center border-t border-(--ui-color-stroke-default) bg-transparent py-3 text-(--ui-color-text-muted) transition-colors hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
         >
           <Icon name={collapsed ? 'slide-in' : 'slide-out'} size="sm" />
         </button>

@@ -9,7 +9,7 @@ export function LoadingState({ className }: t.LoadingStateProps) {
     <div
       className={
         className ??
-        'flex items-center justify-center gap-2 py-12 text-sm text-(--cui-color-text-muted)'
+        'flex items-center justify-center gap-2 py-12 text-sm text-(--ui-color-text-muted)'
       }
     >
       <Icon name="loading-animated" size="sm" />

@@ -36,7 +36,7 @@ import { cn } from './cn';
  * Radix-free icon — a drop-in replacement for the click-ui `Icon` (same
  * `name` string + `size` token API), backed by lucide-react. Icons inherit the
  * current text color (no `color` prop), so they re-theme automatically through
- * the `--cui-color-*` text tokens. `ICON_MAP` is the single source mapping
+ * the `--ui-color-*` text tokens. `ICON_MAP` is the single source mapping
  * click-ui icon names to lucide components; extend it as new names appear.
  */
 type IconSize = 'xs' | 'sm' | 'md' | 'lg';

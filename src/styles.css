@@ -26,48 +26,49 @@
 @layer theme {
   :root {
     /* Brand accent — single source of truth, taken from the logo (#1eb980 green).
-       The click-ui accent/primary/link/outline tokens below derive from this, so
+       The --ui-color accent/primary/link/outline tokens below derive from this, so
        changing the brand color is a one-line edit and stays theme-agnostic. */
     --brand-primary: #1eb980;
     --brand-primary-hover: #18a06d;
-    --cui-color-stroke-default: #e3e5e8;
-    --cui-color-stroke-muted: #e3e5e8;
-    --cui-color-stroke-intense: #c9ccd1;
-    --cui-color-background-default: #ffffff;
-    --cui-color-background-muted: #f5f6f7;
-    --cui-color-background-panel: #ffffff;
-    --cui-color-background-hover: #f5f6f7;
-    --cui-color-background-active: #e3e5e8;
-    --cui-color-background-secondary: #f0f1f3;
-    --cui-color-text-default: #161517;
-    --cui-color-text-muted: #6c6f77;
-    --cui-color-text-disabled: #9a9ea7;
-    --cui-color-text-primary: var(--brand-primary);
-    --cui-color-text-link: var(--brand-primary);
-    --cui-color-text-danger: #e20a0a;
-    --cui-color-title-default: #161517;
-    --cui-color-title-muted: #6c6f77;
-    --cui-color-accent: var(--brand-primary);
-    --cui-color-accent-hover: var(--brand-primary-hover);
-    --cui-color-outline: var(--brand-primary);
-    --cui-color-shadow: rgb(0% 0% 0% / 0.1);
-    --cui-color-accent-success: #16a34a;
-    --cui-color-accent-warning: #d97706;
-    --cui-color-accent-info: #2563eb;
-    --cui-color-accent-danger: #dc2626;
-    --cui-color-accent-user: #7c3aed;
-    --cui-radii-sm: 0.375rem;
-    --cui-color-feedback-info-bg: #e7effd;
-    --cui-color-feedback-info-fg: #437eef;
-    --cui-color-feedback-success-bg: #e5ffe8;
-    --cui-color-feedback-success-fg: #008a0b;
-    --cui-color-feedback-warning-bg: #ffe2d1;
-    --cui-color-feedback-warning-fg: #a33c00;
-    --cui-color-feedback-danger-bg: #ffdddd;
-    --cui-color-feedback-danger-fg: #c10000;
-    --cui-color-feedback-user-bg: #f3e8ff;
-    --cui-color-feedback-user-fg: #6b21a8;
-    --cui-color-text-on-accent: #ffffff;
+    --ui-color-stroke-default: #e3e5e8;
+    --ui-color-stroke-muted: #e3e5e8;
+    --ui-color-stroke-intense: #c9ccd1;
+    --ui-color-background-default: #ffffff;
+    --ui-color-background-muted: #f5f6f7;
+    --ui-color-background-panel: #ffffff;
+    --ui-color-background-hover: #f5f6f7;
+    --ui-color-background-active: #e3e5e8;
+    --ui-color-background-secondary: #f0f1f3;
+    --ui-color-background-accent-muted: #e5e7eb;
+    --ui-color-text-default: #161517;
+    --ui-color-text-muted: #6c6f77;
+    --ui-color-text-disabled: #9a9ea7;
+    --ui-color-text-primary: var(--brand-primary);
+    --ui-color-text-link: var(--brand-primary);
+    --ui-color-text-danger: #e20a0a;
+    --ui-color-title-default: #161517;
+    --ui-color-title-muted: #6c6f77;
+    --ui-color-accent: var(--brand-primary);
+    --ui-color-accent-hover: var(--brand-primary-hover);
+    --ui-color-outline: var(--brand-primary);
+    --ui-color-shadow: rgb(0% 0% 0% / 0.1);
+    --ui-color-accent-success: #16a34a;
+    --ui-color-accent-warning: #d97706;
+    --ui-color-accent-info: #2563eb;
+    --ui-color-accent-danger: #dc2626;
+    --ui-color-accent-user: #7c3aed;
+    --ui-radii-sm: 0.375rem;
+    --ui-color-feedback-info-bg: #e7effd;
+    --ui-color-feedback-info-fg: #437eef;
+    --ui-color-feedback-success-bg: #e5ffe8;
+    --ui-color-feedback-success-fg: #008a0b;
+    --ui-color-feedback-warning-bg: #ffe2d1;
+    --ui-color-feedback-warning-fg: #a33c00;
+    --ui-color-feedback-danger-bg: #ffdddd;
+    --ui-color-feedback-danger-fg: #c10000;
+    --ui-color-feedback-user-bg: #f3e8ff;
+    --ui-color-feedback-user-fg: #6b21a8;
+    --ui-color-text-on-accent: #ffffff;
     --avatar-color-1: #1d4ed8;
     --avatar-color-2: #b45309;
     --avatar-color-3: #15803d;
@@ -76,44 +77,45 @@
   }
 
   .dark {
-    --cui-color-stroke-default: #323232;
-    --cui-color-stroke-muted: #323232;
-    --cui-color-stroke-intense: #414141;
-    --cui-color-background-default: #1f1f1c;
-    --cui-color-background-muted: #282828;
-    --cui-color-background-panel: #1f1f1c;
-    --cui-color-background-hover: #282828;
-    --cui-color-background-active: #323232;
-    --cui-color-background-secondary: #282828;
-    --cui-color-text-default: #ffffff;
-    --cui-color-text-muted: #b3b6bd;
-    --cui-color-text-disabled: #808080;
-    --cui-color-text-primary: var(--brand-primary);
-    --cui-color-text-link: var(--brand-primary);
-    --cui-color-text-danger: #ffbaba;
-    --cui-color-title-default: rgb(97.5% 97.5% 97.5%);
-    --cui-color-title-muted: #b3b6bd;
-    --cui-color-accent: var(--brand-primary);
-    --cui-color-accent-hover: var(--brand-primary-hover);
-    --cui-color-outline: var(--brand-primary);
-    --cui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
-    --cui-color-accent-success: #4ade80;
-    --cui-color-accent-warning: #fbbf24;
-    --cui-color-accent-info: #60a5fa;
-    --cui-color-accent-danger: #f87171;
-    --cui-color-accent-user: #a78bfa;
-    --cui-radii-sm: 0.375rem;
-    --cui-color-feedback-info-bg: #0d3e9b;
-    --cui-color-feedback-info-fg: #d0dffb;
-    --cui-color-feedback-success-bg: #004206;
-    --cui-color-feedback-success-fg: #ccffd0;
-    --cui-color-feedback-warning-bg: #7a2d00;
-    --cui-color-feedback-warning-fg: #ffb88f;
-    --cui-color-feedback-danger-bg: #610000;
-    --cui-color-feedback-danger-fg: #ffbaba;
-    --cui-color-feedback-user-bg: rgb(107 33 168 / 0.3);
-    --cui-color-feedback-user-fg: #d8b4fe;
-    --cui-color-text-on-accent: #ffffff;
+    --ui-color-stroke-default: #323232;
+    --ui-color-stroke-muted: #323232;
+    --ui-color-stroke-intense: #414141;
+    --ui-color-background-default: #1f1f1c;
+    --ui-color-background-muted: #282828;
+    --ui-color-background-panel: #1f1f1c;
+    --ui-color-background-hover: #282828;
+    --ui-color-background-active: #323232;
+    --ui-color-background-secondary: #282828;
+    --ui-color-background-accent-muted: #3a3a3a;
+    --ui-color-text-default: #ffffff;
+    --ui-color-text-muted: #b3b6bd;
+    --ui-color-text-disabled: #808080;
+    --ui-color-text-primary: var(--brand-primary);
+    --ui-color-text-link: var(--brand-primary);
+    --ui-color-text-danger: #ffbaba;
+    --ui-color-title-default: rgb(97.5% 97.5% 97.5%);
+    --ui-color-title-muted: #b3b6bd;
+    --ui-color-accent: var(--brand-primary);
+    --ui-color-accent-hover: var(--brand-primary-hover);
+    --ui-color-outline: var(--brand-primary);
+    --ui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
+    --ui-color-accent-success: #4ade80;
+    --ui-color-accent-warning: #fbbf24;
+    --ui-color-accent-info: #60a5fa;
+    --ui-color-accent-danger: #f87171;
+    --ui-color-accent-user: #a78bfa;
+    --ui-radii-sm: 0.375rem;
+    --ui-color-feedback-info-bg: #0d3e9b;
+    --ui-color-feedback-info-fg: #d0dffb;
+    --ui-color-feedback-success-bg: #004206;
+    --ui-color-feedback-success-fg: #ccffd0;
+    --ui-color-feedback-warning-bg: #7a2d00;
+    --ui-color-feedback-warning-fg: #ffb88f;
+    --ui-color-feedback-danger-bg: #610000;
+    --ui-color-feedback-danger-fg: #ffbaba;
+    --ui-color-feedback-user-bg: rgb(107 33 168 / 0.3);
+    --ui-color-feedback-user-fg: #d8b4fe;
+    --ui-color-text-on-accent: #ffffff;
     --avatar-color-1: #1d4ed8;
     --avatar-color-2: #b45309;
     --avatar-color-3: #15803d;
@@ -123,44 +125,45 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
-      --cui-color-stroke-default: #323232;
-      --cui-color-stroke-muted: #323232;
-      --cui-color-stroke-intense: #414141;
-      --cui-color-background-default: #1f1f1c;
-      --cui-color-background-muted: #282828;
-      --cui-color-background-panel: #1f1f1c;
-      --cui-color-background-hover: #282828;
-      --cui-color-background-active: #323232;
-      --cui-color-background-secondary: #282828;
-      --cui-color-text-default: #ffffff;
-      --cui-color-text-muted: #b3b6bd;
-      --cui-color-text-disabled: #808080;
-      --cui-color-text-primary: var(--brand-primary);
-      --cui-color-text-link: var(--brand-primary);
-      --cui-color-text-danger: #ffbaba;
-      --cui-color-title-default: rgb(97.5% 97.5% 97.5%);
-      --cui-color-title-muted: #b3b6bd;
-      --cui-color-accent: var(--brand-primary);
-      --cui-color-accent-hover: var(--brand-primary-hover);
-      --cui-color-outline: var(--brand-primary);
-      --cui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
-      --cui-color-accent-success: #4ade80;
-      --cui-color-accent-warning: #fbbf24;
-      --cui-color-accent-info: #60a5fa;
-      --cui-color-accent-danger: #f87171;
-      --cui-color-accent-user: #a78bfa;
-      --cui-radii-sm: 0.375rem;
-      --cui-color-feedback-info-bg: #0d3e9b;
-      --cui-color-feedback-info-fg: #d0dffb;
-      --cui-color-feedback-success-bg: #004206;
-      --cui-color-feedback-success-fg: #ccffd0;
-      --cui-color-feedback-warning-bg: #7a2d00;
-      --cui-color-feedback-warning-fg: #ffb88f;
-      --cui-color-feedback-danger-bg: #610000;
-      --cui-color-feedback-danger-fg: #ffbaba;
-      --cui-color-feedback-user-bg: rgb(107 33 168 / 0.3);
-      --cui-color-feedback-user-fg: #d8b4fe;
-      --cui-color-text-on-accent: #ffffff;
+      --ui-color-stroke-default: #323232;
+      --ui-color-stroke-muted: #323232;
+      --ui-color-stroke-intense: #414141;
+      --ui-color-background-default: #1f1f1c;
+      --ui-color-background-muted: #282828;
+      --ui-color-background-panel: #1f1f1c;
+      --ui-color-background-hover: #282828;
+      --ui-color-background-active: #323232;
+      --ui-color-background-secondary: #282828;
+      --ui-color-background-accent-muted: #3a3a3a;
+      --ui-color-text-default: #ffffff;
+      --ui-color-text-muted: #b3b6bd;
+      --ui-color-text-disabled: #808080;
+      --ui-color-text-primary: var(--brand-primary);
+      --ui-color-text-link: var(--brand-primary);
+      --ui-color-text-danger: #ffbaba;
+      --ui-color-title-default: rgb(97.5% 97.5% 97.5%);
+      --ui-color-title-muted: #b3b6bd;
+      --ui-color-accent: var(--brand-primary);
+      --ui-color-accent-hover: var(--brand-primary-hover);
+      --ui-color-outline: var(--brand-primary);
+      --ui-color-shadow: rgb(8.2353% 8.2353% 8.2353% / 0.6);
+      --ui-color-accent-success: #4ade80;
+      --ui-color-accent-warning: #fbbf24;
+      --ui-color-accent-info: #60a5fa;
+      --ui-color-accent-danger: #f87171;
+      --ui-color-accent-user: #a78bfa;
+      --ui-radii-sm: 0.375rem;
+      --ui-color-feedback-info-bg: #0d3e9b;
+      --ui-color-feedback-info-fg: #d0dffb;
+      --ui-color-feedback-success-bg: #004206;
+      --ui-color-feedback-success-fg: #ccffd0;
+      --ui-color-feedback-warning-bg: #7a2d00;
+      --ui-color-feedback-warning-fg: #ffb88f;
+      --ui-color-feedback-danger-bg: #610000;
+      --ui-color-feedback-danger-fg: #ffbaba;
+      --ui-color-feedback-user-bg: rgb(107 33 168 / 0.3);
+      --ui-color-feedback-user-fg: #d8b4fe;
+      --ui-color-text-on-accent: #ffffff;
       --avatar-color-1: #1d4ed8;
       --avatar-color-2: #b45309;
       --avatar-color-3: #15803d;
@@ -176,7 +179,7 @@ html {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--cui-color-stroke-intense) transparent;
+  scrollbar-color: var(--ui-color-stroke-intense) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -189,12 +192,12 @@ html {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: var(--cui-color-stroke-intense);
+  background-color: var(--ui-color-stroke-intense);
   border-radius: 3px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: var(--cui-color-text-muted);
+  background-color: var(--ui-color-text-muted);
 }
 
 body {
@@ -241,10 +244,10 @@ code {
   left: 50%;
   transform: translateX(-50%);
   width: min(640px, calc(100vw - 2rem));
-  background: var(--cui-color-background-default);
-  border: 1px solid var(--cui-color-stroke-default);
+  background: var(--ui-color-background-default);
+  border: 1px solid var(--ui-color-stroke-default);
   border-radius: 12px;
-  box-shadow: 0 16px 70px var(--cui-color-shadow);
+  box-shadow: 0 16px 70px var(--ui-color-shadow);
   z-index: var(--z-command);
   overflow: hidden;
   animation: cmdk-scale-in 150ms ease;
@@ -256,12 +259,12 @@ code {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--cui-color-text-muted);
+  color: var(--ui-color-text-muted);
   user-select: none;
 }
 
 .cmdk-group + .cmdk-group {
-  border-top: 1px solid var(--cui-color-stroke-default);
+  border-top: 1px solid var(--ui-color-stroke-default);
   margin-top: 0.25rem;
   padding-top: 0.25rem;
 }
@@ -289,9 +292,9 @@ code {
 @keyframes cmdk-flash {
   0%,
   80% {
-    outline: 2px solid var(--cui-color-accent);
+    outline: 2px solid var(--ui-color-accent);
     outline-offset: 4px;
-    border-radius: var(--cui-radii-sm);
+    border-radius: var(--ui-radii-sm);
   }
   100% {
     outline-color: transparent;
@@ -316,7 +319,7 @@ code {
 *,
 *::before,
 *::after {
-  outline-color: var(--cui-color-outline);
+  outline-color: var(--ui-color-outline);
 }
 
 button:not([role='switch']),
@@ -329,19 +332,19 @@ summary {
 button:not([role='switch']):focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline-color: var(--cui-color-outline) !important;
+  outline-color: var(--ui-color-outline) !important;
   position: relative;
   z-index: 1;
 }
 
 .select-field-a11y button:focus-visible {
   outline: none !important;
-  border-color: var(--cui-color-outline) !important;
+  border-color: var(--ui-color-outline) !important;
 }
 
 input:not([cmdk-input]):focus-visible,
 textarea:focus-visible {
-  outline: 1px solid var(--cui-color-outline) !important;
+  outline: 1px solid var(--ui-color-outline) !important;
   outline-offset: -1px !important;
 }
 
@@ -365,7 +368,7 @@ textarea:focus-visible {
 
 .auth-card :has(> input:focus-visible),
 .auth-card :has(> textarea:focus-visible) {
-  border-color: var(--cui-color-outline) !important;
+  border-color: var(--ui-color-outline) !important;
 }
 
 .auth-card input:focus-visible,
@@ -380,7 +383,7 @@ textarea:focus-visible {
 
 .password-field-a11y button:focus-visible {
   outline-offset: -2px !important;
-  border-radius: var(--cui-radii-sm) !important;
+  border-radius: var(--ui-radii-sm) !important;
 }
 
 .scope-selector-dialog {
@@ -392,17 +395,17 @@ textarea:focus-visible {
   cursor: pointer;
   align-items: center;
   gap: 0.75rem;
-  border-radius: var(--cui-radii-sm);
+  border-radius: var(--ui-radii-sm);
   padding: 0.5rem 0.75rem;
   text-decoration: none;
 }
 
 .scope-item[aria-selected='true'] {
-  background: var(--cui-color-background-active);
+  background: var(--ui-color-background-active);
 }
 
 .scope-item[data-active='true'] {
-  background: var(--cui-color-background-hover);
+  background: var(--ui-color-background-hover);
 }
 
 .scope-icon {
@@ -412,26 +415,26 @@ textarea:focus-visible {
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: var(--cui-radii-sm);
-  background: var(--cui-color-background-secondary);
+  border-radius: var(--ui-radii-sm);
+  background: var(--ui-color-background-secondary);
 }
 
 .info-banner {
-  background: var(--cui-color-accent-info);
-  color: var(--cui-color-background-default);
+  background: var(--ui-color-accent-info);
+  color: var(--ui-color-background-default);
 }
 
 .info-banner-dismiss {
-  color: var(--cui-color-background-default);
+  color: var(--ui-color-background-default);
 }
 
 .info-banner-dismiss:hover {
-  color: var(--cui-color-background-panel);
+  color: var(--ui-color-background-panel);
 }
 
 .scope-preview-banner {
-  background: var(--cui-color-background-secondary);
-  border: 1px solid var(--cui-color-stroke-default);
+  background: var(--ui-color-background-secondary);
+  border: 1px solid var(--ui-color-stroke-default);
 }
 
 .scope-preview-dimmed {
@@ -447,8 +450,8 @@ textarea:focus-visible {
   content: '';
   position: absolute;
   inset: -2px;
-  border-radius: var(--cui-radii-sm);
-  border: 1px solid var(--cui-color-accent-info);
+  border-radius: var(--ui-radii-sm);
+  border: 1px solid var(--ui-color-accent-info);
   pointer-events: none;
 }
 
@@ -466,14 +469,14 @@ textarea:focus-visible {
 }
 
 .boolean-chip-true {
-  background-color: var(--cui-color-accent);
-  color: var(--cui-color-background-default);
+  background-color: var(--ui-color-accent);
+  color: var(--ui-color-background-default);
 }
 
 .boolean-chip-false {
   background-color: transparent;
-  border: 1px solid var(--cui-color-stroke-default);
-  color: var(--cui-color-text-muted);
+  border: 1px solid var(--ui-color-stroke-default);
+  color: var(--ui-color-text-muted);
 }
 
 .profile-indicator {
@@ -487,8 +490,8 @@ textarea:focus-visible {
   justify-content: center;
   gap: 1px;
   cursor: pointer;
-  border: 1px solid var(--cui-color-stroke-muted);
-  background: var(--cui-color-background-muted);
+  border: 1px solid var(--ui-color-stroke-muted);
+  background: var(--ui-color-background-muted);
   padding: 2px 6px;
   margin-left: auto;
   border-radius: 9999px;
@@ -498,23 +501,23 @@ textarea:focus-visible {
 }
 
 .profile-indicator-btn:hover {
-  background: var(--cui-color-background-hover);
-  border-color: var(--cui-color-stroke-intense);
+  background: var(--ui-color-background-hover);
+  border-color: var(--ui-color-stroke-intense);
 }
 
 .config-input {
-  border-radius: var(--cui-radii-sm);
-  border: 1px solid var(--cui-color-stroke-default);
-  background: var(--cui-color-background-default);
+  border-radius: var(--ui-radii-sm);
+  border: 1px solid var(--ui-color-stroke-default);
+  background: var(--ui-color-background-default);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  color: var(--cui-color-text-default);
+  color: var(--ui-color-text-default);
   outline: none;
 }
 
 .config-input:focus {
-  border-color: var(--cui-color-stroke-intense);
+  border-color: var(--ui-color-stroke-intense);
 }
 
 .config-input:disabled {
@@ -542,26 +545,26 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .config-input.config-input-error {
-  border-color: var(--cui-color-text-danger);
+  border-color: var(--ui-color-text-danger);
 }
 
 .config-input-ghost {
   border: none;
-  border-bottom: 1px solid var(--cui-color-stroke-intense);
+  border-bottom: 1px solid var(--ui-color-stroke-intense);
   border-radius: 0;
   background: transparent;
   padding: 0;
-  color: var(--cui-color-text-default);
+  color: var(--ui-color-text-default);
   outline: none;
 }
 
 .config-input-ghost:focus-visible {
-  outline: 2px solid var(--cui-color-outline);
+  outline: 2px solid var(--ui-color-outline);
   outline-offset: 2px;
 }
 
 [role='switch']:focus-visible {
-  outline: 2px solid var(--cui-color-outline);
+  outline: 2px solid var(--ui-color-outline);
   outline-offset: 2px;
 }
 
@@ -572,8 +575,8 @@ input[type='number'].config-input::-webkit-outer-spin-button {
   border: none;
   background: transparent;
   padding: 4px;
-  border-radius: var(--cui-radii-sm);
-  color: var(--cui-color-text-muted);
+  border-radius: var(--ui-radii-sm);
+  color: var(--ui-color-text-muted);
   cursor: pointer;
   transition:
     color 150ms ease,
@@ -581,8 +584,8 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .trash-btn:hover {
-  background: var(--cui-color-background-hover);
-  color: var(--cui-color-accent-danger);
+  background: var(--ui-color-background-hover);
+  color: var(--ui-color-accent-danger);
 }
 
 /* ── Config section collapse (grid-rows trick for auto height) ── */
@@ -646,14 +649,14 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .config-field-badge-set {
-  background-color: var(--cui-color-feedback-info-bg);
-  color: var(--cui-color-feedback-info-fg);
+  background-color: var(--ui-color-feedback-info-bg);
+  color: var(--ui-color-feedback-info-fg);
 }
 
 .config-field-badge-default {
-  background-color: var(--cui-color-background-secondary);
-  color: var(--cui-color-text-disabled);
-  border: 1px solid var(--cui-color-stroke-default);
+  background-color: var(--ui-color-background-secondary);
+  color: var(--ui-color-text-disabled);
+  border: 1px solid var(--ui-color-stroke-default);
 }
 
 /* ── Table of contents ──────────────────────────────────────── */
@@ -669,7 +672,7 @@ input[type='number'].config-input::-webkit-outer-spin-button {
   top: 0;
   bottom: 0;
   width: 1px;
-  background: var(--cui-color-stroke-default);
+  background: var(--ui-color-stroke-default);
 }
 
 .toc-item {
@@ -685,8 +688,8 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .toc-item[data-toc-active] {
-  color: var(--cui-color-text-default);
-  border-left-color: var(--cui-color-accent);
+  color: var(--ui-color-text-default);
+  border-left-color: var(--ui-color-accent);
 }
 
 .toc-item-parent[data-toc-active] {
@@ -709,13 +712,13 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .config-count-badge-active {
-  background-color: var(--cui-color-feedback-info-bg);
-  color: var(--cui-color-feedback-info-fg);
+  background-color: var(--ui-color-feedback-info-bg);
+  color: var(--ui-color-feedback-info-fg);
 }
 
 .config-count-badge-muted {
-  background-color: var(--cui-color-background-secondary);
-  color: var(--cui-color-text-disabled);
+  background-color: var(--ui-color-background-secondary);
+  color: var(--ui-color-text-disabled);
 }
 
 /* ── Inline add button (section / group headers) ────────────── */
@@ -727,12 +730,12 @@ input[type='number'].config-input::-webkit-outer-spin-button {
   margin-left: 4px;
   padding: 4px 12px 4px 8px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--cui-color-text-muted) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ui-color-text-muted) 40%, transparent);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
-  color: var(--cui-color-text-muted);
-  background-color: var(--cui-color-background-default);
+  color: var(--ui-color-text-muted);
+  background-color: var(--ui-color-background-default);
   cursor: pointer;
   user-select: none;
   transition:
@@ -742,9 +745,9 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .config-add-btn:hover {
-  color: var(--cui-color-text-default);
-  border-color: var(--cui-color-text-muted);
-  background-color: var(--cui-color-background-hover);
+  color: var(--ui-color-text-default);
+  border-color: var(--ui-color-text-muted);
+  background-color: var(--ui-color-background-hover);
 }
 
 .config-add-btn-block {
@@ -753,7 +756,7 @@ input[type='number'].config-input::-webkit-outer-spin-button {
   height: 36px;
   padding: 6px 12px;
   margin-left: 0;
-  border-color: color-mix(in srgb, var(--cui-color-text-muted) 40%, transparent);
+  border-color: color-mix(in srgb, var(--ui-color-text-muted) 40%, transparent);
 }
 
 /* ── Tab configured counts ───────────────────────────────────── */
@@ -772,13 +775,13 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 }
 
 .config-tab-count-active {
-  background-color: var(--cui-color-feedback-info-bg);
-  color: var(--cui-color-feedback-info-fg);
+  background-color: var(--ui-color-feedback-info-bg);
+  color: var(--ui-color-feedback-info-fg);
 }
 
 .config-tab-count-zero {
-  background-color: var(--cui-color-background-secondary);
-  color: var(--cui-color-text-disabled);
+  background-color: var(--ui-color-background-secondary);
+  color: var(--ui-color-text-disabled);
 }
 
 /* ── Reset to default button ─────────────────────────────────── */
@@ -791,16 +794,16 @@ input[type='number'].config-input::-webkit-outer-spin-button {
   border: none;
   background: none;
   padding: 2px;
-  border-radius: var(--cui-radii-sm);
-  color: var(--cui-color-text-disabled);
+  border-radius: var(--ui-radii-sm);
+  color: var(--ui-color-text-disabled);
   transition:
     color 150ms ease,
     background 150ms ease;
 }
 
 .config-reset-btn:hover {
-  color: var(--cui-color-accent-warning);
-  background: var(--cui-color-background-hover);
+  color: var(--ui-color-accent-warning);
+  background: var(--ui-color-background-hover);
 }
 
 /* ── Toggle list items ───────────────────────────────────────── */
@@ -822,32 +825,32 @@ input[type='number'].config-input::-webkit-outer-spin-button {
   border-radius: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  box-shadow: 0 8px 30px var(--cui-color-shadow);
+  box-shadow: 0 8px 30px var(--ui-color-shadow);
   z-index: var(--z-toast);
   animation: toast-in 200ms ease-out;
   pointer-events: none;
 }
 
 .config-toast-info {
-  background: var(--cui-color-accent-info);
-  color: var(--cui-color-text-on-accent);
+  background: var(--ui-color-accent-info);
+  color: var(--ui-color-text-on-accent);
 }
 
 .config-toast-success {
-  background: var(--cui-color-accent-success);
-  color: var(--cui-color-text-on-accent);
+  background: var(--ui-color-accent-success);
+  color: var(--ui-color-text-on-accent);
 }
 
 .config-toast-error {
-  background: var(--cui-color-accent-danger);
-  color: var(--cui-color-text-on-accent);
+  background: var(--ui-color-accent-danger);
+  color: var(--ui-color-text-on-accent);
 }
 
 .config-toast-spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid color-mix(in srgb, var(--cui-color-text-on-accent) 30%, transparent);
-  border-top-color: var(--cui-color-text-on-accent);
+  border: 2px solid color-mix(in srgb, var(--ui-color-text-on-accent) 30%, transparent);
+  border-top-color: var(--ui-color-text-on-accent);
   border-radius: 50%;
   animation: toast-spin 600ms linear infinite;
 }
@@ -871,7 +874,7 @@ input[type='number'].config-input::-webkit-outer-spin-button {
 
 .modal-frost[role='dialog'] {
   border-radius: 12px !important;
-  box-shadow: 0 16px 70px 0 var(--cui-color-shadow) !important;
+  box-shadow: 0 16px 70px 0 var(--ui-color-shadow) !important;
   overscroll-behavior: contain;
 }
 
@@ -898,58 +901,58 @@ body > div:has(+ .modal-frost) {
   border: none;
   background: none;
   padding: 4px;
-  border-radius: var(--cui-radii-sm);
-  color: var(--cui-color-text-muted);
+  border-radius: var(--ui-radii-sm);
+  color: var(--ui-color-text-muted);
   transition:
     color 150ms ease,
     background 150ms ease;
 }
 
 .preview-action-btn:hover {
-  color: var(--cui-color-text-default);
-  background: var(--cui-color-background-hover);
+  color: var(--ui-color-text-default);
+  background: var(--ui-color-background-hover);
 }
 
 .badge-role {
-  background-color: var(--cui-color-feedback-info-bg);
-  color: var(--cui-color-feedback-info-fg);
+  background-color: var(--ui-color-feedback-info-bg);
+  color: var(--ui-color-feedback-info-fg);
 }
 
 .badge-group {
-  background-color: var(--cui-color-feedback-success-bg);
-  color: var(--cui-color-feedback-success-fg);
+  background-color: var(--ui-color-feedback-success-bg);
+  color: var(--ui-color-feedback-success-fg);
 }
 
 .badge-profile {
-  background-color: var(--cui-color-feedback-user-bg);
-  color: var(--cui-color-feedback-user-fg);
+  background-color: var(--ui-color-feedback-user-bg);
+  color: var(--ui-color-feedback-user-fg);
 }
 
 .badge-admin {
-  background-color: var(--cui-color-feedback-warning-bg);
-  color: var(--cui-color-feedback-warning-fg);
+  background-color: var(--ui-color-feedback-warning-bg);
+  color: var(--ui-color-feedback-warning-fg);
 }
 
 .badge-user {
-  background-color: var(--cui-color-feedback-user-bg);
-  color: var(--cui-color-feedback-user-fg);
+  background-color: var(--ui-color-feedback-user-bg);
+  color: var(--ui-color-feedback-user-fg);
 }
 
 .badge-success {
-  background-color: var(--cui-color-feedback-success-bg);
-  color: var(--cui-color-feedback-success-fg);
+  background-color: var(--ui-color-feedback-success-bg);
+  color: var(--ui-color-feedback-success-fg);
 }
 
 .badge-danger {
-  background-color: var(--cui-color-feedback-danger-bg);
-  color: var(--cui-color-feedback-danger-fg);
+  background-color: var(--ui-color-feedback-danger-bg);
+  color: var(--ui-color-feedback-danger-fg);
 }
 
 /* Markdown rendering for trace message content (Opik-inspired). */
 .trace-markdown {
   font-size: 0.8125rem;
   line-height: 1.55;
-  color: var(--cui-color-text-default);
+  color: var(--ui-color-text-default);
 }
 .trace-markdown > :first-child {
   margin-top: 0;
@@ -990,23 +993,23 @@ body > div:has(+ .modal-frost) {
   margin: 0.15rem 0;
 }
 .trace-markdown a {
-  color: var(--cui-color-text-link);
+  color: var(--ui-color-text-link);
   text-decoration: underline;
 }
 .trace-markdown code {
-  font-family: var(--cui-font-family-monospace, monospace);
+  font-family: var(--ui-font-family-monospace, monospace);
   font-size: 0.78em;
   padding: 0.1em 0.3em;
   border-radius: 4px;
-  background-color: var(--cui-color-background-muted);
+  background-color: var(--ui-color-background-muted);
 }
 .trace-markdown pre {
   margin: 0 0 0.5rem;
   padding: 0.6rem 0.7rem;
   border-radius: 6px;
   overflow: auto;
-  background-color: var(--cui-color-background-muted);
-  border: 1px solid var(--cui-color-stroke-default);
+  background-color: var(--ui-color-background-muted);
+  border: 1px solid var(--ui-color-stroke-default);
 }
 .trace-markdown pre code {
   padding: 0;
@@ -1016,8 +1019,8 @@ body > div:has(+ .modal-frost) {
 .trace-markdown blockquote {
   margin: 0 0 0.5rem;
   padding-left: 0.75rem;
-  border-left: 3px solid var(--cui-color-stroke-default);
-  color: var(--cui-color-text-muted);
+  border-left: 3px solid var(--ui-color-stroke-default);
+  color: var(--ui-color-text-muted);
 }
 .trace-markdown table {
   border-collapse: collapse;
@@ -1026,13 +1029,13 @@ body > div:has(+ .modal-frost) {
 }
 .trace-markdown th,
 .trace-markdown td {
-  border: 1px solid var(--cui-color-stroke-default);
+  border: 1px solid var(--ui-color-stroke-default);
   padding: 0.3rem 0.5rem;
   text-align: left;
 }
 .trace-markdown hr {
   border: 0;
-  border-top: 1px solid var(--cui-color-stroke-default);
+  border-top: 1px solid var(--ui-color-stroke-default);
   margin: 0.75rem 0;
 }
 

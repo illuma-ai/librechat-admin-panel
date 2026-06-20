@@ -23,7 +23,7 @@ export function Avatar({ text, textSize = 'md', title, className }: AvatarProps)
     <span
       title={title}
       className={cn(
-        'grid shrink-0 place-items-center overflow-hidden rounded-full bg-(--cui-color-background-accent-muted) font-semibold text-(--cui-color-text-default)',
+        'grid shrink-0 place-items-center overflow-hidden rounded-full bg-(--ui-color-background-accent-muted) font-semibold text-(--ui-color-text-default)',
         SIZE_CLASS[textSize] ?? SIZE_CLASS.md,
         className,
       )}

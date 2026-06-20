@@ -74,10 +74,10 @@ export function Panel({ children, padding = 'md', radii = 'md', hasBorder, hasSh
   return (
     <div
       className={cn(
-        'bg-(--cui-color-background-panel)',
+        'bg-(--ui-color-background-panel)',
         PADDING[padding],
         RADII[radii],
-        hasBorder && 'border border-(--cui-color-stroke-default)',
+        hasBorder && 'border border-(--ui-color-stroke-default)',
         hasShadow && 'shadow-md',
         className,
       )}
@@ -88,7 +88,7 @@ export function Panel({ children, padding = 'md', radii = 'md', hasBorder, hasSh
 }
 
 export function Separator({ className }: { size?: string; className?: string }) {
-  return <hr className={cn('w-full border-0 border-t border-(--cui-color-stroke-default)', className)} />;
+  return <hr className={cn('w-full border-0 border-t border-(--ui-color-stroke-default)', className)} />;
 }
 
 const TITLE_SIZE: Record<string, string> = {
@@ -105,5 +105,5 @@ interface TitleProps {
 
 export function Title({ children, type = 'h1', className }: TitleProps) {
   const Tag = type;
-  return <Tag className={cn(TITLE_SIZE[type], 'text-(--cui-color-text-default)', className)}>{children}</Tag>;
+  return <Tag className={cn(TITLE_SIZE[type], 'text-(--ui-color-text-default)', className)}>{children}</Tag>;
 }

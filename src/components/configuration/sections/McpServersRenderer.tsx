@@ -226,10 +226,10 @@ function flattenGroupFields(
         <div key={field.key} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
           <label
             htmlFor={fieldId}
-            className="shrink-0 text-sm font-medium text-(--cui-color-text-default) sm:w-35"
+            className="shrink-0 text-sm font-medium text-(--ui-color-text-default) sm:w-35"
           >
             {label}
-            <span className="ml-0.5 text-(--cui-color-text-danger)">*</span>
+            <span className="ml-0.5 text-(--ui-color-text-danger)">*</span>
           </label>
           <div className="flex-1">
             <SelectField
@@ -299,7 +299,7 @@ function FieldGroupSection({
 
   return (
     <section ref={sectionRef} className="flex flex-col">
-      <div className="flex items-center gap-2 border-b border-(--cui-color-stroke-default) pb-2">
+      <div className="flex items-center gap-2 border-b border-(--ui-color-stroke-default) pb-2">
         <button
           type="button"
           aria-expanded={isExpanded}
@@ -314,7 +314,7 @@ function FieldGroupSection({
           >
             <Icon name="chevron-right" size="xs" />
           </span>
-          <span className="text-xs font-medium text-(--cui-color-text-muted)">
+          <span className="text-xs font-medium text-(--ui-color-text-muted)">
             {localize(labelKey)}
           </span>
         </button>
@@ -358,7 +358,7 @@ function FieldGroup({
 
   return (
     <section ref={sectionRef} className="flex flex-col">
-      <div className="flex items-center gap-2 border-b border-(--cui-color-stroke-default) pb-2">
+      <div className="flex items-center gap-2 border-b border-(--ui-color-stroke-default) pb-2">
         <button
           type="button"
           aria-expanded={isExpanded}
@@ -373,7 +373,7 @@ function FieldGroup({
           >
             <Icon name="chevron-right" size="xs" />
           </span>
-          <span className="text-xs font-medium text-(--cui-color-text-muted)">
+          <span className="text-xs font-medium text-(--ui-color-text-muted)">
             {localize(labelKey)}
           </span>
         </button>
@@ -623,7 +623,7 @@ function CreateMcpServerDialog({
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="mcp-server-name"
-            className="text-sm font-medium text-(--cui-color-text-default)"
+            className="text-sm font-medium text-(--ui-color-text-default)"
           >
             {localize('com_config_server_name')} <span className="text-red-500">*</span>
           </label>
@@ -936,7 +936,7 @@ export function McpServersRenderer(props: t.FieldRendererProps) {
         />
       ))}
       {entries.length === 0 && (
-        <p className="py-2 text-sm text-(--cui-color-text-muted)">
+        <p className="py-2 text-sm text-(--ui-color-text-muted)">
           {localize('com_config_no_entries')}
         </p>
       )}

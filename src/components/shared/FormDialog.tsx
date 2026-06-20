@@ -44,7 +44,7 @@ export function FormDialog({
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {children}
           {error && (
-            <p role="alert" className="text-sm text-(--cui-color-text-danger)">
+            <p role="alert" className="text-sm text-(--ui-color-text-danger)">
               {error}
             </p>
           )}

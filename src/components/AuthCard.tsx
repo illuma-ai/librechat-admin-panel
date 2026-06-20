@@ -222,10 +222,10 @@ export function AuthCard({
       >
         <Container orientation="vertical" gap="lg" alignItems="center">
           <Title type="h1">{localize('com_auth_title')}</Title>
-          <p className="text-center text-sm text-(--cui-color-text-muted)">
+          <p className="text-center text-sm text-(--ui-color-text-muted)">
             {localize('com_auth_sso_redirecting_auto')}
           </p>
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-(--cui-color-stroke-default) border-t-(--cui-color-accent-info)" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-(--ui-color-stroke-default) border-t-(--ui-color-accent-info)" />
         </Container>
       </Panel>
     );
@@ -249,7 +249,7 @@ export function AuthCard({
 
         {step === '2fa' ? (
           <>
-            <p className="text-center text-sm text-(--cui-color-text-muted)">
+            <p className="text-center text-sm text-(--ui-color-text-muted)">
               {localize('com_auth_2fa_prompt')}
             </p>
             <div className="flex justify-center">
@@ -277,7 +277,7 @@ export function AuthCard({
               </InputOTP>
             </div>
             {isSubmitting && (
-              <p className="text-center text-sm text-(--cui-color-text-muted)">
+              <p className="text-center text-sm text-(--ui-color-text-muted)">
                 {localize('com_auth_2fa_verifying')}
               </p>
             )}
@@ -285,7 +285,7 @@ export function AuthCard({
               type="button"
               onClick={handleBack}
               disabled={isSubmitting}
-              className="text-sm text-(--cui-color-accent-info) transition-colors hover:underline disabled:pointer-events-none disabled:opacity-50"
+              className="text-sm text-(--ui-color-accent-info) transition-colors hover:underline disabled:pointer-events-none disabled:opacity-50"
             >
               {localize('com_auth_2fa_back')}
             </button>

@@ -14,12 +14,12 @@ interface UserCellProps {
  */
 export function UserCell({ user, fallback }: UserCellProps) {
   if (!user) {
-    return <span className="text-(--cui-color-text-muted)">{fallback || '—'}</span>;
+    return <span className="text-(--ui-color-text-muted)">{fallback || '—'}</span>;
   }
   const display = user.name || user.email || fallback;
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <span className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-(--cui-color-background-accent-muted,#e5e7eb) text-[11px] font-semibold text-(--cui-color-text-default)">
+      <span className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-(--ui-color-background-accent-muted) text-[11px] font-semibold text-(--ui-color-text-default)">
         {user.avatar ? (
           <img
             src={user.avatar}
@@ -32,9 +32,9 @@ export function UserCell({ user, fallback }: UserCellProps) {
         )}
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm text-(--cui-color-text-default)">{display}</span>
+        <span className="truncate text-sm text-(--ui-color-text-default)">{display}</span>
         {user.name && user.email ? (
-          <span className="truncate text-xs text-(--cui-color-text-muted)">{user.email}</span>
+          <span className="truncate text-xs text-(--ui-color-text-muted)">{user.email}</span>
         ) : null}
       </span>
     </span>

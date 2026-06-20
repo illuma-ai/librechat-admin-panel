@@ -24,9 +24,9 @@ export function IconButton({ icon, size = 'sm', onClick, disabled, className, ti
       disabled={disabled}
       title={title}
       className={cn(
-        'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) outline-none transition-colors',
-        'hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)',
-        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--cui-color-outline)',
+        'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) outline-none transition-colors',
+        'hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)',
+        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--ui-color-outline)',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}

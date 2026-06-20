@@ -12,7 +12,7 @@ export function ScoresTab({ scores }: ScoresTabProps) {
 
   if (scores.length === 0) {
     return (
-      <div className="px-3 py-6 text-sm text-(--cui-color-text-muted)">
+      <div className="px-3 py-6 text-sm text-(--ui-color-text-muted)">
         {localize('com_traces_scores_empty')}
       </div>
     );
@@ -28,8 +28,8 @@ export function ScoresTab({ scores }: ScoresTabProps) {
 
   return (
     <div className="px-2 pt-2">
-      <div className="overflow-hidden rounded-sm border border-(--cui-color-stroke-default)">
-        <div className="flex border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1.5 text-xs font-medium text-(--cui-color-text-muted)">
+      <div className="overflow-hidden rounded-sm border border-(--ui-color-stroke-default)">
+        <div className="flex border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-muted) px-3 py-1.5 text-xs font-medium text-(--ui-color-text-muted)">
           <span className="w-1/5">{headers[0]}</span>
           <span className="w-1/5">{headers[1]}</span>
           <span className="w-1/5">{headers[2]}</span>
@@ -39,19 +39,19 @@ export function ScoresTab({ scores }: ScoresTabProps) {
         {scores.map((score, i) => (
           <div
             key={`${score.name}-${score.timestamp}-${i}`}
-            className="flex border-b border-(--cui-color-stroke-default) px-3 py-1.5 text-xs last:border-0"
+            className="flex border-b border-(--ui-color-stroke-default) px-3 py-1.5 text-xs last:border-0"
           >
-            <span className="w-1/5 truncate font-medium text-(--cui-color-text-default)">
+            <span className="w-1/5 truncate font-medium text-(--ui-color-text-default)">
               {score.name}
             </span>
-            <span className="w-1/5 truncate text-(--cui-color-text-default)">
+            <span className="w-1/5 truncate text-(--ui-color-text-default)">
               {scoreDisplayValue(score)}
             </span>
-            <span className="w-1/5 truncate text-(--cui-color-text-muted)">{score.source}</span>
-            <span className="flex-1 wrap-break-word text-(--cui-color-text-muted)">
+            <span className="w-1/5 truncate text-(--ui-color-text-muted)">{score.source}</span>
+            <span className="flex-1 wrap-break-word text-(--ui-color-text-muted)">
               {score.comment ?? ''}
             </span>
-            <span className="w-1/5 truncate text-right text-(--cui-color-text-muted)">
+            <span className="w-1/5 truncate text-right text-(--ui-color-text-muted)">
               {formatTimestamp(score.timestamp)}
             </span>
           </div>

@@ -5,7 +5,7 @@ import { cn } from './cn';
 /**
  * Radix-based right-side drawer — a drop-in replacement for the click-ui
  * `Flyout` compound (`Drawer` / `Content` / `Body`) styled with the shared
- * `--cui-color-*` theme tokens. The trace side-panel closes only via an explicit
+ * `--ui-color-*` theme tokens. The trace side-panel closes only via an explicit
  * close action or Escape by default: while `dismissable` is false, outside
  * pointer/interaction events are prevented so a panel-resize pointer-capture
  * cannot dismiss it (mirrors the reference `closeOnInteractOutside={false}`).
@@ -48,7 +48,7 @@ function DrawerContent({
         style={{ width }}
         onPointerDownOutside={preventWhenLocked}
         onInteractOutside={preventWhenLocked}
-        className="fixed inset-y-0 right-0 z-50 flex flex-col overflow-hidden border-l border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) shadow-md outline-none"
+        className="fixed inset-y-0 right-0 z-50 flex flex-col overflow-hidden border-l border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) shadow-md outline-none"
       >
         <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
         {children}

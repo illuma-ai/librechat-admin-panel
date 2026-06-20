@@ -121,13 +121,13 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
         onResize={() => setNavCollapsed(navPanelRef.current?.isCollapsed() ?? false)}
         className="flex min-h-0 flex-col overflow-hidden"
       >
-        <div className="flex shrink-0 items-center gap-1 border-b border-(--cui-color-stroke-default) px-2 py-1">
+        <div className="flex shrink-0 items-center gap-1 border-b border-(--ui-color-stroke-default) px-2 py-1">
           <input
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder={localize('com_traces_search')}
-            className="h-7 min-w-0 flex-1 bg-transparent px-1 text-xs text-(--cui-color-text-default) outline-none placeholder:text-(--cui-color-text-muted)"
+            className="h-7 min-w-0 flex-1 bg-transparent px-1 text-xs text-(--ui-color-text-default) outline-none placeholder:text-(--ui-color-text-muted)"
             aria-label={localize('com_traces_search')}
           />
           <button
@@ -135,7 +135,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             onClick={() => setExpandSignal((n) => n + 1)}
             title={localize('com_traces_expand_all')}
             aria-label={localize('com_traces_expand_all')}
-            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover)"
           >
             <UnfoldVertical className="size-3.5" />
           </button>
@@ -144,7 +144,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             onClick={() => setCollapseSignal((n) => n + 1)}
             title={localize('com_traces_collapse_all')}
             aria-label={localize('com_traces_collapse_all')}
-            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover)"
           >
             <FoldVertical className="size-3.5" />
           </button>
@@ -153,7 +153,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             onClick={handleDownload}
             title={localize('com_traces_download_json')}
             aria-label={localize('com_traces_download_json')}
-            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover)"
           >
             <Download className="size-3.5" />
           </button>
@@ -167,8 +167,8 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
               className={cn(
                 'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm',
                 showGraph
-                  ? 'bg-(--cui-color-background-muted) text-(--cui-color-text-default)'
-                  : 'text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)',
+                  ? 'bg-(--ui-color-background-muted) text-(--ui-color-text-default)'
+                  : 'text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover)',
               )}
             >
               <Network className="size-3.5" />
@@ -180,8 +180,8 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
             className={cn(
               'flex h-7 shrink-0 cursor-pointer items-center rounded-sm px-2 text-xs',
               timeline
-                ? 'bg-(--cui-color-background-muted) text-(--cui-color-text-default)'
-                : 'text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)',
+                ? 'bg-(--ui-color-background-muted) text-(--ui-color-text-default)'
+                : 'text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover)',
             )}
           >
             {localize('com_traces_timeline')}
@@ -190,7 +190,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
         {/* the reference UI renders the agent graph as toggleable secondary content above the
             observation tree in the left navigation panel (not as a right-pane tab). */}
         {showGraph && graphAvailable ? (
-          <div className="h-2/5 min-h-0 shrink-0 overflow-hidden border-b border-(--cui-color-stroke-default)">
+          <div className="h-2/5 min-h-0 shrink-0 overflow-hidden border-b border-(--ui-color-stroke-default)">
             <TraceGraph graph={data.graph} />
           </div>
         ) : null}
@@ -208,7 +208,7 @@ export function TraceDetailContent({ tenant, traceId }: TraceDetailContentProps)
       </Panel>
       {/* Draggable resize handle (double-click to collapse), mirroring the reference. A wide
           transparent `after` overlay makes the 1px divider easy to grab. */}
-      <Separator className="relative z-10 w-px shrink-0 cursor-col-resize touch-none bg-(--cui-color-stroke-default) transition-colors select-none after:absolute after:inset-y-0 after:-left-1.5 after:z-10 after:w-4 after:content-[''] hover:bg-(--cui-color-primary-default) data-resize-handle-active:bg-(--cui-color-primary-default)" />
+      <Separator className="relative z-10 w-px shrink-0 cursor-col-resize touch-none bg-(--ui-color-stroke-default) transition-colors select-none after:absolute after:inset-y-0 after:-left-1.5 after:z-10 after:w-4 after:content-[''] hover:bg-(--ui-color-accent) data-resize-handle-active:bg-(--ui-color-accent)" />
       <Panel id="trace-detail" minSize="40%" defaultSize="60%" className="flex min-h-0 flex-col">
         <TraceDetailPane
           trace={data.trace}

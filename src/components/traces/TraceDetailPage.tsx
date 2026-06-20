@@ -33,13 +33,13 @@ export function TraceDetailPage({ tenant, traceId }: TraceDetailPageProps) {
             user: [],
             tags: [],
           }}
-          className="inline-flex w-fit items-center gap-1 text-sm text-(--cui-color-text-muted) no-underline hover:text-(--cui-color-text-default)"
+          className="inline-flex w-fit items-center gap-1 text-sm text-(--ui-color-text-muted) no-underline hover:text-(--ui-color-text-default)"
         >
           <ChevronLeft className="size-4" />
           {localize('com_traces_back')}
         </Link>
       </div>
-      <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-(--cui-color-stroke-default)">
+      <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-(--ui-color-stroke-default)">
         <TraceDetailContent tenant={tenant} traceId={traceId} />
       </div>
     </div>

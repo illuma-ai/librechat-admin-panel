@@ -115,7 +115,7 @@ export function UserSearchInline({
           id={listboxId}
           role="listbox"
           style={positionStyle}
-          className="max-h-48 overflow-auto rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) shadow-lg"
+          className="max-h-48 overflow-auto rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) shadow-lg"
         >
           {results.map((user, i) => (
             <li
@@ -127,14 +127,14 @@ export function UserSearchInline({
               className={cn(
                 'flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors',
                 i === activeIndex
-                  ? 'bg-(--cui-color-background-active) text-(--cui-color-text-default)'
-                  : 'text-(--cui-color-text-default) hover:bg-(--cui-color-background-hover)',
+                  ? 'bg-(--ui-color-background-active) text-(--ui-color-text-default)'
+                  : 'text-(--ui-color-text-default) hover:bg-(--ui-color-background-hover)',
               )}
             >
               <Avatar name={user.name} size="sm" />
               <div className="flex flex-col">
                 <span className="font-medium">{user.name}</span>
-                <span className="text-xs text-(--cui-color-text-muted)">{user.email}</span>
+                <span className="text-xs text-(--ui-color-text-muted)">{user.email}</span>
               </div>
             </li>
           ))}
@@ -145,7 +145,7 @@ export function UserSearchInline({
       return (
         <div
           style={positionStyle}
-          className="rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) px-3 py-3 text-center text-sm text-(--cui-color-text-muted) shadow-lg"
+          className="rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) px-3 py-3 text-center text-sm text-(--ui-color-text-muted) shadow-lg"
         >
           {localize('com_access_no_users_found')}
         </div>
@@ -187,7 +187,7 @@ export function UserSearchInline({
     <div className="relative">
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-(--cui-color-text-muted)"
+        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-(--ui-color-text-muted)"
       >
         <Icon name="search" size="xs" />
       </span>
@@ -210,7 +210,7 @@ export function UserSearchInline({
         aria-controls={listboxId}
         role="combobox"
         disabled={disabled}
-        className="w-full rounded-lg border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) py-2 pr-3 pl-9 text-sm text-(--cui-color-text-default) placeholder:text-(--cui-color-text-disabled)"
+        className="w-full rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) py-2 pr-3 pl-9 text-sm text-(--ui-color-text-default) placeholder:text-(--ui-color-text-disabled)"
       />
       {hasResults &&
         dropdownRect &&

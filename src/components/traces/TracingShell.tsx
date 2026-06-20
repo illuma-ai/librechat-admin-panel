@@ -122,12 +122,12 @@ export function TracingShell({
       {tabs}
 
       {/* Toolbar */}
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-(--cui-color-stroke-default) px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-(--ui-color-stroke-default) px-3 py-2">
         {filterSidebar ? (
           <button
             type="button"
             onClick={() => setFiltersOpen((o) => !o)}
-            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-(--cui-color-stroke-default) px-2 text-sm text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted)"
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-(--ui-color-stroke-default) px-2 text-sm text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted)"
           >
             {filtersOpen ? (
               <PanelLeftClose className="size-4" />
@@ -138,7 +138,7 @@ export function TracingShell({
               ? localize('com_traces_hide_filters')
               : localize('com_traces_show_filters')}
             {activeFilterCount > 0 ? (
-              <span className="rounded-full bg-(--cui-color-background-muted) px-1.5 text-xs">
+              <span className="rounded-full bg-(--ui-color-background-muted) px-1.5 text-xs">
                 {activeFilterCount}
               </span>
             ) : null}
@@ -181,7 +181,7 @@ export function TracingShell({
       {/* Body: filter sidebar (collapsible) + table */}
       <div className="flex min-h-0 flex-1">
         {filterSidebar && filtersOpen ? (
-          <aside className="w-64 shrink-0 overflow-auto border-r border-(--cui-color-stroke-default)">
+          <aside className="w-64 shrink-0 overflow-auto border-r border-(--ui-color-stroke-default)">
             {filterSidebar}
           </aside>
         ) : null}
@@ -189,9 +189,9 @@ export function TracingShell({
       </div>
 
       {/* Pagination (reference parity): rows-per-page · page X of Y · «‹›» */}
-      <div className="flex shrink-0 items-center justify-end gap-6 border-t border-(--cui-color-stroke-default) px-3 py-1.5">
+      <div className="flex shrink-0 items-center justify-end gap-6 border-t border-(--ui-color-stroke-default) px-3 py-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium whitespace-nowrap text-(--cui-color-text-muted)">
+          <span className="text-sm font-medium whitespace-nowrap text-(--ui-color-text-muted)">
             {localize('com_traces_rows_per_page')}
           </span>
           <div className="w-17.5">
@@ -206,7 +206,7 @@ export function TracingShell({
             />
           </div>
         </div>
-        <span className="text-sm font-medium whitespace-nowrap text-(--cui-color-text-default)">
+        <span className="text-sm font-medium whitespace-nowrap text-(--ui-color-text-default)">
           {localize('com_traces_page_of', { page, total: lastPage })}
         </span>
         <div className="flex items-center gap-1">
@@ -215,7 +215,7 @@ export function TracingShell({
             onClick={() => onPage(1)}
             disabled={isFirstPage}
             aria-label={localize('com_traces_first_page')}
-            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--ui-color-stroke-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronsLeft className="size-4" />
           </button>
@@ -224,7 +224,7 @@ export function TracingShell({
             onClick={() => onPage(page - 1)}
             disabled={isFirstPage}
             aria-label={localize('com_traces_prev_page')}
-            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--ui-color-stroke-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -233,7 +233,7 @@ export function TracingShell({
             onClick={() => onPage(page + 1)}
             disabled={isLastPage}
             aria-label={localize('com_traces_next_page')}
-            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--ui-color-stroke-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -242,7 +242,7 @@ export function TracingShell({
             onClick={() => onPage(lastPage)}
             disabled={isLastPage}
             aria-label={localize('com_traces_last_page')}
-            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-(--ui-color-stroke-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted) disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronsRight className="size-4" />
           </button>

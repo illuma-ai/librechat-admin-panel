@@ -26,12 +26,12 @@ interface MetricProps {
 /** A single labelled metric tile in the session header (reference session stats). */
 function Metric({ icon, label, value }: MetricProps) {
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-(--cui-color-stroke-default) px-3 py-2">
-      <span className="flex items-center gap-1.5 text-xs text-(--cui-color-text-muted)">
+    <div className="flex flex-col gap-1 rounded-md border border-(--ui-color-stroke-default) px-3 py-2">
+      <span className="flex items-center gap-1.5 text-xs text-(--ui-color-text-muted)">
         {icon}
         {label}
       </span>
-      <span className="font-mono text-sm text-(--cui-color-text-default)">{value}</span>
+      <span className="font-mono text-sm text-(--ui-color-text-default)">{value}</span>
     </div>
   );
 }
@@ -102,7 +102,7 @@ export function SessionDetailContent({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-(--cui-color-stroke-default) p-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-(--ui-color-stroke-default) p-3 sm:grid-cols-3 lg:grid-cols-5">
         <Metric
           icon={<Coins className={iconClass} />}
           label={localize('com_traces_metric_cost')}

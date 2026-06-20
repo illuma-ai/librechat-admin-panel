@@ -41,7 +41,7 @@ function MultiAccordionRoot({
       className={cn(
         fillWidth && 'w-full',
         showBorder &&
-          'divide-y divide-(--cui-color-stroke-default) rounded-md border border-(--cui-color-stroke-default)',
+          'divide-y divide-(--ui-color-stroke-default) rounded-md border border-(--ui-color-stroke-default)',
         className,
       )}
       {...dataProps}
@@ -63,9 +63,9 @@ function MultiAccordionItem({ children, value, title, id, className, ...dataProp
   return (
     <AccordionPrimitive.Item value={value} id={id} className={className} {...dataProps}>
       <AccordionPrimitive.Header>
-        <AccordionPrimitive.Trigger className="group flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left text-sm font-medium text-(--cui-color-text-default) outline-none hover:bg-(--cui-color-background-hover)">
+        <AccordionPrimitive.Trigger className="group flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left text-sm font-medium text-(--ui-color-text-default) outline-none hover:bg-(--ui-color-background-hover)">
           {title}
-          <ChevronDown className="size-4 shrink-0 text-(--cui-color-text-muted) transition-transform group-data-[state=open]:rotate-180" />
+          <ChevronDown className="size-4 shrink-0 text-(--ui-color-text-muted) transition-transform group-data-[state=open]:rotate-180" />
         </AccordionPrimitive.Trigger>
       </AccordionPrimitive.Header>
       <AccordionPrimitive.Content className="overflow-hidden data-[state=closed]:animate-none">

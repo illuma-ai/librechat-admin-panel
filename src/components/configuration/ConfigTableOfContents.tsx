@@ -182,7 +182,7 @@ export const ConfigTableOfContents = memo(function ConfigTableOfContents({
                   type="button"
                   data-toc-id={sectionDomId}
                   onClick={() => handleClick(sectionDomId)}
-                  className="toc-item toc-item-parent block w-full cursor-pointer truncate border-none bg-transparent py-1.5 pr-1 pl-3 text-left text-[13px] font-medium text-(--cui-color-text-muted) transition-colors hover:text-(--cui-color-text-default)"
+                  className="toc-item toc-item-parent block w-full cursor-pointer truncate border-none bg-transparent py-1.5 pr-1 pl-3 text-left text-[13px] font-medium text-(--ui-color-text-muted) transition-colors hover:text-(--ui-color-text-default)"
                 >
                   {localize(section.titleKey)}
                 </button>
@@ -194,7 +194,7 @@ export const ConfigTableOfContents = memo(function ConfigTableOfContents({
                           type="button"
                           data-toc-id={item.id}
                           onClick={() => handleClick(item.id)}
-                          className="toc-item toc-item-child block w-full cursor-pointer truncate border-none bg-transparent py-1 pr-1 pl-6 text-left text-xs text-(--cui-color-text-muted) transition-colors hover:text-(--cui-color-text-default)"
+                          className="toc-item toc-item-child block w-full cursor-pointer truncate border-none bg-transparent py-1 pr-1 pl-6 text-left text-xs text-(--ui-color-text-muted) transition-colors hover:text-(--ui-color-text-default)"
                           title={item.label}
                         >
                           {item.label}
@@ -221,7 +221,7 @@ export const ConfigTableOfContents = memo(function ConfigTableOfContents({
                             type="button"
                             data-toc-id={childDomId}
                             onClick={() => handleClick(childDomId)}
-                            className="toc-item toc-item-child block w-full cursor-pointer truncate border-none bg-transparent py-1 pr-1 pl-6 text-left text-xs text-(--cui-color-text-muted) transition-colors hover:text-(--cui-color-text-default)"
+                            className="toc-item toc-item-child block w-full cursor-pointer truncate border-none bg-transparent py-1 pr-1 pl-6 text-left text-xs text-(--ui-color-text-muted) transition-colors hover:text-(--ui-color-text-default)"
                           >
                             {localize(`com_config_field_${child.key}`)}
                           </button>

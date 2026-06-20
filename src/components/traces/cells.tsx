@@ -60,12 +60,12 @@ export function LevelCountsCell({ errors, warnings }: { errors: number; warnings
   return (
     <span className="flex items-center gap-1">
       {errors > 0 ? (
-        <span className="rounded-sm bg-(--cui-color-feedback-danger-bg,#fee2e2) px-1 text-xs text-(--cui-color-feedback-danger-fg,#b91c1c)">
+        <span className="rounded-sm bg-(--ui-color-feedback-danger-bg,#fee2e2) px-1 text-xs text-(--ui-color-feedback-danger-fg,#b91c1c)">
           {errors} error
         </span>
       ) : null}
       {warnings > 0 ? (
-        <span className="rounded-sm bg-(--cui-color-feedback-warning-bg,#fef3c7) px-1 text-xs text-(--cui-color-feedback-warning-fg,#92400e)">
+        <span className="rounded-sm bg-(--ui-color-feedback-warning-bg,#fef3c7) px-1 text-xs text-(--ui-color-feedback-warning-fg,#92400e)">
           {warnings} warn
         </span>
       ) : null}
@@ -81,7 +81,7 @@ export function TagsCell({ tags }: { tags: string[] }) {
       {tags.map((tag) => (
         <span
           key={tag}
-          className="rounded-sm bg-(--cui-color-background-muted) px-1 text-xs text-(--cui-color-text-muted)"
+          className="rounded-sm bg-(--ui-color-background-muted) px-1 text-xs text-(--ui-color-text-muted)"
         >
           {tag}
         </span>
@@ -97,7 +97,7 @@ export function MetadataCell({ metadata }: { metadata: Record<string, string> })
   return (
     <span
       title={JSON.stringify(metadata, null, 2)}
-      className="text-xs text-(--cui-color-text-muted)"
+      className="text-xs text-(--ui-color-text-muted)"
     >
       {formatTokens(keys.length)} keys
     </span>
@@ -108,7 +108,7 @@ export function MetadataCell({ metadata }: { metadata: Record<string, string> })
 export function EnvBadge({ value }: { value: string }) {
   if (!value) return <>—</>;
   return (
-    <span className="max-w-fit truncate rounded-sm bg-(--cui-color-background-muted) px-1 text-xs font-normal text-(--cui-color-text-default)">
+    <span className="max-w-fit truncate rounded-sm bg-(--ui-color-background-muted) px-1 text-xs font-normal text-(--ui-color-text-default)">
       {value}
     </span>
   );
@@ -142,7 +142,7 @@ export function TypeCell({ type }: { type: string }) {
 export function ModelCell({ model }: { model: string }) {
   if (!model) return <>—</>;
   return (
-    <span className="truncate text-xs text-(--cui-color-text-default)" title={model}>
+    <span className="truncate text-xs text-(--ui-color-text-default)" title={model}>
       {model}
     </span>
   );

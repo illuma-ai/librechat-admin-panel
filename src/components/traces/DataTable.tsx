@@ -97,7 +97,7 @@ export function DataTable<T>({
 
   return (
     <div className="flex w-full max-w-full flex-1 flex-col overflow-auto">
-      <div className="relative min-h-full w-full overflow-auto border-t border-(--cui-color-stroke-default)">
+      <div className="relative min-h-full w-full overflow-auto border-t border-(--ui-color-stroke-default)">
         <table
           style={{ width: totalWidth, minWidth: '100%' }}
           className="table-fixed caption-bottom border-separate border-spacing-0 text-sm">
@@ -113,7 +113,7 @@ export function DataTable<T>({
                     style={col.width ? { width: col.width } : undefined}
                     onClick={canSort ? () => onSort?.(sortKey) : undefined}
                     className={cn(
-                      'group relative h-9 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) px-2 text-left align-middle text-xs font-medium text-(--cui-color-text-muted)',
+                      'group relative h-9 border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) px-2 text-left align-middle text-xs font-medium text-(--ui-color-text-muted)',
                       canSort && 'cursor-pointer select-none',
                     )}
                   >
@@ -121,7 +121,7 @@ export function DataTable<T>({
                       <span className="truncate">{col.header}</span>
                       {col.headerInfo != null && (
                         <span
-                          className="mx-1 inline-flex shrink-0 cursor-default text-(--cui-color-text-muted)"
+                          className="mx-1 inline-flex shrink-0 cursor-default text-(--ui-color-text-muted)"
                           title={typeof col.headerInfo === 'string' ? col.headerInfo : undefined}
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -140,7 +140,7 @@ export function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="border-b border-(--cui-color-stroke-default) px-2 py-8 text-center text-(--cui-color-text-muted)"
+                  className="border-b border-(--ui-color-stroke-default) px-2 py-8 text-center text-(--ui-color-text-muted)"
                 >
                   {loading ? '…' : emptyMessage}
                 </td>
@@ -155,11 +155,11 @@ export function DataTable<T>({
                     key={key}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
                     className={cn(
-                      'border-b border-(--cui-color-stroke-default)',
+                      'border-b border-(--ui-color-stroke-default)',
                       onRowClick && 'cursor-pointer',
                       selected
-                        ? 'bg-(--cui-color-background-muted)'
-                        : 'hover:bg-(--cui-color-background-hover)',
+                        ? 'bg-(--ui-color-background-muted)'
+                        : 'hover:bg-(--ui-color-background-hover)',
                     )}
                   >
                     {columns.map((col) => (
@@ -167,7 +167,7 @@ export function DataTable<T>({
                         key={col.id}
                         style={col.width ? { width: col.width } : undefined}
                         className={cn(
-                          'overflow-hidden border-b border-(--cui-color-stroke-default) px-2 align-middle text-xs text-(--cui-color-text-default)',
+                          'overflow-hidden border-b border-(--ui-color-stroke-default) px-2 align-middle text-xs text-(--ui-color-text-default)',
                           isSmall ? 'whitespace-nowrap' : 'align-top',
                         )}
                       >

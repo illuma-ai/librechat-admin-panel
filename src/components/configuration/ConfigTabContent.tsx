@@ -146,7 +146,7 @@ export function ConfigTabContent({
 
   if ((filtering || showConfiguredOnly) && visibleSections.length === 0) {
     return (
-      <div className="flex items-center justify-center py-16 text-(--cui-color-text-muted)">
+      <div className="flex items-center justify-center py-16 text-(--ui-color-text-muted)">
         <span className="text-sm">
           {localize(filtering ? 'com_scope_no_changed_in_tab' : 'com_config_no_fields')}
         </span>

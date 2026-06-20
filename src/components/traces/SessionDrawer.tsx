@@ -27,8 +27,8 @@ export function SessionDrawer({ tenant, sessionId, onClose, onOpenTrace }: Sessi
     >
       <Drawer.Content width="min(1180px, 96vw)" dismissable title={title}>
         <Drawer.Body className="h-full">
-          <div className="flex min-h-11 shrink-0 items-center justify-between gap-2 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1">
-            <span className="truncate text-sm font-medium text-(--cui-color-text-default)">
+          <div className="flex min-h-11 shrink-0 items-center justify-between gap-2 border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-muted) px-3 py-1">
+            <span className="truncate text-sm font-medium text-(--ui-color-text-default)">
               {title}
             </span>
             <button
@@ -36,7 +36,7 @@ export function SessionDrawer({ tenant, sessionId, onClose, onOpenTrace }: Sessi
               onClick={onClose}
               title={localize('com_traces_close')}
               aria-label={localize('com_traces_close')}
-              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
             >
               <X className="size-4" />
             </button>

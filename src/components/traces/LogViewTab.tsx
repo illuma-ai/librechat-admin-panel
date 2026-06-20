@@ -58,8 +58,8 @@ function LevelChip({ level }: { level: string }) {
       className={cn(
         'shrink-0 rounded-sm px-1 py-0.5 text-[10px] font-medium',
         upper === 'ERROR'
-          ? 'bg-(--cui-color-feedback-danger-bg) text-(--cui-color-feedback-danger-fg)'
-          : 'bg-(--cui-color-feedback-warning-bg) text-(--cui-color-feedback-warning-fg)',
+          ? 'bg-(--ui-color-feedback-danger-bg) text-(--ui-color-feedback-danger-fg)'
+          : 'bg-(--ui-color-feedback-warning-bg) text-(--ui-color-feedback-warning-fg)',
       )}
     >
       {upper}
@@ -83,7 +83,7 @@ export function MessageList({
   if (messages.length === 0 || preferJson) {
     if (!raw) return null;
     return (
-      <pre className="trace-markdown overflow-auto rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) p-2 text-xs whitespace-pre-wrap">
+      <pre className="trace-markdown overflow-auto rounded-sm border border-(--ui-color-stroke-default) bg-(--ui-color-background-muted) p-2 text-xs whitespace-pre-wrap">
         {prettyJson(raw)}
       </pre>
     );
@@ -102,13 +102,13 @@ function ChatBubble({ message }: { message: t.TraceMessage }) {
   const isAssistant = message.role === 'assistant' || message.role === 'tool';
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-medium tracking-wide text-(--cui-color-text-muted) uppercase">
+      <span className="text-[10px] font-medium tracking-wide text-(--ui-color-text-muted) uppercase">
         {message.role}
       </span>
       <div
         className={cn(
-          'rounded-sm border border-(--cui-color-stroke-default) p-2 text-xs wrap-break-word',
-          !isAssistant && 'bg-(--cui-color-background-muted)',
+          'rounded-sm border border-(--ui-color-stroke-default) p-2 text-xs wrap-break-word',
+          !isAssistant && 'bg-(--ui-color-background-muted)',
         )}
         style={isAssistant ? { backgroundColor: 'var(--trace-output-bg)' } : undefined}
       >
@@ -131,7 +131,7 @@ function ExpandedIO({
   if (messages.length === 0 && !raw) return null;
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[10px] font-medium tracking-wide text-(--cui-color-text-muted) uppercase">
+      <span className="text-[10px] font-medium tracking-wide text-(--ui-color-text-muted) uppercase">
         {title}
       </span>
       <MessageList messages={messages} raw={raw} />
@@ -147,13 +147,13 @@ function RowIndent({ depth, ancestorLines }: { depth: number; ancestorLines: boo
       {Array.from({ length: depth - 1 }, (_, i) => (
         <div key={i} className="relative w-4">
           {ancestorLines[i] ? (
-            <div className="absolute top-0 bottom-0 left-2 w-px bg-(--cui-color-stroke-default)" />
+            <div className="absolute top-0 bottom-0 left-2 w-px bg-(--ui-color-stroke-default)" />
           ) : null}
         </div>
       ))}
       <div className="relative w-4 shrink-0">
-        <div className="absolute top-0 left-2 h-1/2 w-px bg-(--cui-color-stroke-default)" />
-        <div className="absolute top-1/2 left-2 h-px w-2 bg-(--cui-color-stroke-default)" />
+        <div className="absolute top-0 left-2 h-1/2 w-px bg-(--ui-color-stroke-default)" />
+        <div className="absolute top-1/2 left-2 h-px w-2 bg-(--ui-color-stroke-default)" />
       </div>
     </div>
   );
@@ -165,27 +165,27 @@ function LogRow({ row }: { row: FlatLogRow }) {
   const [open, setOpen] = useState(false);
   const { node, depth, ancestorLines } = row;
   return (
-    <div className="border-b border-(--cui-color-stroke-default) last:border-0">
+    <div className="border-b border-(--ui-color-stroke-default) last:border-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-xs hover:bg-(--cui-color-background-hover)"
+        className="flex w-full cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-xs hover:bg-(--ui-color-background-hover)"
         aria-expanded={open}
       >
         <ChevronRight
           className={cn(
-            'size-3 shrink-0 text-(--cui-color-text-muted) transition-transform',
+            'size-3 shrink-0 text-(--ui-color-text-muted) transition-transform',
             open ? 'rotate-90' : '',
           )}
         />
         <RowIndent depth={depth} ancestorLines={ancestorLines} />
         <TypeIcon type={node.type} isSmall />
-        <span className="min-w-0 flex-1 truncate text-(--cui-color-text-default)" title={node.name}>
+        <span className="min-w-0 flex-1 truncate text-(--ui-color-text-default)" title={node.name}>
           {node.name || `Unnamed ${node.type}`}
         </span>
         <LevelChip level={node.level} />
         {node.latencyMs > 0 ? (
-          <span className="shrink-0 text-(--cui-color-text-muted)">
+          <span className="shrink-0 text-(--ui-color-text-muted)">
             {formatLatency(node.latencyMs)}
           </span>
         ) : null}
@@ -219,7 +219,7 @@ export function LogViewTab({ observations }: LogViewTabProps) {
 
   if (rows.length === 0) {
     return (
-      <div className="px-3 py-6 text-sm text-(--cui-color-text-muted)">
+      <div className="px-3 py-6 text-sm text-(--ui-color-text-muted)">
         {localize('com_traces_log_empty')}
       </div>
     );

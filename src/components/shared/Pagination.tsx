@@ -18,7 +18,7 @@ export function getPageNumbers(current: number, total: number): (number | 'ellip
 }
 
 const ARROW_CLASS =
-  'flex size-8 items-center justify-center rounded-md border border-(--cui-color-stroke-default) text-(--cui-color-text-default) outline-none transition-colors hover:bg-(--cui-color-background-hover) disabled:cursor-not-allowed disabled:opacity-40';
+  'flex size-8 items-center justify-center rounded-md border border-(--ui-color-stroke-default) text-(--ui-color-text-default) outline-none transition-colors hover:bg-(--ui-color-background-hover) disabled:cursor-not-allowed disabled:opacity-40';
 
 /** Token-only pagination (prev / numbered pages with ellipsis / next). */
 export function Pagination({ currentPage, totalPages, onPageChange }: t.PaginationProps) {
@@ -41,7 +41,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: t.Paginati
         page === 'ellipsis' ? (
           <span
             key={`ellipsis-${index}`}
-            className="flex size-8 items-center justify-center text-(--cui-color-text-muted)"
+            className="flex size-8 items-center justify-center text-(--ui-color-text-muted)"
           >
             …
           </span>
@@ -55,8 +55,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: t.Paginati
             className={cn(
               'flex size-8 cursor-pointer items-center justify-center rounded-md border text-sm outline-none transition-colors',
               page === currentPage
-                ? 'border-(--cui-color-accent) bg-(--cui-color-accent) font-medium text-(--cui-color-text-on-accent)'
-                : 'border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-hover)',
+                ? 'border-(--ui-color-accent) bg-(--ui-color-accent) font-medium text-(--ui-color-text-on-accent)'
+                : 'border-(--ui-color-stroke-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-hover)',
             )}
           >
             {page}

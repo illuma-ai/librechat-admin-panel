@@ -41,8 +41,8 @@ function Badge({ children, dark }: { children: React.ReactNode; dark?: boolean }
       className={cn(
         'inline-flex max-w-full items-center gap-1 rounded-md px-2 py-0.5 text-xs',
         dark
-          ? 'bg-(--cui-color-text-default) text-(--cui-color-background-default)'
-          : 'bg-(--cui-color-background-muted) text-(--cui-color-text-default)',
+          ? 'bg-(--ui-color-text-default) text-(--ui-color-background-default)'
+          : 'bg-(--ui-color-background-muted) text-(--ui-color-text-default)',
       )}
     >
       <span className="truncate">{children}</span>
@@ -69,7 +69,7 @@ function IOPanel({
   if (messages.length === 0 && !raw) return null;
   return (
     <div className="flex flex-col gap-1 px-2 pt-2">
-      <div className="text-sm font-medium text-(--cui-color-text-default)">{title}</div>
+      <div className="text-sm font-medium text-(--ui-color-text-default)">{title}</div>
       <MessageList messages={messages} raw={raw} preferJson={view === 'json'} />
     </div>
   );
@@ -206,7 +206,7 @@ export function TraceDetailPane({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* header: title + timestamp + badges (the reference detail header: p-2 space-y-2 gap-1) */}
-      <div className="shrink-0 space-y-2 border-b border-(--cui-color-stroke-default) p-2">
+      <div className="shrink-0 space-y-2 border-b border-(--ui-color-stroke-default) p-2">
         <div className="flex w-full flex-row items-center gap-1">
           {onToggleNav ? (
             <button
@@ -214,7 +214,7 @@ export function TraceDetailPane({
               onClick={onToggleNav}
               aria-label={localize(navCollapsed ? 'com_traces_expand' : 'com_traces_collapse')}
               title={localize(navCollapsed ? 'com_traces_expand' : 'com_traces_collapse')}
-              className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
+              className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
             >
               {navCollapsed ? (
                 <PanelLeftOpen className="size-4" />
@@ -224,12 +224,12 @@ export function TraceDetailPane({
             </button>
           ) : null}
           <TypeIcon type={node ? node.type : 'trace'} isRoot={isRoot} isSmall />
-          <span className="line-clamp-2 min-w-0 font-medium break-all wrap-break-word text-(--cui-color-text-default)">
+          <span className="line-clamp-2 min-w-0 font-medium break-all wrap-break-word text-(--ui-color-text-default)">
             {title}
           </span>
         </div>
         <div className="flex flex-col gap-2">
-          <div className="text-sm text-(--cui-color-text-muted)">
+          <div className="text-sm text-(--ui-color-text-muted)">
             {formatTimestampLong(trace.timestamp)}
           </div>
           <div className="flex flex-wrap items-center gap-1">
@@ -277,7 +277,7 @@ export function TraceDetailPane({
       </div>
 
       {/* tabs + view toggle */}
-      <div className="flex shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) px-2">
+      <div className="flex shrink-0 items-center justify-between border-b border-(--ui-color-stroke-default) px-2">
         <div className="flex items-center gap-3">
           {TAB_IDS.map((id) => (
             <button
@@ -287,8 +287,8 @@ export function TraceDetailPane({
               className={cn(
                 'cursor-pointer border-b-2 py-2 text-sm font-medium',
                 activeTab === id
-                  ? 'border-(--cui-color-accent) text-(--cui-color-text-default)'
-                  : 'border-transparent text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+                  ? 'border-(--ui-color-accent) text-(--ui-color-text-default)'
+                  : 'border-transparent text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)',
               )}
             >
               {localize(TAB_LABEL_KEYS[id])}
@@ -296,7 +296,7 @@ export function TraceDetailPane({
           ))}
         </div>
         {activeTab === 'preview' ? (
-          <div className="flex items-center gap-0.5 rounded-md bg-(--cui-color-background-muted) p-0.5 text-xs">
+          <div className="flex items-center gap-0.5 rounded-md bg-(--ui-color-background-muted) p-0.5 text-xs">
             {(['pretty', 'json'] as const).map((mode) => (
               <button
                 key={mode}
@@ -305,8 +305,8 @@ export function TraceDetailPane({
                 className={cn(
                   'cursor-pointer rounded px-2 py-0.5',
                   view === mode
-                    ? 'bg-(--cui-color-background-default) text-(--cui-color-text-default)'
-                    : 'text-(--cui-color-text-muted)',
+                    ? 'bg-(--ui-color-background-default) text-(--ui-color-text-default)'
+                    : 'text-(--ui-color-text-muted)',
                 )}
               >
                 {mode === 'pretty' ? localize('com_traces_formatted') : localize('com_traces_json')}
@@ -331,14 +331,14 @@ export function TraceDetailPane({
         <div className="min-h-0 flex-1 overflow-auto pb-4">
           {isRoot && trace.tags.length > 0 ? (
             <div className="flex flex-col gap-1 px-2 pt-2">
-              <div className="text-sm font-medium text-(--cui-color-text-default)">
+              <div className="text-sm font-medium text-(--ui-color-text-default)">
                 {localize('com_traces_tags')}
               </div>
               <div className="flex flex-wrap gap-1">
                 {trace.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-sm bg-(--cui-color-background-muted) px-1.5 py-0.5 text-xs text-(--cui-color-text-muted)"
+                    className="rounded-sm bg-(--ui-color-background-muted) px-1.5 py-0.5 text-xs text-(--ui-color-text-muted)"
                   >
                     {tag}
                   </span>
@@ -362,21 +362,21 @@ export function TraceDetailPane({
 
           {rows.length > 0 ? (
             <div className="flex flex-col gap-1 px-2 pt-3">
-              <div className="text-sm font-medium text-(--cui-color-text-default)">
+              <div className="text-sm font-medium text-(--ui-color-text-default)">
                 {localize('com_traces_metadata')}
               </div>
-              <div className="overflow-hidden rounded-sm border border-(--cui-color-stroke-default)">
-                <div className="flex border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1.5 text-xs font-medium text-(--cui-color-text-muted)">
+              <div className="overflow-hidden rounded-sm border border-(--ui-color-stroke-default)">
+                <div className="flex border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-muted) px-3 py-1.5 text-xs font-medium text-(--ui-color-text-muted)">
                   <span className="w-1/3">{localize('com_traces_path')}</span>
                   <span className="flex-1">{localize('com_traces_value')}</span>
                 </div>
                 {rows.map((r) => (
                   <div
                     key={r.path}
-                    className="flex border-b border-(--cui-color-stroke-default) px-3 py-1 text-xs last:border-0"
+                    className="flex border-b border-(--ui-color-stroke-default) px-3 py-1 text-xs last:border-0"
                   >
-                    <span className="w-1/3 truncate text-(--cui-color-text-muted)">{r.path}</span>
-                    <span className="flex-1 break-all text-(--cui-color-text-default)">
+                    <span className="w-1/3 truncate text-(--ui-color-text-muted)">{r.path}</span>
+                    <span className="flex-1 break-all text-(--ui-color-text-default)">
                       {r.value}
                     </span>
                   </div>

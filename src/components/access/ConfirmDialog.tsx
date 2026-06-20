@@ -24,10 +24,10 @@ export function ConfirmDialog({
     >
       <Dialog.Content title={title} showClose onClose={onCancel} className="modal-frost max-w-md!">
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-(--cui-color-text-muted)">{description}</p>
+          <p className="text-sm text-(--ui-color-text-muted)">{description}</p>
 
           {error && (
-            <p role="alert" className="text-sm text-(--cui-color-text-danger)">
+            <p role="alert" className="text-sm text-(--ui-color-text-danger)">
               {error}
             </p>
           )}

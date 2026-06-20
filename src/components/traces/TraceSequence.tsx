@@ -154,14 +154,14 @@ function TimelineBar({ node, bounds }: { node: t.ObservationNode; bounds: TimeBo
   const widthPct = span > 0 ? Math.max(1.5, clampPct((durMs / span) * 100)) : 100;
   const color = typeVisual(node.type).color;
   return (
-    <div className="relative mt-1 h-3.5 w-full overflow-hidden rounded-sm bg-(--cui-color-background-muted)">
+    <div className="relative mt-1 h-3.5 w-full overflow-hidden rounded-sm bg-(--ui-color-background-muted)">
       <div
         className="absolute top-0 bottom-0 rounded-sm opacity-80"
         style={{ left: `${offsetPct}%`, width: `${Math.min(widthPct, 100 - offsetPct)}%`, backgroundColor: color }}
       />
       {node.latencyMs > 0 ? (
         <span
-          className="absolute top-1/2 -translate-y-1/2 px-1 text-[10px] text-(--cui-color-text-muted)"
+          className="absolute top-1/2 -translate-y-1/2 px-1 text-[10px] text-(--ui-color-text-muted)"
           style={{ left: `${Math.min(offsetPct, 80)}%` }}
         >
           {formatLatency(node.latencyMs)}
@@ -208,7 +208,7 @@ export function TraceSequence({
 
   if (rows.length === 0) {
     return (
-      <div className="p-4 text-sm text-(--cui-color-text-muted)">
+      <div className="p-4 text-sm text-(--ui-color-text-muted)">
         {localize('com_traces_no_observations')}
       </div>
     );
@@ -238,8 +238,8 @@ export function TraceSequence({
             className={cn(
               'relative flex w-full cursor-pointer pr-1 pl-2',
               selected
-                ? 'bg-(--cui-color-background-muted)'
-                : 'hover:bg-(--cui-color-background-hover)',
+                ? 'bg-(--ui-color-background-muted)'
+                : 'hover:bg-(--ui-color-background-hover)',
             )}
           >
             {/* ancestor indent guides */}
@@ -248,7 +248,7 @@ export function TraceSequence({
                 {Array.from({ length: depth - 1 }, (_, i) => (
                   <div key={i} className="relative w-5">
                     {ancestorLines[i] ? (
-                      <div className="absolute top-0 bottom-0 left-3 w-px bg-(--cui-color-stroke-default)" />
+                      <div className="absolute top-0 bottom-0 left-3 w-px bg-(--ui-color-stroke-default)" />
                     ) : null}
                   </div>
                 ))}
@@ -260,14 +260,14 @@ export function TraceSequence({
               <div className="relative w-5 shrink-0">
                 <div
                   className={cn(
-                    'absolute top-0 left-3 w-px bg-(--cui-color-stroke-default)',
+                    'absolute top-0 left-3 w-px bg-(--ui-color-stroke-default)',
                     isLast ? 'h-3' : 'bottom-3',
                   )}
                 />
                 {!isLast ? (
-                  <div className="absolute top-3 bottom-0 left-3 w-px bg-(--cui-color-stroke-default)" />
+                  <div className="absolute top-3 bottom-0 left-3 w-px bg-(--ui-color-stroke-default)" />
                 ) : null}
-                <div className="absolute top-3 left-3 h-px w-2 bg-(--cui-color-stroke-default)" />
+                <div className="absolute top-3 left-3 h-px w-2 bg-(--ui-color-stroke-default)" />
               </div>
             ) : null}
 
@@ -277,21 +277,21 @@ export function TraceSequence({
                 <TypeIcon type={node.type} isRoot={isRoot} isSmall />
               </div>
               {hasChildren && !isCollapsed ? (
-                <div className="absolute top-3 bottom-0 left-1/2 w-px bg-(--cui-color-stroke-default)" />
+                <div className="absolute top-3 bottom-0 left-1/2 w-px bg-(--ui-color-stroke-default)" />
               ) : null}
             </div>
 
             {/* content: name + metrics */}
             <div className="flex min-w-0 flex-1 flex-col py-1 pr-1 pl-1">
               <span
-                className="truncate text-xs text-(--cui-color-text-default)"
+                className="truncate text-xs text-(--ui-color-text-default)"
                 title={node.name || node.type}
               >
                 {node.name || `Unnamed ${node.type}`}
               </span>
               {timeline ? <TimelineBar node={node} bounds={bounds} /> : null}
               {!timeline && showMetrics ? (
-                <div className="flex flex-wrap gap-x-2 text-xs text-(--cui-color-text-muted)">
+                <div className="flex flex-wrap gap-x-2 text-xs text-(--ui-color-text-muted)">
                   {node.latencyMs > 0 ? <span>{formatLatency(node.latencyMs)}</span> : null}
                   {tokenText ? <span>{tokenText}</span> : null}
                   {cost > 0 ? (
@@ -309,9 +309,9 @@ export function TraceSequence({
                     <span
                       key={`${score.name}-${i}`}
                       title={score.comment ?? undefined}
-                      className="inline-flex items-center gap-1 rounded-sm border border-(--cui-color-stroke-success,var(--cui-color-stroke-default)) bg-(--cui-color-background-muted) px-1 text-[10px] leading-4 text-(--cui-color-text-muted)"
+                      className="inline-flex items-center gap-1 rounded-sm border border-(--ui-color-accent-success) bg-(--ui-color-background-muted) px-1 text-[10px] leading-4 text-(--ui-color-text-muted)"
                     >
-                      <span className="font-medium text-(--cui-color-text-default)">
+                      <span className="font-medium text-(--ui-color-text-default)">
                         {score.name}
                       </span>
                       <span>{scoreDisplayValue(score)}</span>
@@ -333,7 +333,7 @@ export function TraceSequence({
                     e.stopPropagation();
                     toggleCollapse(node.id);
                   }}
-                  className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover)"
+                  className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover)"
                 >
                   <ChevronRight
                     className={cn('size-4 transition-transform', isCollapsed ? '' : 'rotate-90')}

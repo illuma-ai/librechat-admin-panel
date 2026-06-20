@@ -204,12 +204,12 @@ function FieldGroup({
 
   return (
     <section ref={sectionRef} className="flex flex-col">
-      <div className="flex items-center gap-2 border-b border-(--cui-color-stroke-default)">
+      <div className="flex items-center gap-2 border-b border-(--ui-color-stroke-default)">
         <button
           type="button"
           aria-expanded={isExpanded}
           onClick={toggle}
-          className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border-none bg-transparent py-2 pr-0 pl-1 transition-colors outline-none select-none hover:bg-(--cui-color-background-hover) focus-visible:bg-(--cui-color-background-hover)"
+          className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border-none bg-transparent py-2 pr-0 pl-1 transition-colors outline-none select-none hover:bg-(--ui-color-background-hover) focus-visible:bg-(--ui-color-background-hover)"
         >
           <span
             className={cn(
@@ -219,7 +219,7 @@ function FieldGroup({
           >
             <Icon name="chevron-right" size="xs" />
           </span>
-          <span className="text-xs font-medium text-(--cui-color-text-muted)">
+          <span className="text-xs font-medium text-(--ui-color-text-muted)">
             {localize(labelKey)}
           </span>
         </button>

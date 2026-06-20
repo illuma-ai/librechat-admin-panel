@@ -26,7 +26,7 @@ export function ColumnsMenu<T>({
       <Popover.Trigger>
         <button
           type="button"
-          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-(--cui-color-stroke-default) px-2 text-sm text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted)"
+          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-(--ui-color-stroke-default) px-2 text-sm text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted)"
         >
           <Columns3 className="size-4" />
           {localize('com_traces_columns')} {visibleCount}/{total}
@@ -37,7 +37,7 @@ export function ColumnsMenu<T>({
           {toggleable.map((col) => (
             <label
               key={col.id}
-              className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm hover:bg-(--cui-color-background-muted)"
+              className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm hover:bg-(--ui-color-background-muted)"
             >
               <Checkbox
                 checked={!hidden.has(col.id)}

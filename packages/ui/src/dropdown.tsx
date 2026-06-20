@@ -6,7 +6,7 @@ import { cn } from './cn';
 /**
  * Radix-based dropdown menu — a drop-in replacement for the click-ui `Dropdown`
  * compound (same `Dropdown` / `Trigger` / `Content` / `Item` API) styled with
- * the shared `--cui-color-*` theme tokens. Part of the gradual Radix migration
+ * the shared `--ui-color-*` theme tokens. Part of the gradual Radix migration
  * of the traces module.
  */
 interface DropdownProps {
@@ -32,7 +32,7 @@ function DropdownContent({ children, align = 'start' }: DropdownContentProps) {
       <DropdownPrimitive.Content
         align={align}
         sideOffset={4}
-        className="z-50 min-w-[8rem] overflow-hidden rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) p-1 shadow-md"
+        className="z-50 min-w-[8rem] overflow-hidden rounded-md border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) p-1 shadow-md"
       >
         {children}
       </DropdownPrimitive.Content>
@@ -55,7 +55,7 @@ function DropdownItem({ children, onClick, icon, disabled, className }: Dropdown
       onSelect={onClick}
       disabled={disabled}
       className={cn(
-        'relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-(--cui-color-text-default) outline-none select-none data-highlighted:bg-(--cui-color-background-muted) data-disabled:cursor-not-allowed data-disabled:opacity-50',
+        'relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-(--ui-color-text-default) outline-none select-none data-highlighted:bg-(--ui-color-background-muted) data-disabled:cursor-not-allowed data-disabled:opacity-50',
         className,
       )}
     >

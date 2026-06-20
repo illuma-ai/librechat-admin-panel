@@ -6,7 +6,7 @@ import { cn } from './cn';
 /**
  * Radix-based Select — a drop-in replacement for the click-ui `Select`. Supports
  * BOTH shapes: an `options` array, or the compound `<Select.Item>` children API
- * (`value`/`onSelect`). Styled with the shared `--cui-color-*` theme tokens.
+ * (`value`/`onSelect`). Styled with the shared `--ui-color-*` theme tokens.
  */
 export interface SelectOption {
   value: string;
@@ -25,7 +25,7 @@ interface SelectProps {
 }
 
 const ITEM_CLASS =
-  'relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-7 text-sm text-(--cui-color-text-default) outline-none select-none data-highlighted:bg-(--cui-color-background-muted) data-[state=checked]:font-medium';
+  'relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-7 text-sm text-(--ui-color-text-default) outline-none select-none data-highlighted:bg-(--ui-color-background-muted) data-[state=checked]:font-medium';
 
 function SelectRoot({
   value,
@@ -42,8 +42,8 @@ function SelectRoot({
       <SelectPrimitive.Trigger
         aria-label={ariaLabel}
         className={cn(
-          'flex h-8 w-full items-center justify-between gap-1 rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-sm text-(--cui-color-text-default) outline-none',
-          'data-placeholder:text-(--cui-color-text-muted) focus-visible:border-(--cui-color-accent)',
+          'flex h-8 w-full items-center justify-between gap-1 rounded-md border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-2 text-sm text-(--ui-color-text-default) outline-none',
+          'data-placeholder:text-(--ui-color-text-muted) focus-visible:border-(--ui-color-accent)',
           'disabled:cursor-not-allowed disabled:opacity-50',
           className,
         )}
@@ -57,7 +57,7 @@ function SelectRoot({
         <SelectPrimitive.Content
           position="popper"
           sideOffset={4}
-          className="z-50 max-h-72 min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) shadow-md"
+          className="z-50 max-h-72 min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) shadow-md"
         >
           <SelectPrimitive.Viewport className="p-1">
             {options

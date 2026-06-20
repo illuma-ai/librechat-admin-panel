@@ -4,7 +4,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 /**
  * Radix-based tooltip — a drop-in replacement for the click-ui `Tooltip`
  * compound (same `Tooltip` / `Trigger` / `Content` API) styled with the shared
- * `--cui-color-*` theme tokens. Part of the gradual Radix migration of the
+ * `--ui-color-*` theme tokens. Part of the gradual Radix migration of the
  * traces module.
  */
 interface TooltipProps {
@@ -40,7 +40,7 @@ function TooltipContent({ children, maxWidth }: TooltipContentProps) {
       <TooltipPrimitive.Content
         sideOffset={4}
         style={maxWidth ? { maxWidth } : undefined}
-        className="z-50 rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 py-1 text-xs text-(--cui-color-text-default) shadow-md"
+        className="z-50 rounded-md border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-2 py-1 text-xs text-(--ui-color-text-default) shadow-md"
       >
         {children}
       </TooltipPrimitive.Content>

@@ -15,7 +15,7 @@ export function StatusToggle({ id, isActive, onChange, disabled }: t.StatusToggl
         disabled={disabled}
         aria-label={label}
       />
-      <span className="text-xs text-(--cui-color-text-muted)">{label}</span>
+      <span className="text-xs text-(--ui-color-text-muted)">{label}</span>
     </div>
   );
 }

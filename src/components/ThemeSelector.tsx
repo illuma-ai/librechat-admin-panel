@@ -62,7 +62,7 @@ function ThemeButton({ theme, onChange }: { theme: string; onChange: (value: str
   return (
     <>
       <button
-        className="flex items-center gap-2 rounded-lg p-3 hover:bg-(--cui-color-background-hover)"
+        className="flex items-center gap-2 rounded-lg p-3 hover:bg-(--ui-color-background-hover)"
         aria-label={`${localize('com_ui_toggle_theme')}, ${currentLabel}`}
         aria-keyshortcuts="Ctrl+Shift+T"
         onClick={(e) => {
@@ -75,7 +75,7 @@ function ThemeButton({ theme, onChange }: { theme: string; onChange: (value: str
             handleChange(nextTheme);
           }
         }}
-        style={{ color: 'var(--cui-color-text-default)' }}
+        style={{ color: 'var(--ui-color-text-default)' }}
       >
         <Icon name={themeIcons[theme as t.ThemeOption] ?? 'display'} size="md" aria-hidden="true" />
       </button>

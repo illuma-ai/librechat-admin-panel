@@ -4,7 +4,7 @@ import { cn } from './cn';
 /**
  * Radix-based switch — a drop-in replacement for the click-ui `Switch` (same
  * `checked` / `onCheckedChange` / `id` / `label` / `disabled` API). The "on"
- * track uses `--cui-color-accent` (the brand color) so it re-themes through the
+ * track uses `--ui-color-accent` (the brand color) so it re-themes through the
  * tokens instead of click-ui's hardcoded accent. When `label` is present the
  * whole control is wrapped in a `<label>` for click-to-toggle.
  */
@@ -26,8 +26,8 @@ export function Switch({ checked, onCheckedChange, id, label, disabled, classNam
       disabled={disabled}
       className={cn(
         'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border border-transparent outline-none transition-colors',
-        'bg-(--cui-color-background-muted) data-[state=checked]:bg-(--cui-color-accent)',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--cui-color-outline)',
+        'bg-(--ui-color-background-muted) data-[state=checked]:bg-(--ui-color-accent)',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ui-color-outline)',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
@@ -40,7 +40,7 @@ export function Switch({ checked, onCheckedChange, id, label, disabled, classNam
   return (
     <label htmlFor={id} className="flex cursor-pointer items-center gap-2">
       {control}
-      <span className="text-sm text-(--cui-color-text-default)">{label}</span>
+      <span className="text-sm text-(--ui-color-text-default)">{label}</span>
     </label>
   );
 }

@@ -6,12 +6,12 @@ import { cn } from './cn';
 /**
  * Text input primitives — drop-in replacements for the click-ui `TextField` /
  * `NumberField` / `TextAreaField` / `SearchField` (same value/onChange(value)
- * API). Every color comes from a `--cui-color-*` theme token (single source of
+ * API). Every color comes from a `--ui-color-*` theme token (single source of
  * truth) — no hardcoded colors. `onChange` receives the raw string value, as
  * click-ui's controls do.
  */
 const INPUT_CLASS =
-  'h-8 w-full rounded-md border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-sm text-(--cui-color-text-default) outline-none placeholder:text-(--cui-color-text-muted) focus-visible:border-(--cui-color-accent) disabled:cursor-not-allowed disabled:opacity-50';
+  'h-8 w-full rounded-md border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-2 text-sm text-(--ui-color-text-default) outline-none placeholder:text-(--ui-color-text-muted) focus-visible:border-(--ui-color-accent) disabled:cursor-not-allowed disabled:opacity-50';
 
 interface FieldShellProps {
   id?: string;
@@ -26,12 +26,12 @@ function FieldShell({ id, label, error, children }: FieldShellProps) {
   return (
     <div className="flex w-full flex-col gap-1.5">
       {label ? (
-        <label htmlFor={id} className="text-sm font-medium text-(--cui-color-text-default)">
+        <label htmlFor={id} className="text-sm font-medium text-(--ui-color-text-default)">
           {label}
         </label>
       ) : null}
       {children}
-      {error ? <span className="text-xs text-(--cui-color-text-danger)">{error}</span> : null}
+      {error ? <span className="text-xs text-(--ui-color-text-danger)">{error}</span> : null}
     </div>
   );
 }
@@ -78,7 +78,7 @@ export function TextField({
         placeholder={placeholder}
         disabled={disabled}
         aria-invalid={error ? true : undefined}
-        className={cn(INPUT_CLASS, error && 'border-(--cui-color-accent-danger)', className)}
+        className={cn(INPUT_CLASS, error && 'border-(--ui-color-accent-danger)', className)}
         {...aria}
       />
     </FieldShell>
@@ -206,14 +206,14 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(fu
           placeholder={placeholder}
           disabled={disabled}
           aria-invalid={error ? true : undefined}
-          className={cn(INPUT_CLASS, 'pr-9', error && 'border-(--cui-color-accent-danger)')}
+          className={cn(INPUT_CLASS, 'pr-9', error && 'border-(--ui-color-accent-danger)')}
           {...aria}
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? hideLabel : showLabel}
-          className="absolute top-1/2 right-1.5 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) outline-none hover:text-(--cui-color-text-default) focus-visible:outline-2 focus-visible:outline-(--cui-color-outline)"
+          className="absolute top-1/2 right-1.5 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) outline-none hover:text-(--ui-color-text-default) focus-visible:outline-2 focus-visible:outline-(--ui-color-outline)"
         >
           {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
@@ -234,7 +234,7 @@ interface SearchFieldProps {
 export function SearchField({ value, onChange, placeholder, className, style, ...aria }: SearchFieldProps) {
   return (
     <div className={cn('relative w-full', className)} style={style}>
-      <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-(--cui-color-text-muted)" />
+      <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-(--ui-color-text-muted)" />
       <input
         type="search"
         value={value}

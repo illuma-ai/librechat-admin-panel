@@ -21,7 +21,7 @@ export function TracingTabs({ active }: { active: TracingTab }) {
   const search = useSearch({ strict: false }) as { tenant?: string; range?: t.TraceRange };
 
   return (
-    <div className="shrink-0 border-b border-(--cui-color-stroke-default) px-3">
+    <div className="shrink-0 border-b border-(--ui-color-stroke-default) px-3">
       <div
         className="flex items-center gap-4"
         role="tablist"
@@ -50,8 +50,8 @@ export function TracingTabs({ active }: { active: TracingTab }) {
             className={cn(
               'cursor-pointer border-b-2 py-2 text-sm font-medium transition-colors',
               active === tab.value
-                ? 'border-(--cui-color-accent) text-(--cui-color-text-default)'
-                : 'border-transparent text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+                ? 'border-(--ui-color-accent) text-(--ui-color-text-default)'
+                : 'border-transparent text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)',
             )}
           >
             {localize(tab.labelKey)}

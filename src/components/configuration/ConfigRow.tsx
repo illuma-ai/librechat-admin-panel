@@ -45,7 +45,7 @@ export function ConfigRow({
           ? localize('com_a11y_remove_override', { name: title })
           : localize('com_a11y_reset_to_default', { name: title })
       }
-      className="inline-flex items-center gap-0.5 text-[11px] text-(--cui-color-text-muted) transition-colors hover:text-(--cui-color-text-default)"
+      className="inline-flex items-center gap-0.5 text-[11px] text-(--ui-color-text-muted) transition-colors hover:text-(--ui-color-text-default)"
     >
       <Icon name="refresh" size="sm" />
       <span>{localize('com_ui_reset')}</span>
@@ -53,7 +53,7 @@ export function ConfigRow({
   ) : null;
 
   const pendingResetHint = isPendingReset ? (
-    <span className="text-[11px] font-medium text-(--cui-color-accent-danger)">
+    <span className="text-[11px] font-medium text-(--ui-color-accent-danger)">
       {localize('com_config_pending_reset')}
     </span>
   ) : null;
@@ -61,14 +61,14 @@ export function ConfigRow({
   const configuredDot =
     isConfigured && !isPendingReset ? (
       <span
-        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-(--cui-color-accent)"
+        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-(--ui-color-accent)"
         aria-hidden="true"
       />
     ) : null;
 
   const defaultHintEl =
     defaultHint != null ? (
-      <span className="text-[11px] text-(--cui-color-text-muted)">
+      <span className="text-[11px] text-(--ui-color-text-muted)">
         {localize('com_config_default_hint', { value: String(defaultHint) })}
       </span>
     ) : null;

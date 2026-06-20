@@ -31,14 +31,14 @@ export function SettingsDialog({ open, onClose }: t.SettingsDialogProps) {
         <div className="flex flex-col gap-6 py-2">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-(--cui-color-text-default)">
+              <span className="text-sm font-medium text-(--ui-color-text-default)">
                 {localize('com_nav_theme')}
               </span>
-              <span className="text-xs text-(--cui-color-text-muted)">
+              <span className="text-xs text-(--ui-color-text-muted)">
                 {localize('com_settings_theme_desc')}
               </span>
             </div>
-            <div className="flex gap-1 rounded-lg border border-(--cui-color-stroke-default) p-0.5">
+            <div className="flex gap-1 rounded-lg border border-(--ui-color-stroke-default) p-0.5">
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt}
@@ -47,8 +47,8 @@ export function SettingsDialog({ open, onClose }: t.SettingsDialogProps) {
                   className={cn(
                     'cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition-colors',
                     theme === opt
-                      ? 'bg-(--cui-color-background-active) text-(--cui-color-text-default)'
-                      : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+                      ? 'bg-(--ui-color-background-active) text-(--ui-color-text-default)'
+                      : 'text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)',
                   )}
                   aria-pressed={theme === opt}
                 >

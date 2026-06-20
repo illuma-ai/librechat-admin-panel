@@ -99,18 +99,18 @@ function AppError({ error }: ErrorComponentProps) {
   return (
     <div role="alert" className="flex min-h-screen items-center justify-center p-6">
       <div className="flex max-w-sm flex-col items-center gap-4 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--cui-color-background-secondary)">
-          <span aria-hidden="true" className="text-(--cui-color-text-danger)">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--ui-color-background-secondary)">
+          <span aria-hidden="true" className="text-(--ui-color-text-danger)">
             <Icon name="warning" size="md" />
           </span>
         </div>
-        <h2 className="text-lg font-semibold text-(--cui-color-title-default)">
+        <h2 className="text-lg font-semibold text-(--ui-color-title-default)">
           {localize('com_error_page_title')}
         </h2>
-        <p className="text-sm text-(--cui-color-text-muted)">{localize('com_error_page_desc')}</p>
+        <p className="text-sm text-(--ui-color-text-muted)">{localize('com_error_page_desc')}</p>
         <Link
           to="/"
-          className="mt-2 rounded-lg border border-(--cui-color-stroke-default) bg-transparent px-4 py-2 text-sm font-medium text-(--cui-color-text-default) no-underline transition-colors hover:bg-(--cui-color-background-hover)"
+          className="mt-2 rounded-lg border border-(--ui-color-stroke-default) bg-transparent px-4 py-2 text-sm font-medium text-(--ui-color-text-default) no-underline transition-colors hover:bg-(--ui-color-background-hover)"
         >
           {localize('com_nav_go_home')}
         </Link>
@@ -124,16 +124,16 @@ function AppNotFound() {
   return (
     <div role="alert" className="flex min-h-screen items-center justify-center p-6">
       <div className="flex max-w-sm flex-col items-center gap-4 text-center">
-        <span className="text-4xl font-bold text-(--cui-color-text-muted)">404</span>
-        <h2 className="text-lg font-semibold text-(--cui-color-title-default)">
+        <span className="text-4xl font-bold text-(--ui-color-text-muted)">404</span>
+        <h2 className="text-lg font-semibold text-(--ui-color-title-default)">
           {localize('com_error_not_found_title')}
         </h2>
-        <p className="text-sm text-(--cui-color-text-muted)">
+        <p className="text-sm text-(--ui-color-text-muted)">
           {localize('com_error_not_found_desc')}
         </p>
         <Link
           to="/"
-          className="mt-2 rounded-lg border border-(--cui-color-stroke-default) bg-transparent px-4 py-2 text-sm font-medium text-(--cui-color-text-default) no-underline transition-colors hover:bg-(--cui-color-background-hover)"
+          className="mt-2 rounded-lg border border-(--ui-color-stroke-default) bg-transparent px-4 py-2 text-sm font-medium text-(--ui-color-text-default) no-underline transition-colors hover:bg-(--ui-color-background-hover)"
         >
           {localize('com_nav_go_home')}
         </Link>

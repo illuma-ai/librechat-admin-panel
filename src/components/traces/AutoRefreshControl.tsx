@@ -56,7 +56,7 @@ export function AutoRefreshControl({
         disabled={fetching}
         title={localize('com_traces_refresh')}
         aria-label={localize('com_traces_refresh')}
-        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-l-md rounded-r-none border border-r-0 border-(--cui-color-stroke-default) text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted) disabled:cursor-default disabled:opacity-60"
+        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-l-md rounded-r-none border border-r-0 border-(--ui-color-stroke-default) text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted) disabled:cursor-default disabled:opacity-60"
       >
         <RefreshCw className={cn('size-4', fetching && 'animate-spin')} />
       </button>
@@ -66,7 +66,7 @@ export function AutoRefreshControl({
             type="button"
             aria-label={localize('com_traces_auto_refresh')}
             title={localize('com_traces_auto_refresh')}
-            className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-l-none rounded-r-md border border-(--cui-color-stroke-default) px-2 text-sm text-(--cui-color-text-default) hover:bg-(--cui-color-background-muted)"
+            className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-l-none rounded-r-md border border-(--ui-color-stroke-default) px-2 text-sm text-(--ui-color-text-default) hover:bg-(--ui-color-background-muted)"
           >
             <ChevronDown className="size-4 opacity-50" />
             <span>{localize(active.labelKey)}</span>
@@ -78,7 +78,7 @@ export function AutoRefreshControl({
               <span
                 className={cn(
                   'flex items-center gap-2',
-                  interval === option.value && 'font-medium text-(--cui-color-text-default)',
+                  interval === option.value && 'font-medium text-(--ui-color-text-default)',
                 )}
               >
                 {localize(option.labelKey)}

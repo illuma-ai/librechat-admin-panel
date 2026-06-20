@@ -21,7 +21,7 @@ interface TraceDrawerProps {
 /** Small keyboard-shortcut chip, mirroring the reference's `KeyboardShortcut`. */
 function ShortcutKey({ children }: { children: string }) {
   return (
-    <kbd className="rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-1 font-mono text-[10px] leading-4 text-(--cui-color-text-muted)">
+    <kbd className="rounded-sm border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-1 font-mono text-[10px] leading-4 text-(--ui-color-text-muted)">
       {children}
     </kbd>
   );
@@ -47,9 +47,9 @@ function NavButton({
       onClick={onClick}
       disabled={!onClick}
       className={cn(
-        'flex h-7 flex-row items-center gap-1.5 rounded-sm border border-(--cui-color-stroke-default) px-2 text-(--cui-color-text-default) transition-colors',
+        'flex h-7 flex-row items-center gap-1.5 rounded-sm border border-(--ui-color-stroke-default) px-2 text-(--ui-color-text-default) transition-colors',
         onClick
-          ? 'cursor-pointer hover:bg-(--cui-color-background-hover)'
+          ? 'cursor-pointer hover:bg-(--ui-color-background-hover)'
           : 'cursor-not-allowed opacity-40',
       )}
     >
@@ -78,7 +78,7 @@ function ExpandButton({
       aria-label={title}
       onClick={onClick}
       className={cn(
-        'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--cui-color-text-muted) hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)',
+        'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-sm text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)',
         className,
       )}
     >
@@ -124,10 +124,10 @@ function DrawerHeader({
   }).href;
 
   return (
-    <div className="flex min-h-11 shrink-0 flex-row flex-nowrap items-center justify-between gap-2 border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-2 py-1">
+    <div className="flex min-h-11 shrink-0 flex-row flex-nowrap items-center justify-between gap-2 border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-muted) px-2 py-1">
       <div className="flex min-w-0 flex-row items-center gap-2">
         <TypeIcon type="trace" isRoot showLabel />
-        <span className="truncate text-sm font-medium text-(--cui-color-text-default)">
+        <span className="truncate text-sm font-medium text-(--ui-color-text-default)">
           {name ? `${name}: ${traceId}` : traceId}
         </span>
       </div>
@@ -148,7 +148,7 @@ function DrawerHeader({
             />
           </div>
         ) : null}
-        <div className="flex h-full flex-row items-center gap-1 border-l border-(--cui-color-stroke-default) pl-2">
+        <div className="flex h-full flex-row items-center gap-1 border-l border-(--ui-color-stroke-default) pl-2">
           <ExpandButton
             icon={Expand}
             title={localize('com_traces_open_current_tab')}

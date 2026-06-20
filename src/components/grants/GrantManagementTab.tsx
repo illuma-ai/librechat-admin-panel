@@ -75,18 +75,18 @@ export function GrantManagementTab() {
         />
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-(--cui-color-stroke-default)">
+      <div className="overflow-x-auto rounded-lg border border-(--ui-color-stroke-default)">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">{localize('com_grants_title')}</caption>
           <thead>
-            <tr className="border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-muted)">
-              <th scope="col" className="px-4 py-2.5 font-medium text-(--cui-color-text-muted)">
+            <tr className="border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-muted)">
+              <th scope="col" className="px-4 py-2.5 font-medium text-(--ui-color-text-muted)">
                 {localize('com_cap_col_name')}
               </th>
-              <th scope="col" className="px-4 py-2.5 font-medium text-(--cui-color-text-muted)">
+              <th scope="col" className="px-4 py-2.5 font-medium text-(--ui-color-text-muted)">
                 {localize('com_cap_col_capabilities')}
               </th>
-              <th scope="col" className="px-4 py-2.5 font-medium text-(--cui-color-text-muted)">
+              <th scope="col" className="px-4 py-2.5 font-medium text-(--ui-color-text-muted)">
                 {localize('com_cap_col_status')}
               </th>
             </tr>

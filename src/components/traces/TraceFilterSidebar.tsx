@@ -47,10 +47,10 @@ function TypeOptionLabel({ value }: { value: string }) {
  * tokens with hex fallbacks (consistent with `LevelCountsCell`).
  */
 const LEVEL_DOT_COLORS: Record<string, string> = {
-  ERROR: 'var(--cui-color-feedback-danger-fg, #b91c1c)',
-  WARNING: 'var(--cui-color-feedback-warning-fg, #92400e)',
-  DEFAULT: 'var(--cui-color-text-default, #475569)',
-  DEBUG: 'var(--cui-color-text-muted, #94a3b8)',
+  ERROR: 'var(--ui-color-feedback-danger-fg, #b91c1c)',
+  WARNING: 'var(--ui-color-feedback-warning-fg, #92400e)',
+  DEFAULT: 'var(--ui-color-text-default, #475569)',
+  DEBUG: 'var(--ui-color-text-muted, #94a3b8)',
 };
 
 /** Render an observation-level option: a small severity-colored dot + the level label. */
@@ -93,7 +93,7 @@ function InfoTooltip({ description }: { description: string }) {
     <Tooltip>
       <Tooltip.Trigger
         onClick={(e) => e.stopPropagation()}
-        className="inline-flex cursor-help items-center text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
+        className="inline-flex cursor-help items-center text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
         aria-label={description}
       >
         <Info className="size-3.5" />
@@ -117,8 +117,8 @@ function SegmentedToggle<T extends string>({
 }) {
   return (
     <div className="mb-1.5 flex items-center gap-1.5 px-2">
-      <span className="text-[10px] text-(--cui-color-text-muted)">{label}</span>
-      <div className="inline-flex rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) text-[10px]">
+      <span className="text-[10px] text-(--ui-color-text-muted)">{label}</span>
+      <div className="inline-flex rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) text-[10px]">
         {segments.map((seg, i) => (
           <button
             key={seg.value}
@@ -128,10 +128,10 @@ function SegmentedToggle<T extends string>({
               'px-1.5 py-0.5 transition-colors',
               i === 0 ? 'rounded-l' : '',
               i === segments.length - 1 ? 'rounded-r' : '',
-              i > 0 ? 'border-l border-(--cui-color-stroke-default)' : '',
+              i > 0 ? 'border-l border-(--ui-color-stroke-default)' : '',
               value === seg.value
-                ? 'bg-(--cui-color-background-muted) font-medium text-(--cui-color-text-default)'
-                : 'text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)',
+                ? 'bg-(--ui-color-background-muted) font-medium text-(--ui-color-text-default)'
+                : 'text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)',
             )}
           >
             {seg.label}
@@ -182,13 +182,13 @@ function TextRuleSection({
             }
           }}
           placeholder={localize('com_traces_filter_enter_value')}
-          className="h-7 flex-1 rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-xs text-(--cui-color-text-default)"
+          className="h-7 flex-1 rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-2 text-xs text-(--ui-color-text-default)"
         />
         <button
           type="button"
           onClick={add}
           disabled={draft.length === 0}
-          className="h-7 shrink-0 rounded px-2 text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default) disabled:opacity-50"
+          className="h-7 shrink-0 rounded px-2 text-xs text-(--ui-color-text-muted) hover:text-(--ui-color-text-default) disabled:opacity-50"
         >
           {localize('com_traces_filter_add')}
         </button>
@@ -198,9 +198,9 @@ function TextRuleSection({
           {rules.map((rule, idx) => (
             <div
               key={`${rule.operator}-${rule.value}-${idx}`}
-              className="flex items-center gap-2 rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-2 py-1 text-xs"
+              className="flex items-center gap-2 rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-muted) px-2 py-1 text-xs"
             >
-              <span className="shrink-0 text-[10px] font-medium text-(--cui-color-text-muted)">
+              <span className="shrink-0 text-[10px] font-medium text-(--ui-color-text-muted)">
                 {rule.operator === 'contains'
                   ? localize('com_traces_filter_contains')
                   : localize('com_traces_filter_not_contains')}
@@ -211,7 +211,7 @@ function TextRuleSection({
               <button
                 type="button"
                 onClick={() => onChange(rules.filter((_, i) => i !== idx))}
-                className="size-4 shrink-0 text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
+                className="size-4 shrink-0 text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
                 aria-label={localize('com_traces_clear')}
               >
                 <X className="size-3" />
@@ -285,16 +285,16 @@ function CategoricalFacet({
   const ChevronIcon = open ? ChevronUp : ChevronDown;
 
   return (
-    <div className="border-b border-(--cui-color-stroke-default)">
-      <div className="flex w-full items-center justify-between px-3 py-1.5 text-sm text-(--cui-color-text-muted)">
+    <div className="border-b border-(--ui-color-stroke-default)">
+      <div className="flex w-full items-center justify-between px-3 py-1.5 text-sm text-(--ui-color-text-muted)">
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-(--cui-color-text-default)">{label}</span>
+          <span className="truncate text-(--ui-color-text-default)">{label}</span>
           {info}
           {isActive ? (
             <button
               type="button"
               onClick={clear}
-              className="inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-(--cui-color-stroke-default) px-2 text-xs hover:bg-(--cui-color-background-muted)"
+              className="inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-(--ui-color-stroke-default) px-2 text-xs hover:bg-(--ui-color-background-muted)"
             >
               {localize('com_traces_clear')} <X className="size-3" />
             </button>
@@ -304,7 +304,7 @@ function CategoricalFacet({
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? localize('com_traces_collapse') : localize('com_traces_expand')}
-          className="shrink-0 hover:text-(--cui-color-text-default)"
+          className="shrink-0 hover:text-(--ui-color-text-default)"
         >
           <ChevronIcon className="size-4" />
         </button>
@@ -341,13 +341,13 @@ function CategoricalFacet({
               ) : null}
 
               {options.length === 0 ? (
-                <div className="px-2 py-1 text-xs text-(--cui-color-text-muted)">
+                <div className="px-2 py-1 text-xs text-(--ui-color-text-muted)">
                   {emptyHint ?? localize('com_traces_filter_no_options')}
                 </div>
               ) : (
                 <>
                   <div className="relative mb-1.5">
-                    <Search className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-(--cui-color-text-muted)" />
+                    <Search className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-(--ui-color-text-muted)" />
                     <input
                       value={search}
                       onChange={(e) => {
@@ -355,12 +355,12 @@ function CategoricalFacet({
                         setShowAll(false);
                       }}
                       placeholder={localize('com_traces_filter_values_placeholder')}
-                      className="h-7 w-full rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) pr-2 pl-7 text-xs text-(--cui-color-text-default)"
+                      className="h-7 w-full rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) pr-2 pl-7 text-xs text-(--ui-color-text-default)"
                     />
                   </div>
 
                   {filtered.length === 0 ? (
-                    <div className="px-2 py-1 text-xs text-(--cui-color-text-muted)">
+                    <div className="px-2 py-1 text-xs text-(--ui-color-text-muted)">
                       {localize('com_traces_filter_no_options')}
                     </div>
                   ) : (
@@ -370,7 +370,7 @@ function CategoricalFacet({
                         return (
                           <label
                             key={opt.value}
-                            className="flex cursor-pointer items-center gap-1.5 rounded-sm px-1 py-0.5 hover:bg-(--cui-color-background-muted)"
+                            className="flex cursor-pointer items-center gap-1.5 rounded-sm px-1 py-0.5 hover:bg-(--ui-color-background-muted)"
                           >
                             <Checkbox
                               checked={checked}
@@ -391,7 +391,7 @@ function CategoricalFacet({
                                 </span>
                               )}
                               {opt.count > 0 ? (
-                                <span className="ml-auto pl-2 text-right text-xs text-(--cui-color-text-muted)">
+                                <span className="ml-auto pl-2 text-right text-xs text-(--ui-color-text-muted)">
                                   {formatTokens(opt.count)}
                                 </span>
                               ) : null}
@@ -403,7 +403,7 @@ function CategoricalFacet({
                         <button
                           type="button"
                           onClick={() => setShowAll(true)}
-                          className="mt-1 w-full px-1 py-1 text-left text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
+                          className="mt-1 w-full px-1 py-1 text-left text-xs text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
                         >
                           {localize('com_traces_filter_show_more')}
                         </button>
@@ -456,16 +456,16 @@ function NumericRangeFacet({
   };
 
   return (
-    <div className="border-b border-(--cui-color-stroke-default)">
-      <div className="flex w-full items-center justify-between px-3 py-1.5 text-sm text-(--cui-color-text-muted)">
+    <div className="border-b border-(--ui-color-stroke-default)">
+      <div className="flex w-full items-center justify-between px-3 py-1.5 text-sm text-(--ui-color-text-muted)">
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-(--cui-color-text-default)">{label}</span>
+          <span className="truncate text-(--ui-color-text-default)">{label}</span>
           {info}
           {isActive ? (
             <button
               type="button"
               onClick={() => onChange({ min: undefined, max: undefined })}
-              className="inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-(--cui-color-stroke-default) px-2 text-xs hover:bg-(--cui-color-background-muted)"
+              className="inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-(--ui-color-stroke-default) px-2 text-xs hover:bg-(--ui-color-background-muted)"
             >
               {localize('com_traces_clear')} <X className="size-3" />
             </button>
@@ -475,7 +475,7 @@ function NumericRangeFacet({
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? localize('com_traces_collapse') : localize('com_traces_expand')}
-          className="shrink-0 hover:text-(--cui-color-text-default)"
+          className="shrink-0 hover:text-(--ui-color-text-default)"
         >
           <ChevronIcon className="size-4" />
         </button>
@@ -490,9 +490,9 @@ function NumericRangeFacet({
             onChange={(e) => onChange({ min: parse(e.target.value), max })}
             placeholder={localize('com_traces_filter_min')}
             aria-label={`${label} ${localize('com_traces_filter_min')}`}
-            className="h-7 w-full rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-xs text-(--cui-color-text-default)"
+            className="h-7 w-full rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-2 text-xs text-(--ui-color-text-default)"
           />
-          <span className="shrink-0 text-xs text-(--cui-color-text-muted)">–</span>
+          <span className="shrink-0 text-xs text-(--ui-color-text-muted)">–</span>
           <input
             type="number"
             min={0}
@@ -505,10 +505,10 @@ function NumericRangeFacet({
                 : localize('com_traces_filter_max')
             }
             aria-label={`${label} ${localize('com_traces_filter_max')}`}
-            className="h-7 w-full rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) px-2 text-xs text-(--cui-color-text-default)"
+            className="h-7 w-full rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) px-2 text-xs text-(--ui-color-text-default)"
           />
           {unit ? (
-            <span className="shrink-0 text-xs text-(--cui-color-text-muted)">{unit}</span>
+            <span className="shrink-0 text-xs text-(--ui-color-text-muted)">{unit}</span>
           ) : null}
         </div>
       ) : null}
@@ -586,8 +586,8 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
 
   return (
     <div className="flex h-full w-full flex-col overflow-auto">
-      <div className="sticky top-0 z-10 flex h-10 shrink-0 items-center justify-between border-b border-(--cui-color-stroke-default) bg-(--cui-color-background-panel) px-3">
-        <span className="text-sm font-medium text-(--cui-color-text-default)">
+      <div className="sticky top-0 z-10 flex h-10 shrink-0 items-center justify-between border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) px-3">
+        <span className="text-sm font-medium text-(--ui-color-text-default)">
           {localize('com_traces_filters')}
         </span>
         <div className="flex items-center gap-1">
@@ -595,13 +595,13 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
             type="button"
             onClick={clearAll}
             disabled={!isFiltered}
-            className="h-7 cursor-pointer px-2 text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default) disabled:cursor-default disabled:opacity-40"
+            className="h-7 cursor-pointer px-2 text-xs text-(--ui-color-text-muted) hover:text-(--ui-color-text-default) disabled:cursor-default disabled:opacity-40"
           >
             {localize('com_traces_clear_all')}
           </button>
           <Tooltip>
             <Tooltip.Trigger
-              className="inline-flex size-7 cursor-default items-center justify-center rounded text-(--cui-color-text-muted) opacity-50"
+              className="inline-flex size-7 cursor-default items-center justify-center rounded text-(--ui-color-text-muted) opacity-50"
               aria-label={localize('com_traces_filter_smart_reserved')}
             >
               <Sparkles className="size-4" />
