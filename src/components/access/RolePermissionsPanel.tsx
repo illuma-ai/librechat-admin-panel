@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Switch } from '@clickhouse/click-ui';
-import { Icon } from '@admin/ui';
+import { Switch, Icon  } from '@admin/ui';
 import { PermissionTypes } from 'librechat-data-provider';
 import type * as t from '@/types';
 import { PERMISSION_TYPE_SCHEMA } from '@/constants';

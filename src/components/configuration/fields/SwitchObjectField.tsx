@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Switch } from '@clickhouse/click-ui';
+import { Switch } from '@admin/ui';
 import type * as t from '@/types';
 
 export function SwitchObjectField({

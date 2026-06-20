@@ -10,3 +10,4 @@ export { Tabs } from './tabs';
 export { Button } from './button';
 export { Icon } from './icon';
 export { Dialog } from './dialog';
+export { Switch } from './switch';
