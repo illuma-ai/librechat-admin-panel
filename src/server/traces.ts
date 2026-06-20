@@ -157,7 +157,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
               o.tokens AS tokens, o.inTok AS inputTokens, o.outTok AS outputTokens,
               o.obs AS observations, o.gens AS generations, o.tools AS tools,
               o.errs AS errors, o.warns AS warnings, o.latency AS latencyMs,
-              o.rootInput AS input, o.rootOutput AS output
+              o.rootType AS type, o.rootInput AS input, o.rootOutput AS output
        FROM (
          SELECT id, name, user_id, session_id, environment, release, version, tags, metadata, timestamp
          FROM traces FINAL
@@ -173,6 +173,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
                 countIf(type = 'generation') AS gens, countIf(type = 'tool') AS tools,
                 countIf(level = 'ERROR') AS errs, countIf(level = 'WARNING') AS warns,
                 arrayStringConcat(arrayFilter(x -> x != '', groupUniqArray(model)), ', ') AS model,
+                anyIf(type, parent_observation_id = '' AND type != '') AS rootType,
                 anyIf(input, parent_observation_id = '' AND input != '') AS rootInput,
                 anyIf(output, parent_observation_id = '' AND output != '') AS rootOutput,
                 dateDiff('millisecond', min(start_time), max(end_time)) AS latency
@@ -189,6 +190,7 @@ export const getTracesFn = createServerFn({ method: 'GET' })
       rows: rows.map((r) => ({
         id: String(r.id ?? ''),
         name: String(r.name ?? ''),
+        type: String(r.type ?? '') || 'span',
         userId: String(r.userId ?? ''),
         sessionId: String(r.sessionId ?? ''),
         timestamp: String(r.timestamp ?? ''),

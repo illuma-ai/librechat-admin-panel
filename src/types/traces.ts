@@ -4,6 +4,8 @@
 export interface TraceListItem {
   id: string;
   name: string;
+  /** The root observation's type (span/generation/tool/agent/event) — drives the Type cell. */
+  type: string;
   userId: string;
   sessionId: string;
   timestamp: string;
