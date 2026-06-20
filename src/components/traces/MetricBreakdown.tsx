@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Popover } from '@clickhouse/click-ui';
+import { Popover } from '@admin/ui';
 import { useLocalize } from '@/hooks';
 import { usdFormatter } from './format';
 

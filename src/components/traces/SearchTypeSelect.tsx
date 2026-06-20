@@ -1,5 +1,5 @@
-import { Dropdown } from '@clickhouse/click-ui';
 import { ChevronDown } from 'lucide-react';
+import { Dropdown } from '@admin/ui';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 

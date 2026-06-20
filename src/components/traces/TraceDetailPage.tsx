@@ -1,4 +1,4 @@
-import { Icon } from '@clickhouse/click-ui';
+import { ChevronLeft } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useLocalize } from '@/hooks';
 import { TraceDetailContent } from './TraceDetailContent';
@@ -35,7 +35,7 @@ export function TraceDetailPage({ tenant, traceId }: TraceDetailPageProps) {
           }}
           className="inline-flex w-fit items-center gap-1 text-sm text-(--cui-color-text-muted) no-underline hover:text-(--cui-color-text-default)"
         >
-          <Icon name="chevron-left" size="sm" />
+          <ChevronLeft className="size-4" />
           {localize('com_traces_back')}
         </Link>
       </div>

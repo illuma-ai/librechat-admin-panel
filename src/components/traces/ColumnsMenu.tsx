@@ -1,5 +1,5 @@
-import { Checkbox, Popover } from '@clickhouse/click-ui';
 import { Columns3 } from 'lucide-react';
+import { Checkbox, Popover } from '@admin/ui';
 import { useLocalize } from '@/hooks';
 import type { DataTableColumn } from './DataTable';
 
@@ -42,8 +42,8 @@ export function ColumnsMenu<T>({
               <Checkbox
                 checked={!hidden.has(col.id)}
                 onCheckedChange={() => onToggle(col.id)}
-                label={<span className="text-xs">{col.header}</span>}
               />
+              <span className="text-xs">{col.header}</span>
             </label>
           ))}
         </div>

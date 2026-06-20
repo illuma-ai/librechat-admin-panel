@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Checkbox, Tooltip } from '@clickhouse/click-ui';
 import { ChevronDown, ChevronUp, Info, Search, Sparkles, X } from 'lucide-react';
+import { Checkbox, Tooltip } from '@admin/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type * as t from '@/types';
@@ -368,40 +368,35 @@ function CategoricalFacet({
                       {visible.map((opt) => {
                         const checked = value.includes(opt.value);
                         return (
-                          <div
+                          <label
                             key={opt.value}
-                            className="flex items-center gap-1 rounded-sm px-1 py-0.5 hover:bg-(--cui-color-background-muted)"
+                            className="flex cursor-pointer items-center gap-1.5 rounded-sm px-1 py-0.5 hover:bg-(--cui-color-background-muted)"
                           >
                             <Checkbox
                               checked={checked}
-                              onCheckedChange={(c: boolean) =>
+                              onCheckedChange={(c) =>
                                 onChange(
                                   c
                                     ? [...value, opt.value]
                                     : value.filter((v) => v !== opt.value),
                                 )
                               }
-                              label={
-                                <span className="flex min-w-0 flex-1 items-center gap-1.5">
-                                  {renderOptionLabel ? (
-                                    renderOptionLabel(opt.value)
-                                  ) : (
-                                    <span
-                                      className="min-w-0 flex-1 truncate text-xs"
-                                      title={opt.value}
-                                    >
-                                      {opt.value}
-                                    </span>
-                                  )}
-                                  {opt.count > 0 ? (
-                                    <span className="ml-auto pl-2 text-right text-xs text-(--cui-color-text-muted)">
-                                      {formatTokens(opt.count)}
-                                    </span>
-                                  ) : null}
-                                </span>
-                              }
                             />
-                          </div>
+                            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                              {renderOptionLabel ? (
+                                renderOptionLabel(opt.value)
+                              ) : (
+                                <span className="min-w-0 flex-1 truncate text-xs" title={opt.value}>
+                                  {opt.value}
+                                </span>
+                              )}
+                              {opt.count > 0 ? (
+                                <span className="ml-auto pl-2 text-right text-xs text-(--cui-color-text-muted)">
+                                  {formatTokens(opt.count)}
+                                </span>
+                              ) : null}
+                            </span>
+                          </label>
                         );
                       })}
                       {filtered.length > MAX_VISIBLE && !showAll ? (
