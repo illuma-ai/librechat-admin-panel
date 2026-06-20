@@ -57,6 +57,8 @@
     "remark-gfm": "^4.0.1",
     "styled-components": "^6.3.11",
     "tailwindcss": "^4.1.18",
+    "vis-data": "^8.0.4",
+    "vis-network": "^10.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

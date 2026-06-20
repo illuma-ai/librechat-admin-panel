@@ -1,73 +1,204 @@
-import { useMemo } from 'react';
-import { ArrowDown } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { DataSet } from 'vis-data';
+import { Network } from 'vis-network/standalone';
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import type * as t from '@/types';
-import { typeVisual } from './traceIcons';
+import { useLocalize } from '@/hooks';
 
-/** Group graph nodes into ordered step layers (Start at top, End at bottom). */
-function toLayers(graph: t.TraceGraph): t.TraceGraphNode[][] {
-  const byStep = new Map<number, t.TraceGraphNode[]>();
-  for (const node of graph.nodes) {
-    if (!byStep.has(node.step)) byStep.set(node.step, []);
-    byStep.get(node.step)!.push(node);
-  }
-  return [...byStep.entries()].sort((a, b) => a[0] - b[0]).map(([, nodes]) => nodes);
+/** vis-network node color spec (border + fill + highlight). */
+interface NodeColor {
+  border: string;
+  background: string;
+  highlight: { border: string; background: string };
 }
 
-/** Convert a hex color + alpha to an rgba() string for the node fill. */
-function tint(hex: string, alpha: number): string {
-  const n = parseInt(hex.replace('#', ''), 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+/**
+ * Observation-type → node border color, mirroring Langfuse's `getNodeStyle`
+ * (gray-100 fill, type-colored border). Keys are our lowercase observation types.
+ */
+const TYPE_COLORS: Record<string, string> = {
+  agent: '#c4b5fd', // purple-300
+  tool: '#fed7aa', // orange-300
+  generation: '#f0abfc', // fuchsia-300
+  span: '#93c5fd', // blue-300
+  chain: '#f9a8d4', // pink-300
+  retriever: '#5eead4', // teal-300
+  event: '#6ee7b7', // green-300
+  embedding: '#fbbf24', // amber-300
+  guardrail: '#fca5a5', // red-300
+};
+
+function nodeColor(type: string): NodeColor {
+  const border = TYPE_COLORS[type] ?? TYPE_COLORS.span;
+  return { border, background: '#f3f4f6', highlight: { border, background: '#e5e7eb' } };
 }
 
-function NodePill({ node }: { node: t.TraceGraphNode }) {
-  const isSystem = node.type === 'system';
-  if (isSystem) {
-    return (
-      <div
-        title={node.label}
-        className="max-w-65 truncate rounded-full border border-(--cui-color-stroke-default) bg-(--cui-color-background-muted) px-3 py-1.5 text-center text-xs font-medium text-(--cui-color-text-muted)"
-      >
-        {node.label}
-      </div>
-    );
-  }
-  // Color the node by its observation type (Langfuse uses colored agent nodes).
-  const visual = typeVisual(node.type);
-  const Icon = visual.icon;
+const START_COLOR: NodeColor = {
+  border: '#166534',
+  background: '#86efac',
+  highlight: { border: '#15803d', background: '#4ade80' },
+};
+const END_COLOR: NodeColor = {
+  border: '#7f1d1d',
+  background: '#fecaca',
+  highlight: { border: '#991b1b', background: '#fca5a5' },
+};
+
+interface VisNode {
+  id: string;
+  label: string;
+  color: NodeColor;
+  x?: number;
+  y?: number;
+}
+
+/** vis-network options, copied from Langfuse's TraceGraphCanvas (hierarchical UD, boxed nodes). */
+const NETWORK_OPTIONS = {
+  autoResize: true,
+  layout: {
+    hierarchical: {
+      enabled: true,
+      direction: 'UD',
+      levelSeparation: 60,
+      nodeSpacing: 175,
+      sortMethod: 'hubsize',
+      shakeTowards: 'roots',
+    },
+    randomSeed: 1,
+  },
+  physics: { enabled: false, stabilization: { iterations: 0 } },
+  interaction: { zoomView: false },
+  nodes: {
+    shape: 'box',
+    margin: { top: 10, right: 10, bottom: 10, left: 10 },
+    borderWidth: 2,
+    font: { size: 14, color: '#000000' },
+    shadow: { enabled: true, color: 'rgba(0,0,0,0.2)', size: 3, x: 3, y: 3 },
+    scaling: { label: { enabled: true, min: 14, max: 16 } },
+  },
+  edges: {
+    arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+    width: 1.5,
+    color: { color: '#64748b' },
+    selectionWidth: 0,
+    chosen: false,
+  },
+} as const;
+
+const START_IDS = new Set(['Start', '__start__', 'LANGFUSE_START', '__lf_start__']);
+const END_IDS = new Set(['End', '__end__', 'LANGFUSE_END', '__lf_end__']);
+
+interface ZoomButtonProps {
+  icon: typeof ZoomIn;
+  title: string;
+  onClick: () => void;
+}
+
+function ZoomButton({ icon: Icon, title, onClick }: ZoomButtonProps) {
   return (
-    <div
-      title={node.label}
-      className="flex max-w-65 items-center gap-1.5 truncate rounded-md border px-3 py-1.5 text-center text-xs font-medium"
-      style={{
-        borderColor: visual.color,
-        backgroundColor: tint(visual.color, 0.1),
-        color: visual.color,
-      }}
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className="flex size-7 cursor-pointer items-center justify-center rounded-sm border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) text-(--cui-color-text-muted) shadow-sm hover:bg-(--cui-color-background-hover) hover:text-(--cui-color-text-default)"
     >
-      <Icon className="size-3.5 shrink-0" />
-      <span className="truncate">{node.label}</span>
-    </div>
+      <Icon className="size-4" />
+    </button>
   );
 }
 
-/** Langfuse-style agent graph: a layered Start → steps → End flow. */
+/**
+ * Langfuse agent-graph view: an interactive vis-network DAG (top-down hierarchical
+ * layout, type-colored boxed nodes, green Start / red End, arrow edges) with
+ * hover zoom controls.
+ */
 export function TraceGraph({ graph }: { graph: t.TraceGraph }) {
-  const layers = useMemo(() => toLayers(graph), [graph]);
-  if (layers.length === 0) return null;
+  const localize = useLocalize();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const networkRef = useRef<Network | null>(null);
+  const [hovering, setHovering] = useState(false);
+
+  const visNodes = useMemo<VisNode[]>(
+    () =>
+      graph.nodes.map((node) => {
+        const base: VisNode = { id: node.id, label: node.label, color: nodeColor(node.type) };
+        if (START_IDS.has(node.id)) return { ...base, x: -200, y: 0, color: START_COLOR };
+        if (END_IDS.has(node.id)) return { ...base, x: 200, y: 0, color: END_COLOR };
+        return base;
+      }),
+    [graph.nodes],
+  );
+
+  const visEdges = useMemo(
+    () => graph.edges.map((edge, i) => ({ id: `e${i}`, from: edge.from, to: edge.to })),
+    [graph.edges],
+  );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || visNodes.length === 0) return;
+
+    const nodes = new DataSet<VisNode>(visNodes);
+    const edges = new DataSet(visEdges);
+    const network = new Network(container, { nodes, edges }, NETWORK_OPTIONS);
+    networkRef.current = network;
+
+    const handleResize = () => {
+      network.redraw();
+      network.fit();
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      networkRef.current = null;
+      network.destroy();
+    };
+  }, [visNodes, visEdges]);
+
+  const zoom = (factor: number) => {
+    const network = networkRef.current;
+    if (network) network.moveTo({ scale: network.getScale() * factor });
+  };
+  const reset = () => {
+    networkRef.current?.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+  };
+
+  if (graph.nodes.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-(--cui-color-text-muted)">
+        {localize('com_traces_no_graph')}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center gap-2 p-4">
-      {layers.map((nodes, i) => (
-        <div key={nodes.map((n) => n.id).join('|')} className="flex flex-col items-center gap-2">
-          <div className="flex flex-wrap justify-center gap-3">
-            {nodes.map((node) => (
-              <NodePill key={node.id} node={node} />
-            ))}
-          </div>
-          {i < layers.length - 1 ? (
-            <ArrowDown className="size-4 text-(--cui-color-text-muted)" />
-          ) : null}
+    <div
+      className="relative h-full min-h-50 w-full"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      {hovering ? (
+        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+          <ZoomButton
+            icon={ZoomIn}
+            title={localize('com_traces_zoom_in')}
+            onClick={() => zoom(1.2)}
+          />
+          <ZoomButton
+            icon={ZoomOut}
+            title={localize('com_traces_zoom_out')}
+            onClick={() => zoom(1 / 1.2)}
+          />
+          <ZoomButton
+            icon={RotateCcw}
+            title={localize('com_traces_zoom_reset')}
+            onClick={reset}
+          />
         </div>
-      ))}
+      ) : null}
+      <div ref={containerRef} className="h-full w-full" />
     </div>
   );
 }
