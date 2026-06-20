@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Checkbox } from '@clickhouse/click-ui';
-import { ChevronDown, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Checkbox, Tooltip } from '@clickhouse/click-ui';
+import { ChevronDown, ChevronUp, Info, Search, Sparkles, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
@@ -36,6 +37,27 @@ function extraOptions(
     | (t.TraceFilterOptions & Partial<Record<typeof key, t.FacetOption[]>>)
     | undefined;
   return record?.[key] ?? [];
+}
+
+/**
+ * Info-icon popover used next to facet labels that warrant a short description
+ * (Langfuse renders a ⓘ next to several facets). Built on the click-ui Tooltip
+ * compound component; the codebase convention is an info-icon popover, never
+ * plain inline description text.
+ */
+function InfoTooltip({ description }: { description: string }) {
+  return (
+    <Tooltip>
+      <Tooltip.Trigger
+        onClick={(e) => e.stopPropagation()}
+        className="inline-flex cursor-help items-center text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
+        aria-label={description}
+      >
+        <Info className="size-3.5" />
+      </Tooltip.Trigger>
+      <Tooltip.Content maxWidth="220px">{description}</Tooltip.Content>
+    </Tooltip>
+  );
 }
 
 /** A small segmented control. Generic so it serves both the mode and operator toggles. */
@@ -166,6 +188,7 @@ function TextRuleSection({
  */
 function CategoricalFacet({
   label,
+  info,
   options,
   value,
   onChange,
@@ -177,6 +200,7 @@ function CategoricalFacet({
   emptyHint,
 }: {
   label: string;
+  info?: ReactNode;
   options: t.FacetOption[];
   value: string[];
   onChange: (next: string[]) => void;
@@ -191,8 +215,15 @@ function CategoricalFacet({
   const [open, setOpen] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [mode, setMode] = useState<FacetMode>('select');
+  const [search, setSearch] = useState('');
   const isActive = value.length > 0 || (textRules?.length ?? 0) > 0;
-  const visible = showAll ? options : options.slice(0, MAX_VISIBLE);
+
+  const filtered = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    if (needle.length === 0) return options;
+    return options.filter((opt) => opt.value.toLowerCase().includes(needle));
+  }, [options, search]);
+  const visible = showAll ? filtered : filtered.slice(0, MAX_VISIBLE);
 
   const clear = () => {
     onChange([]);
@@ -205,33 +236,33 @@ function CategoricalFacet({
     else onChange([]);
   };
 
+  const ChevronIcon = open ? ChevronUp : ChevronDown;
+
   return (
     <div className="border-b border-(--cui-color-stroke-default)">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-3 py-1.5 text-left text-sm text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
-      >
-        <span className="flex items-center gap-1.5">
-          {label}
+      <div className="flex w-full items-center justify-between px-3 py-1.5 text-sm text-(--cui-color-text-muted)">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-(--cui-color-text-default)">{label}</span>
+          {info}
           {isActive ? (
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation();
-                clear();
-              }}
-              className="inline-flex h-5 cursor-pointer items-center gap-1 rounded-full border border-(--cui-color-stroke-default) px-2 text-xs hover:bg-(--cui-color-background-muted)"
+            <button
+              type="button"
+              onClick={clear}
+              className="inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-(--cui-color-stroke-default) px-2 text-xs hover:bg-(--cui-color-background-muted)"
             >
-              {localize('com_traces_clear')} ✕
-            </span>
+              {localize('com_traces_clear')} <X className="size-3" />
+            </button>
           ) : null}
         </span>
-        <ChevronDown
-          className={cn('size-4 shrink-0 transition-transform', open ? 'rotate-180' : '')}
-        />
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? localize('com_traces_collapse') : localize('com_traces_expand')}
+          className="shrink-0 hover:text-(--cui-color-text-default)"
+        >
+          <ChevronIcon className="size-4" />
+        </button>
+      </div>
       {open ? (
         <div className="pb-2">
           {enableTextMode && onTextRulesChange ? (
@@ -269,45 +300,71 @@ function CategoricalFacet({
                 </div>
               ) : (
                 <>
-                  {visible.map((opt) => {
-                    const checked = value.includes(opt.value);
-                    return (
-                      <div
-                        key={opt.value}
-                        className="flex items-center gap-1 rounded-sm px-1 py-0.5 hover:bg-(--cui-color-background-muted)"
-                      >
-                        <Checkbox
-                          checked={checked}
-                          onCheckedChange={(c: boolean) =>
-                            onChange(
-                              c ? [...value, opt.value] : value.filter((v) => v !== opt.value),
-                            )
-                          }
-                          label={
-                            <span className="flex min-w-0 flex-1 items-center">
-                              <span className="min-w-0 flex-1 truncate text-xs" title={opt.value}>
-                                {opt.value}
-                              </span>
-                              {opt.count > 0 ? (
-                                <span className="ml-auto pl-2 text-right text-xs text-(--cui-color-text-muted)">
-                                  {formatTokens(opt.count)}
+                  <div className="relative mb-1.5">
+                    <Search className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-(--cui-color-text-muted)" />
+                    <input
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setShowAll(false);
+                      }}
+                      placeholder={localize('com_traces_filter_values_placeholder')}
+                      className="h-7 w-full rounded border border-(--cui-color-stroke-default) bg-(--cui-color-background-default) pr-2 pl-7 text-xs text-(--cui-color-text-default)"
+                    />
+                  </div>
+
+                  {filtered.length === 0 ? (
+                    <div className="px-2 py-1 text-xs text-(--cui-color-text-muted)">
+                      {localize('com_traces_filter_no_options')}
+                    </div>
+                  ) : (
+                    <>
+                      {visible.map((opt) => {
+                        const checked = value.includes(opt.value);
+                        return (
+                          <div
+                            key={opt.value}
+                            className="flex items-center gap-1 rounded-sm px-1 py-0.5 hover:bg-(--cui-color-background-muted)"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(c: boolean) =>
+                                onChange(
+                                  c
+                                    ? [...value, opt.value]
+                                    : value.filter((v) => v !== opt.value),
+                                )
+                              }
+                              label={
+                                <span className="flex min-w-0 flex-1 items-center">
+                                  <span
+                                    className="min-w-0 flex-1 truncate text-xs"
+                                    title={opt.value}
+                                  >
+                                    {opt.value}
+                                  </span>
+                                  {opt.count > 0 ? (
+                                    <span className="ml-auto pl-2 text-right text-xs text-(--cui-color-text-muted)">
+                                      {formatTokens(opt.count)}
+                                    </span>
+                                  ) : null}
                                 </span>
-                              ) : null}
-                            </span>
-                          }
-                        />
-                      </div>
-                    );
-                  })}
-                  {options.length > MAX_VISIBLE && !showAll ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowAll(true)}
-                      className="mt-1 w-full px-1 py-1 text-left text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
-                    >
-                      {localize('com_traces_filter_show_more')}
-                    </button>
-                  ) : null}
+                              }
+                            />
+                          </div>
+                        );
+                      })}
+                      {filtered.length > MAX_VISIBLE && !showAll ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowAll(true)}
+                          className="mt-1 w-full px-1 py-1 text-left text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
+                        >
+                          {localize('com_traces_filter_show_more')}
+                        </button>
+                      ) : null}
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -371,15 +428,27 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
         <span className="text-sm font-medium text-(--cui-color-text-default)">
           {localize('com_traces_filters')}
         </span>
-        {isFiltered ? (
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={clearAll}
-            className="h-7 cursor-pointer px-2 text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default)"
+            disabled={!isFiltered}
+            className="h-7 cursor-pointer px-2 text-xs text-(--cui-color-text-muted) hover:text-(--cui-color-text-default) disabled:cursor-default disabled:opacity-40"
           >
             {localize('com_traces_clear_all')}
           </button>
-        ) : null}
+          <Tooltip>
+            <Tooltip.Trigger
+              className="inline-flex size-7 cursor-default items-center justify-center rounded text-(--cui-color-text-muted) opacity-50"
+              aria-label={localize('com_traces_filter_smart_reserved')}
+            >
+              <Sparkles className="size-4" />
+            </Tooltip.Trigger>
+            <Tooltip.Content maxWidth="220px">
+              {localize('com_traces_filter_smart_reserved')}
+            </Tooltip.Content>
+          </Tooltip>
+        </div>
       </div>
       <CategoricalFacet
         label={localize('com_traces_environment')}
@@ -407,6 +476,7 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
       />
       <CategoricalFacet
         label={localize('com_traces_session_id')}
+        info={<InfoTooltip description={localize('com_traces_filter_session_id_info')} />}
         options={extraOptions(data, 'sessionIds')}
         value={sessionId}
         onChange={setSessionId}
@@ -426,6 +496,7 @@ export function TraceFilterSidebar({ tenant, filters, onChange }: TraceFilterSid
       />
       <CategoricalFacet
         label={localize('com_traces_tags')}
+        info={<InfoTooltip description={localize('com_traces_filter_tags_info')} />}
         options={data?.tags ?? []}
         value={filters.tags}
         onChange={(v) => onChange({ tags: v })}
