@@ -60,7 +60,7 @@ export function TotalMetric({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex items-baseline justify-start gap-2">
+    <div className="flex items-baseline justify-start gap-2 pt-1 pb-2">
       <div className="text-3xl font-bold text-(--ui-color-text-default)">{metric}</div>
       <p className="text-sm text-(--ui-color-text-muted)">{description}</p>
       {children}
