@@ -263,6 +263,44 @@ export const dashboardTracesByNameQueryOptions = (tenantId: string, range: t.Tra
     enabled: tenantId.length > 0,
   });
 
+// ── Model Usage breakdown over time (by model / by observation type) ──
+
+export const getDashboardUsageBreakdownFn = createServerFn({ method: 'GET' })
+  .inputValidator(dashboardSchema)
+  .handler(async ({ data }): Promise<t.DashboardUsageBreakdown> => {
+    const params = { t: data.tenantId };
+    const oClause = rangeClause(data.range, 'start_time');
+    const series = (dim: string, extra: string) =>
+      chQuery<Record<string, unknown>>(
+        `SELECT toString(${bucketExpr(data.range, 'start_time')}) AS bucket, ${dim} AS key,
+                sum(total_cost) AS cost, sum(total_tokens) AS tokens
+         FROM observations FINAL
+         WHERE tenant_id = {t:String} AND is_deleted = 0 ${extra} ${oClause}
+         GROUP BY bucket, key ORDER BY bucket ASC`,
+        params,
+      );
+    const [modelRows, typeRows] = await Promise.all([
+      series('model', "AND model != ''"),
+      series('type', "AND type != ''"),
+    ]);
+    const map = (rows: Record<string, unknown>[]): t.UsageSeriesRow[] =>
+      rows.map((r) => ({
+        bucket: String(r.bucket ?? ''),
+        key: String(r.key ?? ''),
+        cost: toNumber(r.cost),
+        tokens: toNumber(r.tokens),
+      }));
+    return { model: map(modelRows), type: map(typeRows) };
+  });
+
+export const dashboardUsageBreakdownQueryOptions = (tenantId: string, range: t.TraceRange) =>
+  queryOptions({
+    queryKey: ['dashboard', 'usageBreakdown', tenantId, range],
+    queryFn: () => getDashboardUsageBreakdownFn({ data: { tenantId, range } }),
+    ...LIST_QUERY_REFETCH,
+    enabled: tenantId.length > 0,
+  });
+
 // ── Latency-percentile tables (by trace / generation / observation name) ──
 
 export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })

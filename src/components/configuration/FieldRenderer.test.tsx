@@ -9,11 +9,6 @@ vi.mock('@/hooks/useLocalize', () => ({
   useLocalize: () => (key: string) => key,
 }));
 
-interface MockSwitchProps {
-  checked: boolean;
-  'aria-label'?: string;
-  onCheckedChange?: (checked: boolean) => void;
-}
 interface MockSelectProps {
   children: React.ReactNode;
   value: string;
@@ -23,74 +18,6 @@ interface MockSelectItemProps {
   children: React.ReactNode;
   value: string;
 }
-interface MockIconProps {
-  name: string;
-}
-interface MockButtonProps {
-  label: string;
-  onClick?: () => void;
-}
-interface MockTextFieldProps {
-  id?: string;
-  value?: string;
-  placeholder?: string;
-  onChange?: (value: string) => void;
-  onBlur?: () => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-  type?: string;
-}
-interface MockNumberFieldProps {
-  id?: string;
-  value?: string | number;
-  placeholder?: string;
-  onChange?: (value: string) => void;
-  onBlur?: () => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-}
-interface MockIconButtonProps {
-  icon: string;
-  onClick?: () => void;
-  'aria-label'?: string;
-}
-
-vi.mock('@clickhouse/click-ui', () => ({
-  Switch: (props: MockSwitchProps) => (
-    <button
-      role="switch"
-      aria-checked={props.checked}
-      aria-label={props['aria-label']}
-      data-testid="toggle"
-      onClick={() => props.onCheckedChange?.(!props.checked)}
-    />
-  ),
-  Select: Object.assign(
-    ({ children, value, ...props }: MockSelectProps) => (
-      <div data-testid="select" data-value={value} aria-label={props['aria-label']}>
-        {children}
-      </div>
-    ),
-    {
-      Item: ({ children, value }: MockSelectItemProps) => (
-        <div data-testid="select-item" data-value={value}>
-          {children}
-        </div>
-      ),
-    },
-  ),
-  Icon: ({ name }: MockIconProps) => <span data-testid={`icon-${name}`} />,
-  Button: ({ label, onClick }: MockButtonProps) => (
-    <button onClick={onClick}>{label}</button>
-  ),
-  IconButton: ({ icon, onClick, ...props }: MockIconButtonProps) => (
-    <button onClick={onClick} aria-label={props['aria-label'] ?? icon} data-testid={`icon-button-${icon}`} />
-  ),
-  TextField: ({ id, value, placeholder, onChange, onBlur, type }: MockTextFieldProps) => (
-    <input id={id} value={value ?? ''} placeholder={placeholder} type={type ?? 'text'} onChange={(e) => onChange?.(e.target.value)} onBlur={onBlur} />
-  ),
-  NumberField: ({ id, value, placeholder, onChange, onBlur }: MockNumberFieldProps) => (
-    <input id={id} value={value ?? ''} placeholder={placeholder} type="number" onChange={(e) => onChange?.(e.target.value)} onBlur={onBlur} />
-  ),
-}));
 
 // Override only @admin/ui Select: the real Radix Select keeps its options in a
 // portal that isn't rendered until opened, so render them inline here so the

@@ -79,6 +79,20 @@ export interface NameCountRow {
   count: number;
 }
 
+/** One (bucket, series-key) usage point for the Model Usage multi-line chart. */
+export interface UsageSeriesRow {
+  bucket: string;
+  key: string;
+  cost: number;
+  tokens: number;
+}
+
+/** Model Usage breakdown over time, grouped by model and by observation type. */
+export interface DashboardUsageBreakdown {
+  model: UsageSeriesRow[];
+  type: UsageSeriesRow[];
+}
+
 /** A latency-percentile table row keyed by name (+ optional observation type badge). */
 export interface LatencyTableRow {
   name: string;

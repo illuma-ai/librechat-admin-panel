@@ -10,10 +10,12 @@ import {
   dashboardSummaryQueryOptions,
   dashboardTimeseriesQueryOptions,
   dashboardTracesByNameQueryOptions,
+  dashboardUsageBreakdownQueryOptions,
 } from '@/server';
-import { formatCost, formatTokens, parseChDate } from '@/components/traces';
+import { formatCost, formatTokens } from '@/components/traces';
+import { bucketLabel, pivotUsage } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
-import { HorizontalBarChart, LineTimeChart, LatencyLineChart } from './charts/recharts';
+import { HorizontalBarChart, LineTimeChart, LatencyLineChart, MultiLineChart } from './charts/recharts';
 import { MetricTable } from './charts/MetricTable';
 
 /** Resolved data bundle shared by every dashboard widget for a tenant + range. */
@@ -22,8 +24,10 @@ export interface DashboardData {
   breakdowns?: t.DashboardBreakdowns;
   tracesByName: t.NameCountRow[];
   latencyTables?: t.DashboardLatencyTables;
+  usageBreakdown?: t.DashboardUsageBreakdown;
   points: (t.MetricBucket & { label: string })[];
   modelLatency: (t.LatencyBucket & { label: string })[];
+  range: t.TraceRange;
   isLoading: boolean;
 }
 
@@ -34,13 +38,6 @@ export interface WidgetDef {
   Component: (props: { data: DashboardData; title: string; action?: ReactNode }) => ReactNode;
 }
 
-function bucketLabel(bucket: string, range: t.TraceRange): string {
-  const d = parseChDate(bucket);
-  if (Number.isNaN(d.getTime())) return bucket;
-  if (range === '24h') return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
 /** Run the dashboard aggregate queries and derive the shared, labelled data bundle. */
 export function useDashboardData(tenant: string, range: t.TraceRange): DashboardData {
   const summary = useQuery(dashboardSummaryQueryOptions(tenant, range));
@@ -48,6 +45,7 @@ export function useDashboardData(tenant: string, range: t.TraceRange): Dashboard
   const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range));
   const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range));
   const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range));
+  const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range));
   const modelLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation'));
 
   const points = useMemo(
@@ -64,11 +62,14 @@ export function useDashboardData(tenant: string, range: t.TraceRange): Dashboard
     breakdowns: breakdowns.data,
     tracesByName: tracesByName.data ?? [],
     latencyTables: latencyTables.data,
+    usageBreakdown: usageBreakdown.data,
     points,
     modelLatency,
+    range,
     isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading,
   };
 }
+
 
 const num = (n?: number) => (n ?? 0).toLocaleString();
 const compact = (n: number) => formatTokens(n); // K/M compact formatter
@@ -139,10 +140,16 @@ function ObservationsWidget({ data, title, action }: { data: DashboardData; titl
   );
 }
 
+type UsageTab = 'cost_model' | 'cost_type' | 'usage_model' | 'usage_type';
+
 function ModelUsageWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
-  const [tab, setTab] = useState<'cost' | 'tokens'>('cost');
-  const isCost = tab === 'cost';
+  const [tab, setTab] = useState<UsageTab>('cost_model');
+  const metric: 'cost' | 'tokens' = tab.startsWith('cost') ? 'cost' : 'tokens';
+  const dim: 'model' | 'type' = tab.endsWith('model') ? 'model' : 'type';
+  const rows = data.usageBreakdown ? data.usageBreakdown[dim] : [];
+  const { data: chartData, keys } = pivotUsage(rows, metric, data.range);
+  const isCost = metric === 'cost';
   return (
     <DashboardCard
       title={title}
@@ -152,8 +159,10 @@ function ModelUsageWidget({ data, title, action }: { data: DashboardData; title:
           active={tab}
           onSelect={setTab}
           tabs={[
-            { value: 'cost', label: localize('com_dash_tab_cost') },
-            { value: 'tokens', label: localize('com_dash_tab_usage') },
+            { value: 'cost_model', label: localize('com_dash_tab_cost_model') },
+            { value: 'cost_type', label: localize('com_dash_tab_cost_type') },
+            { value: 'usage_model', label: localize('com_dash_tab_usage_model') },
+            { value: 'usage_type', label: localize('com_dash_tab_usage_type') },
           ]}
         />
       }
@@ -162,11 +171,7 @@ function ModelUsageWidget({ data, title, action }: { data: DashboardData; title:
         metric={isCost ? formatCost(data.summary?.cost ?? 0) : formatTokens(data.summary?.tokens ?? 0)}
         description={isCost ? localize('com_dash_total_cost') : localize('com_dash_total_tokens')}
       />
-      <LineTimeChart
-        points={data.points.map((p) => ({ label: p.label, value: isCost ? p.cost : p.tokens }))}
-        valueName={isCost ? 'Cost' : 'Tokens'}
-        formatValue={isCost ? formatCost : formatTokens}
-      />
+      <MultiLineChart data={chartData} seriesKeys={keys} formatValue={isCost ? formatCost : formatTokens} />
     </DashboardCard>
   );
 }
@@ -257,7 +262,15 @@ function PlaceholderWidget({ title, action }: { data: DashboardData; title: stri
   );
 }
 
-/** Catalog mirroring the reference dashboard 1:1, with each widget's `xl` column span. */
+/**
+ * Catalog mirroring the reference dashboard, ordered so every row fills the 6-col
+ * grid exactly (no ragged rows):
+ *   row1: Traces(2) + Model costs(2) + Scores(2)
+ *   row2: Observations(3) + Model Usage(3)
+ *   row3: User consumption(3) + Scores Analytics(3)
+ *   row4: Trace(2) + Generation(2) + Observation(2) latency tables
+ *   row5: Model latencies(6)
+ */
 export const WIDGET_CATALOG: (WidgetDef & { span: string })[] = [
   { id: 'traces', titleKey: 'com_dash_w_traces', span: 'xl:col-span-2', Component: TracesWidget },
   { id: 'model_costs', titleKey: 'com_dash_w_model_costs', span: 'xl:col-span-2', Component: ModelCostsWidget },
@@ -265,6 +278,7 @@ export const WIDGET_CATALOG: (WidgetDef & { span: string })[] = [
   { id: 'observations', titleKey: 'com_dash_w_observations', span: 'xl:col-span-3', Component: ObservationsWidget },
   { id: 'model_usage', titleKey: 'com_dash_w_model_usage', span: 'xl:col-span-3', Component: ModelUsageWidget },
   { id: 'user_consumption', titleKey: 'com_dash_w_user_consumption', span: 'xl:col-span-3', Component: UserConsumptionWidget },
+  { id: 'scores_analytics', titleKey: 'com_dash_w_scores_analytics', span: 'xl:col-span-3', Component: PlaceholderWidget },
   {
     id: 'trace_latency',
     titleKey: 'com_dash_w_latency',
@@ -284,7 +298,6 @@ export const WIDGET_CATALOG: (WidgetDef & { span: string })[] = [
     Component: makeLatencyTableWidget((t) => t.observation, true),
   },
   { id: 'model_latency', titleKey: 'com_dash_w_model_latencies', span: 'xl:col-span-full', Component: ModelLatenciesWidget },
-  { id: 'scores_analytics', titleKey: 'com_dash_w_scores_analytics', span: 'xl:col-span-full', Component: PlaceholderWidget },
 ];
 
 export const WIDGET_BY_ID = new Map(WIDGET_CATALOG.map((w) => [w.id, w]));

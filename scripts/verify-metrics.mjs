@@ -95,6 +95,17 @@ async function main() {
   check('Σ user traces ≤ KPI traces', sum(userCons, 'tr') <= num(summary.traces), `${sum(userCons, 'tr')} vs ${num(summary.traces)}`);
   check('Σ user cost ≤ KPI cost', sum(userCons, 'cost') <= num(summary.cost) + 1e-6, `${sum(userCons, 'cost')} vs ${num(summary.cost)}`);
 
+  // Model Usage breakdown reconciles: Σ usage-by-model cost == Σ usage-by-type cost
+  // == KPI cost (both partition the same observation cost — model-less spans add $0).
+  const usageByModel = await ch(
+    `SELECT sum(total_cost) cost, sum(total_tokens) tok FROM observations FINAL WHERE tenant_id='${TENANT}' AND is_deleted=0 AND model!='' ${oClause}`,
+  );
+  const usageByType = await ch(
+    `SELECT sum(total_cost) cost, sum(total_tokens) tok FROM observations FINAL WHERE tenant_id='${TENANT}' AND is_deleted=0 AND type!='' ${oClause}`,
+  );
+  check('usage-by-type cost == KPI cost', close(num(usageByType[0].cost), num(summary.cost), 1e-6), `${num(usageByType[0].cost)} vs ${num(summary.cost)}`);
+  check('usage-by-model cost ≤ usage-by-type cost', num(usageByModel[0].cost) <= num(usageByType[0].cost) + 1e-6, `${num(usageByModel[0].cost)} vs ${num(usageByType[0].cost)}`);
+
   // Scores breakdown count reconciles to the raw score count.
   const [{ c: scoreTotal } = {}] = await ch(
     `SELECT count() c FROM scores FINAL WHERE tenant_id='${TENANT}' AND is_deleted=0 AND name!='' ${tClause}`,

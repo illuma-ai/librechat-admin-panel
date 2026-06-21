@@ -183,6 +183,44 @@ export function LineTimeChart({
   );
 }
 
+/** Multi-line chart over time, one line per series key (reference Model Usage). */
+export function MultiLineChart({
+  data,
+  seriesKeys,
+  formatValue,
+}: {
+  data: Record<string, number | string>[];
+  seriesKeys: string[];
+  formatValue?: (n: number) => string;
+}) {
+  if (data.length === 0 || seriesKeys.length === 0) return <EmptyChart />;
+  return (
+    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+      <LineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+        <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
+        <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={48} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(v) => (formatValue ? formatValue(Number(v)) : Number(v).toLocaleString())}
+        />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+        {seriesKeys.map((key, i) => (
+          <Line
+            key={key}
+            type="monotone"
+            dataKey={key}
+            stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
 function EmptyChart() {
   return (
     <div
