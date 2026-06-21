@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactElement } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -101,7 +102,23 @@ const TOOLTIP_STYLE = {
 
 const AXIS_TICK = { fill: AXIS, fontSize: 11 } as const;
 
-const CHART_HEIGHT = 220;
+/** Floor height so a chart stays readable on a content-sized (Home) card. */
+const CHART_MIN_HEIGHT = 180;
+
+/**
+ * Fill-height chart frame: the chart grows to fill its card (so it adapts to a custom
+ * dashboard's grid-cell height) but keeps a readable floor on content-sized cards.
+ * `flex-1 min-h-0` lets it expand inside a flex card; `minHeight` is the floor.
+ */
+function ChartFrame({ children }: { children: ReactElement }) {
+  return (
+    <div className="min-h-0 w-full flex-1" style={{ minHeight: CHART_MIN_HEIGHT }}>
+      <ResponsiveContainer width="100%" height="100%">
+        {children}
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export interface BarTimePoint {
   label: string;
@@ -122,7 +139,7 @@ export function BarTimeChart({
 }) {
   if (points.length === 0) return <EmptyChart />;
   return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+    <ChartFrame>
       <BarChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
         <ChartGradients />
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
@@ -134,7 +151,7 @@ export function BarTimeChart({
         />
         <Bar dataKey="value" name={valueName} fill={grad(colorIndex)} radius={[4, 4, 0, 0]} />
       </BarChart>
-    </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
@@ -154,7 +171,7 @@ export function PieBreakdownChart({
   if (points.length === 0) return <EmptyChart />;
   const fmt = formatValue ?? ((n: number) => n.toLocaleString());
   return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+    <ChartFrame>
       <RePieChart>
         <Pie data={points} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} strokeWidth={1}>
           {points.map((_, i) => (
@@ -164,7 +181,7 @@ export function PieBreakdownChart({
         <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => fmt(Number(v))} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
       </RePieChart>
-    </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
@@ -225,7 +242,7 @@ export function LineTimeChart({
 }) {
   if (points.length === 0) return <EmptyChart />;
   return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+    <ChartFrame>
       <AreaChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
         <ChartGradients />
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
@@ -246,7 +263,7 @@ export function LineTimeChart({
           isAnimationActive={false}
         />
       </AreaChart>
-    </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
@@ -263,7 +280,7 @@ export function MultiLineChart({
   const { hidden, legendProps } = useLegendToggle();
   if (data.length === 0 || seriesKeys.length === 0) return <EmptyChart />;
   return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+    <ChartFrame>
       <LineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
@@ -286,15 +303,15 @@ export function MultiLineChart({
           />
         ))}
       </LineChart>
-    </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
 function EmptyChart() {
   return (
     <div
-      className="flex items-center justify-center text-sm text-(--ui-color-text-muted)"
-      style={{ height: CHART_HEIGHT }}
+      className="flex min-h-0 w-full flex-1 items-center justify-center text-sm text-(--ui-color-text-muted)"
+      style={{ minHeight: CHART_MIN_HEIGHT }}
     >
       No data
     </div>
