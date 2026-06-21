@@ -1,16 +1,9 @@
 name: Docker Image Publish
 
 on:
+  # MANUAL ONLY (workflow_dispatch) — never auto-publish the image on push.
+  # Private repo; publishing is a deliberate, on-demand action.
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/**'
-      - 'server.ts'
-      - 'package.json'
-      - 'bun.lock'
-      - 'Dockerfile'
       - '.github/workflows/docker-publish.yml'
 
 jobs:

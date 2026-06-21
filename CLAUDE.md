@@ -39,6 +39,21 @@ src/
 
 ---
 
+## Spec-driven workflow
+
+Non-trivial changes flow through a gated, step-verified workflow so nothing is
+skipped or hallucinated, and deltas stay surgical (this is a fork — keep it
+pull-clean from upstream; ship via the `illuma` remote, never `origin`):
+`/specify`→`/clarify`→`/plan`→`/tasks`→`/implement`→`/converge`→`/verify`
+(Claude Code commands in `.claude/commands/`) + the `verified-development` skill,
+governed by `.specify/memory/constitution.md` (principles I–VIII) and
+`docs/coding-standards.md`. **Right-size it:** trivial means gate + CHANGELOG only;
+small means spec + tasks; substantial means the full pipeline. Gate =
+`npm run lint` + `npm run build` + `npm run test`. CI + Docker publish are
+**manual-only** (`workflow_dispatch`). Full guide: `docs/development-workflow.md`.
+
+---
+
 ## Code Style
 
 ### Naming and File Organization

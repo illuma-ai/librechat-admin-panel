@@ -1,7 +1,10 @@
 name: CI
 
 on:
-  pull_request:
+  # MANUAL ONLY (workflow_dispatch) — private repo, limited Actions minutes.
+  # The enforced gate is local `npm run lint`/`build`/`test`; run CI on demand.
+  # Platform rule across all repos.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref_name }}
