@@ -48,15 +48,16 @@ export function useDashboardData(
   tenant: string,
   range: t.TraceRange,
   environment: string[] = [],
+  traceFilters: t.DashboardTraceFilter[] = [],
 ): DashboardData {
-  const summary = useQuery(dashboardSummaryQueryOptions(tenant, range, environment));
-  const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range, environment));
-  const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range, environment));
-  const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range, environment));
-  const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range, environment));
-  const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range, environment));
-  const obsByLevel = useQuery(dashboardObservationsByLevelQueryOptions(tenant, range, environment));
-  const modelLat = useQuery(dashboardModelLatencySeriesQueryOptions(tenant, range, environment));
+  const summary = useQuery(dashboardSummaryQueryOptions(tenant, range, environment, traceFilters));
+  const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range, environment, traceFilters));
+  const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range, environment, traceFilters));
+  const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range, environment, traceFilters));
+  const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range, environment, traceFilters));
+  const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range, environment, traceFilters));
+  const obsByLevel = useQuery(dashboardObservationsByLevelQueryOptions(tenant, range, environment, traceFilters));
+  const modelLat = useQuery(dashboardModelLatencySeriesQueryOptions(tenant, range, environment, traceFilters));
 
   const points = useMemo(
     () => (series.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),

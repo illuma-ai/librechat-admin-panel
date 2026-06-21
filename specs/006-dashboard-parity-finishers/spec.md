@@ -43,5 +43,9 @@ gate (lint+build+test+metrics) → commit → push. Repeat.
       level pills) are richer than a single `WidgetQuery` can express; converting them
       to query-widgets would LOSE those features. Built-ins keep swap + remove + drag;
       custom widgets have full query-edit. Reported as a design tradeoff, not a bug.
-- [ ] T3 — Page-level Filters builder (traceName/user/tags/release/version): remaining
-      larger item; env filter already threads through. Next.
+- [x] T3 — Page-level Filters builder DONE: `DashboardFilters` popover (Where/Column/
+      value/Add + chips + count badge) for Trace Name(contains)/User(=)/Tags(has),
+      threaded through ALL aggregates via parameterized `traceWhere`+`traceIdIn`
+      (trace predicate + obs `trace_id IN (…)` subquery). Verified: user filter → Traces
+      = 8 exact vs CH, all cards consistent. **Release/Version HELD** (LibreChat emits
+      neither — both 0/50 in data).

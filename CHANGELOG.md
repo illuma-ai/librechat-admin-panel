@@ -42,6 +42,16 @@ change that alters behaviour.
   ClickHouse. Removed the now-dead `LatencyLineChart`.
 
 ### Added
+- **Page-level Filters builder** (spec `006`, T3) — the dashboard header gained a
+  Langfuse-style **Filters** popover ("Where [Column] [op] [value] + Add") with active
+  filters shown as removable chips + a count badge. Columns are the trace fields we
+  capture: **Trace Name** (contains), **User** (equals), **Tags** (has). The filter
+  threads through **every** aggregate (KPIs, time-series, breakdowns, latency tables,
+  model usage/latency, observations-by-level) via parameterized `traceWhere` /
+  `traceIdIn` clauses (trace-table predicate + observation `trace_id IN (…)` subquery)
+  — so all cards stay consistent. Verified on screen: filtering by a user dropped
+  Traces to exactly 8 (cross-checked vs ClickHouse). **Release + Version are
+  intentionally held** — LibreChat does not emit them yet (both empty in the data).
 - **Pie chart widget type** (spec `006`, T4) — the custom-widget builder gained a
   **Pie chart** option (categorical share of a breakdown dimension); renders via a new
   `PieBreakdownChart`. Synced the server-side widget-query zod enum (was a second

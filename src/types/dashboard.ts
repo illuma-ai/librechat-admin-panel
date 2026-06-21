@@ -106,6 +106,15 @@ export interface NameCountRow {
 }
 
 /** One (bucket, series-key) usage point for the Model Usage multi-line chart. */
+/** Trace-level filterable columns for the dashboard page-level Filters builder. */
+export type TraceFilterColumn = 'name' | 'user' | 'tags';
+
+/** One page-level dashboard filter (trace name contains / user equals / has tag). */
+export interface DashboardTraceFilter {
+  column: TraceFilterColumn;
+  value: string;
+}
+
 /** One (bucket, level) observation count for the Observations-by-Level chart. */
 export interface LevelSeriesRow {
   bucket: string;

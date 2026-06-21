@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Select } from '@admin/ui';
 import type * as t from '@/types';
@@ -5,6 +6,7 @@ import { useLocalize } from '@/hooks';
 import { traceFilterOptionsQueryOptions } from '@/server';
 import { useTracingTenant } from '@/components/traces';
 import { useDashboardData, WIDGET_CATALOG, CatalogWidget } from './widgetCatalog';
+import { DashboardFilters } from './DashboardFilters';
 
 interface DashboardMetricsProps {
   tenant: string;
@@ -39,7 +41,8 @@ export function DashboardMetrics({
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const filterOptions = useQuery(traceFilterOptionsQueryOptions(effectiveTenant));
-  const data = useDashboardData(effectiveTenant, range, environment ? [environment] : []);
+  const [filters, setFilters] = useState<t.DashboardTraceFilter[]>([]);
+  const data = useDashboardData(effectiveTenant, range, environment ? [environment] : [], filters);
 
   const envOptions = [
     { value: '', label: localize('com_dash_all_environments') },
@@ -66,6 +69,7 @@ export function DashboardMetrics({
         <div className="w-44">
           <Select value={environment} onSelect={onEnvironment} options={envOptions} />
         </div>
+        <DashboardFilters filters={filters} onChange={setFilters} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-6">
