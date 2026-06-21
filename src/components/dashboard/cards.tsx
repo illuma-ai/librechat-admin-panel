@@ -30,7 +30,7 @@ export function DashboardCard({
         className,
       )}
     >
-      <div className="flex flex-col space-y-1 p-4">
+      <div className="flex flex-col p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col space-y-1">
             <h3 className="text-2xl leading-none font-semibold tracking-tight text-(--ui-color-text-default)">
@@ -42,7 +42,7 @@ export function DashboardCard({
           </div>
           {headerRight}
         </div>
-        {headerChildren}
+        {headerChildren ? <div className="mt-4">{headerChildren}</div> : null}
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
     </div>
