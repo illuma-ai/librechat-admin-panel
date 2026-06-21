@@ -12,7 +12,7 @@ import {
   dashboardTracesByNameQueryOptions,
   dashboardUsageBreakdownQueryOptions,
 } from '@/server';
-import { formatCost, formatTokens } from '@/components/traces';
+import { formatCost, formatTokens, formatIntervalSeconds } from '@/components/traces';
 import { bucketLabel, pivotUsage } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
 import { HorizontalBarChart, LineTimeChart, LatencyLineChart, MultiLineChart } from './charts/recharts';
@@ -111,22 +111,55 @@ function ModelCostsWidget({ data, title, action }: { data: DashboardData; title:
   );
 }
 
+/** Score-type glyph shown before a score name (reference: # numeric, Ⓑ boolean, Ⓒ categorical). */
+function scoreTypeIcon(dataType: string): string {
+  if (dataType === 'NUMERIC') return '#';
+  if (dataType === 'BOOLEAN') return 'Ⓑ';
+  if (dataType === 'CATEGORICAL') return 'Ⓒ';
+  return '#';
+}
+
+/** Display label for a score row: "{icon} name (source)" (source lower-cased, reference parity). */
+function scoreLabel(r: t.ScoreDistributionRow): string {
+  const src = r.source ? ` (${r.source.toLowerCase()})` : '';
+  return `${scoreTypeIcon(r.dataType)} ${r.name}${src}`;
+}
+
 function ScoresWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
   const [expanded, setExpanded] = useState(false);
   const all = data.breakdowns?.scoreDistribution ?? [];
   const total = all.reduce((s, r) => s + r.count, 0);
   const rows = expanded ? all : all.slice(0, 5);
+  // Categorical scores blank the Avg/0/1 cells; boolean blanks Avg; numeric shows Avg only.
+  const cell = (v: number | null) => (v === null ? '—' : v.toLocaleString());
   return (
     <DashboardCard title={title} headerRight={action}>
       <TotalMetric metric={num(total)} description={localize('com_dash_total_scores')} />
       <MetricTable
         rows={rows}
-        rowKey={(r) => r.name}
+        rowKey={(r) => `${r.name}::${r.source}`}
         columns={[
-          { key: 'name', header: 'Name', render: (r) => r.name },
+          { key: 'name', header: 'Name', render: (r) => scoreLabel(r) },
           { key: 'count', header: '#', align: 'right', render: (r) => r.count.toLocaleString() },
-          { key: 'avg', header: 'Avg', align: 'right', render: (r) => (r.average === null ? '—' : r.average.toFixed(2)) },
+          {
+            key: 'avg',
+            header: 'Avg',
+            align: 'right',
+            render: (r) => (r.average === null ? '—' : r.average.toFixed(2)),
+          },
+          {
+            key: 'zero',
+            header: '0',
+            align: 'right',
+            render: (r) => (r.dataType === 'CATEGORICAL' ? '—' : cell(r.zero)),
+          },
+          {
+            key: 'one',
+            header: '1',
+            align: 'right',
+            render: (r) => (r.dataType === 'CATEGORICAL' ? '—' : cell(r.one)),
+          },
         ]}
       />
       <ExpandButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} totalLength={all.length} maxLength={5} />
@@ -228,10 +261,10 @@ function latencyColumns(withType: boolean) {
           r.name
         ),
     },
-    { key: 'p50', header: 'p50', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p50.toFixed(2)}s` },
-    { key: 'p90', header: 'p90', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p90.toFixed(2)}s` },
-    { key: 'p95', header: 'p95', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p95.toFixed(2)}s` },
-    { key: 'p99', header: 'p99', align: 'right' as const, render: (r: t.LatencyTableRow) => `${r.p99.toFixed(2)}s` },
+    { key: 'p50', header: 'p50', align: 'right' as const, render: (r: t.LatencyTableRow) => formatIntervalSeconds(r.p50) },
+    { key: 'p90', header: 'p90', align: 'right' as const, render: (r: t.LatencyTableRow) => formatIntervalSeconds(r.p90) },
+    { key: 'p95', header: 'p95', align: 'right' as const, render: (r: t.LatencyTableRow) => formatIntervalSeconds(r.p95) },
+    { key: 'p99', header: 'p99', align: 'right' as const, render: (r: t.LatencyTableRow) => formatIntervalSeconds(r.p99) },
   ];
   return cols;
 }

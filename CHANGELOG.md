@@ -8,6 +8,10 @@ change that alters behaviour.
 ## [Unreleased]
 
 ### Changed
+- **Human-readable latency in dashboard tables** (spec `004`, T2) — the trace /
+  generation / observation latency-percentile tables and the model-latency chart
+  tooltip now render durations via the reference `formatIntervalSeconds`
+  (`4.47s` / `1m 52s` / `2h 05m`) instead of raw `N.NNs`, matching Langfuse.
 - **Logo-level sidebar collapse + square avatar** (spec `003`, tasks T1–T2,
   LibreChat-aligned) — the collapse/expand control is now the brand logo itself: a
   `group` button whose logo mark swaps to a `PanelLeft` glyph on hover (pure CSS,
@@ -26,6 +30,14 @@ change that alters behaviour.
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
 ### Added
+- **Scores card 1:1 with Langfuse** (spec `004`, T1) — the dashboard Scores card now
+  matches the reference exactly: grouped by score **name + source**, the Name cell
+  shows a score-type glyph (`#` numeric, `Ⓑ` boolean, `Ⓒ` categorical) + source suffix
+  (`user_feedback (annotation)`), and the table gained **`0` / `1` columns** (boolean
+  value counts). Categorical rows blank Avg/0/1 (`—`); numeric/boolean show counts —
+  matching `dropValuesForCategoricalScores`. Backend `scoreDistribution` extended with
+  `source` + `countIf(value=0/1)` (all from already-captured `data_type`/`source`/
+  `value` — no fabricated data). Cross-checked vs ground-truth ClickHouse.
 - **Auto-adjusting custom dashboard grid + Langfuse-parity widget editing**
   (spec `003`, tasks T3–T5) — custom dashboards now use **react-grid-layout**
   (`WidthProvider(Responsive)`, 12 cols, 16:9 row height, `.drag-handle`, vertical

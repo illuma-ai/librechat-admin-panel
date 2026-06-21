@@ -13,6 +13,7 @@ import {
   Legend,
   LabelList,
 } from 'recharts';
+import { formatIntervalSeconds } from '@/components/traces';
 
 /**
  * recharts wrappers matching the reference dashboard's chart styles, themed with
@@ -133,7 +134,7 @@ export function LatencyLineChart({ points }: { points: LatencyPoint[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
         <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} unit="s" />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => `${Number(v).toFixed(2)}s`} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => formatIntervalSeconds(Number(v))} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         {lines.map((l) => (
           <Line

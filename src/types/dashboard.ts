@@ -34,11 +34,20 @@ export interface ModelUsageRow {
 }
 
 /** Per-score-name rollup for the Scores widget (average omitted for categorical). */
+/**
+ * One row of the Scores card, grouped by score name + source (reference parity).
+ * `average` is the numeric/boolean mean (null for categorical); `zero`/`one` are the
+ * boolean value=0 / value=1 counts (0 for non-boolean). `dataType` is NUMERIC |
+ * BOOLEAN | CATEGORICAL, used to pick the row icon and which cells render.
+ */
 export interface ScoreDistributionRow {
   name: string;
+  source: string;
   dataType: string;
   count: number;
   average: number | null;
+  zero: number;
+  one: number;
 }
 
 /** Per-user rollup for the User Consumption widget. */

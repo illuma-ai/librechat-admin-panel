@@ -138,12 +138,17 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
        GROUP BY model ORDER BY cost DESC LIMIT 20`,
       params,
     );
+    // Scores grouped by name + source (reference parity): numeric/boolean mean +
+    // value=0/value=1 counts (both blanked for categorical, matching Langfuse's
+    // dropValuesForCategoricalScores). Counts cover any non-categorical score.
     const scoreRows = await chQuery<Record<string, unknown>>(
-      `SELECT name AS name, any(data_type) AS dataType, count() AS count,
-              avgIf(value, data_type != 'CATEGORICAL') AS average
+      `SELECT name AS name, source AS source, any(data_type) AS dataType, count() AS count,
+              avgIf(value, data_type != 'CATEGORICAL') AS average,
+              countIf(data_type != 'CATEGORICAL' AND value = 0) AS zero,
+              countIf(data_type != 'CATEGORICAL' AND value = 1) AS one
        FROM scores FINAL
        WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${env} ${rangeClause(data.range, 'timestamp')}
-       GROUP BY name ORDER BY count DESC LIMIT 20`,
+       GROUP BY name, source ORDER BY count DESC LIMIT 20`,
       params,
     );
 
@@ -192,9 +197,15 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
       })),
       scoreDistribution: scoreRows.map((r) => ({
         name: String(r.name ?? ''),
+        source: String(r.source ?? ''),
         dataType: String(r.dataType ?? ''),
         count: toNumber(r.count),
-        average: r.average === null || r.average === undefined ? null : toNumber(r.average),
+        average:
+          r.dataType === 'CATEGORICAL' || r.average === null || r.average === undefined
+            ? null
+            : toNumber(r.average),
+        zero: toNumber(r.zero),
+        one: toNumber(r.one),
       })),
       userConsumption: userRows.map((r) => ({
         userId: String(r.userId ?? ''),
