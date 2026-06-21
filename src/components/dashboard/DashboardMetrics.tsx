@@ -31,17 +31,21 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
 
   return (
     <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-3">
-      <div className="flex items-center justify-end gap-2">
-        <Select
-          value={effectiveTenant}
-          onSelect={onTenant}
-          options={tenants.map((tn) => ({ value: tn.id, label: tn.name }))}
-        />
-        <Select
-          value={range}
-          onSelect={(value) => onRange(value as t.TraceRange)}
-          options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
-        />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="w-52">
+          <Select
+            value={effectiveTenant}
+            onSelect={onTenant}
+            options={tenants.map((tn) => ({ value: tn.id, label: tn.name }))}
+          />
+        </div>
+        <div className="w-44">
+          <Select
+            value={range}
+            onSelect={(value) => onRange(value as t.TraceRange)}
+            options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-6">
