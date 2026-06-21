@@ -42,8 +42,16 @@ small piece on screen before moving on.
 - [x] T3 — Observations-by-Level: backend per-bucket per-level counts (we DO capture
       `level`: DEFAULT 524 / DEBUG 62 / ERROR 40); card renders DEFAULT/DEBUG/ERROR
       series + legend-pill toggles. Verified on screen. metrics 12/12.
-- [ ] T4 — Widget-builder chart-type card shapes + add/save/grid/edit round-trip.
-- [ ] T5 — Page-level filter pass + gate + commit.
+- [x] T4 — Verified on screen: all 5 builder chart types render distinct card shapes
+      (Big number=text-4xl, Table=rows, Hbar/Bar/Line=recharts surfaces). Full
+      round-trip: saved a custom widget ("My Cost Trend"), created a scoped dashboard
+      ("Cost Watch") via the dialog checklist, added the custom widget via the picker →
+      grid auto-adjusted 8→9 and persisted the custom id; every card shows grip/edit/
+      remove + the ported controls (level pills, All-models dropdown, tabs). 0 errors.
+- [x] T5 — Page-level env filter already threads through all aggregates (spec 001
+      cb1e22f); home filter pills verified. **Deferred (reported):** Langfuse's
+      page-level Filters *builder* (traceName/tags/user/release/version) and
+      per-widget-card filters — larger feature, not fabricated.
 - NOTE: our "Model latencies" card shows percentile-lines-over-time, while Langfuse
       shows per-model lines at a chosen percentile (tabs 50/75/90/95/99 + model
       dropdown). Restructuring that card is a larger follow-up (backend per-model
