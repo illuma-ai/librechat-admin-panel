@@ -3,10 +3,12 @@ import type { ReactNode } from 'react';
 import { cn } from '@/utils';
 
 /**
- * Dashboard widget card — a faithful port of the reference `DashboardCard`
- * (shadcn Card): a p-6 header with a large title + optional description and an
- * optional right slot (dropdown), an optional header row (tabs), and a gap-4
- * content area. Themed only with `--ui-color-*` tokens.
+ * Dashboard widget card — a direct port of Langfuse's `DashboardCard` + shadcn `Card`
+ * structure (verbatim layout/spacing), themed with our `--ui-color-*` tokens and our
+ * borderless raised surface. Card = `flex flex-col`; CardHeader = `flex flex-col
+ * space-y-1 p-4 relative`; title block = `flex flex-col gap-1.5` with a `text-2xl
+ * leading-none font-semibold tracking-tight` title; CardContent = `flex flex-1
+ * flex-col gap-4 p-4 pt-0` so charts fill the remaining height.
  */
 export function DashboardCard({
   className,
@@ -30,10 +32,10 @@ export function DashboardCard({
         className,
       )}
     >
-      <div className="flex flex-col p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-col space-y-1">
-            <h3 className="text-xl leading-tight font-medium tracking-tight text-(--ui-color-text-default)">
+      <div className="relative flex flex-col space-y-1 p-4">
+        <div className="items-top flex justify-between">
+          <div className="flex flex-col gap-1.5">
+            <h3 className="text-2xl leading-none font-semibold tracking-tight text-(--ui-color-text-default)">
               {title}
             </h3>
             {description ? (
@@ -42,9 +44,9 @@ export function DashboardCard({
           </div>
           {headerRight}
         </div>
-        {headerChildren ? <div className="mt-6">{headerChildren}</div> : null}
+        {headerChildren}
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
     </div>
   );
 }
