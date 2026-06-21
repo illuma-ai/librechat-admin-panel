@@ -34,6 +34,10 @@ change that alters behaviour.
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
 ### Added
+- **"All models" selector on the Model Usage card** (spec `005`, T1) — a header
+  popover (search + Select-All + per-model checkboxes) matching Langfuse's
+  `ModelSelectorPopover`; deselecting a model hides its series on the model-dimension
+  tabs. Reusable `ModelMultiSelect`; default = all selected.
 - **Scores card 1:1 with Langfuse** (spec `004`, T1) — the dashboard Scores card now
   matches the reference exactly: grouped by score **name + source**, the Name cell
   shows a score-type glyph (`#` numeric, `Ⓑ` boolean, `Ⓒ` categorical) + source suffix

@@ -15,6 +15,7 @@ import {
 import { formatCost, formatTokens, formatIntervalSeconds } from '@/components/traces';
 import { bucketLabel, pivotUsage } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
+import { ModelMultiSelect } from './ModelMultiSelect';
 import { HorizontalBarChart, LineTimeChart, LatencyLineChart, MultiLineChart } from './charts/recharts';
 import { MetricTable } from './charts/MetricTable';
 
@@ -187,10 +188,28 @@ function ModelUsageWidget({ data, title, action }: { data: DashboardData; title:
   const rows = data.usageBreakdown ? data.usageBreakdown[dim] : [];
   const { data: chartData, keys } = pivotUsage(rows, metric, data.range);
   const isCost = metric === 'cost';
+
+  // "All models" header control filters the model-dimension series (reference parity).
+  // Distinct model names come from the model breakdown; default = all selected.
+  const allModels = useMemo(() => {
+    const seen: string[] = [];
+    for (const r of data.usageBreakdown?.model ?? []) if (!seen.includes(r.key)) seen.push(r.key);
+    return seen;
+  }, [data.usageBreakdown]);
+  const [selectedModels, setSelectedModels] = useState<string[] | null>(null);
+  const selected = selectedModels ?? allModels;
+  // Only the model-dimension tabs are filtered by the model selector.
+  const visibleKeys = dim === 'model' ? keys.filter((k) => selected.includes(k)) : keys;
+
   return (
     <DashboardCard
       title={title}
-      headerRight={action}
+      headerRight={
+        <div className="flex items-center gap-2">
+          <ModelMultiSelect options={allModels} selected={selected} onChange={setSelectedModels} />
+          {action}
+        </div>
+      }
       headerChildren={
         <CardTabs
           active={tab}
@@ -208,7 +227,7 @@ function ModelUsageWidget({ data, title, action }: { data: DashboardData; title:
         metric={isCost ? formatCost(data.summary?.cost ?? 0) : formatTokens(data.summary?.tokens ?? 0)}
         description={isCost ? localize('com_dash_total_cost') : localize('com_dash_total_tokens')}
       />
-      <MultiLineChart data={chartData} seriesKeys={keys} formatValue={isCost ? formatCost : formatTokens} />
+      <MultiLineChart data={chartData} seriesKeys={visibleKeys} formatValue={isCost ? formatCost : formatTokens} />
     </DashboardCard>
   );
 }
