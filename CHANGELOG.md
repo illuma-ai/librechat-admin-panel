@@ -8,6 +8,10 @@ change that alters behaviour.
 ## [Unreleased]
 
 ### Changed
+- **Dashboards list parity** (spec `004`, T4) — the custom-dashboards list gained
+  **Created** + **Updated** columns and a kebab **Actions** menu (Open / Rename /
+  Delete) in place of the bare delete icon; Rename edits the name inline. The table is
+  now a borderless raised surface (matches the spec-002 theme).
 - **Human-readable latency in dashboard tables** (spec `004`, T2) — the trace /
   generation / observation latency-percentile tables and the model-latency chart
   tooltip now render durations via the reference `formatIntervalSeconds`

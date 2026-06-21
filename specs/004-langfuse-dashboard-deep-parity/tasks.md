@@ -16,7 +16,8 @@
       chart tooltip. Verified on screen: `4.47s` / `1m 17s` / `1m 52s` (Langfuse-style).
 - [ ] T3 — Fix edit/delete of existing widgets (if T0 found a bug). Verify remove
       (n→n-1 persists) + edit-swap persists, on the grid.
-- [ ] T4 — Dashboards list parity: add Created/Updated At columns + an Actions menu
-      (Open / Rename / Delete) replacing the bare delete icon. Verify on screen.
+- [x] T4 — Dashboards list parity: added Created/Updated columns + a kebab Actions
+      menu (Open / Rename[inline] / Delete) replacing the bare delete icon; borderless
+      raised surface. Verified on screen: kebab → Open/Rename/Delete items render.
 - [ ] T5 — Gate: lint + build + test + `verify:metrics` 12/12; CHANGELOG; commit +
       push to `illuma`. Report deferred items (legend pills, builder filters, etc.).
