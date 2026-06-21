@@ -8,7 +8,7 @@ export function Header({ title, onSearchClick, children }: t.HeaderProps) {
   const shortcut = isMac ? '⌘K' : 'Ctrl+K';
 
   return (
-    <header className="shrink-0 border-b border-(--ui-color-stroke-default) bg-(--ui-color-background-panel)">
+    <header className="shrink-0 bg-(--ui-color-background-canvas)">
       <div className="flex items-center gap-3 px-4 py-2">
         <div className="flex shrink-0 flex-col">
           {title ? (
@@ -25,10 +25,10 @@ export function Header({ title, onSearchClick, children }: t.HeaderProps) {
               type="button"
               onClick={onSearchClick}
               aria-label={localize('com_cmdk_label')}
-              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-(--ui-color-stroke-default) bg-transparent px-3 py-1.5 text-sm text-(--ui-color-text-muted) transition-colors hover:border-(--ui-color-stroke-intense) hover:text-(--ui-color-text-default)"
+              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-(--ui-color-background-default) px-3 py-1.5 text-sm text-(--ui-color-text-muted) transition-colors hover:text-(--ui-color-text-default)"
             >
               <span>{localize('com_ui_search')}</span>
-              <kbd className="rounded border border-(--ui-color-stroke-default) bg-(--ui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--ui-color-text-default)">
+              <kbd className="rounded bg-(--ui-color-background-secondary) px-1.5 py-0.5 text-xs font-medium text-(--ui-color-text-default)">
                 {shortcut}
               </kbd>
             </button>

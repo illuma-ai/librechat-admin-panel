@@ -26,7 +26,7 @@ export function DashboardCard({
   return (
     <div
       className={cn(
-        'flex h-full flex-col rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) shadow-xs',
+        'flex h-full flex-col rounded-xl bg-(--ui-color-background-default)',
         className,
       )}
     >

@@ -41,7 +41,7 @@ function MultiAccordionRoot({
       className={cn(
         fillWidth && 'w-full',
         showBorder &&
-          'divide-y divide-(--ui-color-stroke-default) rounded-md border border-(--ui-color-stroke-default)',
+          'divide-y divide-(--ui-color-stroke-default) overflow-hidden rounded-xl bg-(--ui-color-background-default)',
         className,
       )}
       {...dataProps}

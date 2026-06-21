@@ -7,6 +7,18 @@ change that alters behaviour.
 
 ## [Unreleased]
 
+### Changed
+- **LibreChat-aligned surface-layered redesign** (spec `002-librechat-theme-alignment`)
+  — moved the shell from a flat, border-driven look to a borderless, minimal
+  **surface hierarchy** matching the host platform: new `--ui-color-background-canvas`
+  (page/content backdrop) + `--ui-color-background-sidebar` (rail) tokens in all three
+  theme blocks, and dark `--ui-color-background-default`/`-panel` raised to `#242424`.
+  The sidebar, content canvas, and raised cards now read as three distinct tones, so
+  cards differentiate by **background colour set at the component level** rather than
+  1px strokes. `DashboardCard` and the `@admin/ui` accordion group dropped their
+  borders/shadows; the `Header` and sidebar dividers went borderless. Token-driven
+  (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
+
 ### Added
 - **Modern app-shell** (spec `001-modern-ui-charts`) — sidebar rail now uses a
   vertical surface gradient (`--ui-color-background-panel`→`--ui-color-background-default`)

@@ -83,7 +83,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
       <aside
         aria-label={localize('com_a11y_admin_panel')}
         className={cn(
-          'sticky top-0 z-(--z-floating) flex h-screen shrink-0 flex-col overflow-hidden border-r border-(--ui-color-stroke-default) bg-linear-to-b from-(--ui-color-background-panel) to-(--ui-color-background-default) transition-[width] duration-200',
+          'sticky top-0 z-(--z-floating) flex h-screen shrink-0 flex-col overflow-hidden bg-(--ui-color-background-sidebar) transition-[width] duration-200',
           collapsed ? 'w-14' : 'w-63',
         )}
       >
@@ -126,7 +126,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
         </nav>
 
         {initials && (
-          <div className="flex shrink-0 items-center border-t border-(--ui-color-stroke-default) px-2 py-3">
+          <div className="flex shrink-0 items-center px-2 py-3">
             <div className="flex items-center gap-2.5 overflow-hidden px-0.5">
               <Dropdown>
                 <Dropdown.Trigger>
@@ -191,7 +191,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
           onClick={onToggle}
           aria-label={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
           title={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
-          className="flex w-full shrink-0 cursor-pointer items-center justify-center border-t border-(--ui-color-stroke-default) bg-transparent py-3 text-(--ui-color-text-muted) transition-colors hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
+          className="flex w-full shrink-0 cursor-pointer items-center justify-center bg-transparent py-3 text-(--ui-color-text-muted) transition-colors hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
         >
           <Icon name={collapsed ? 'slide-in' : 'slide-out'} size="sm" />
         </button>

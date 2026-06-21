@@ -39,6 +39,11 @@
     --ui-color-background-hover: #f5f6f7;
     --ui-color-background-active: #e3e5e8;
     --ui-color-background-secondary: #f0f1f3;
+    /* Surface-layering tiers (LibreChat-aligned): backdrop < sidebar < raised.
+       Page/content = canvas, sidebar rail = sidebar, raised cards/modals =
+       background-default/-panel. Cards differentiate by tone, not borders. */
+    --ui-color-background-canvas: #f4f5f7;
+    --ui-color-background-sidebar: #ebedf0;
     --ui-color-background-accent-muted: #e5e7eb;
     --ui-color-text-default: #161517;
     --ui-color-text-muted: #6c6f77;
@@ -80,12 +85,14 @@
     --ui-color-stroke-default: #323232;
     --ui-color-stroke-muted: #323232;
     --ui-color-stroke-intense: #414141;
-    --ui-color-background-default: #1f1f1c;
+    --ui-color-background-default: #242424;
     --ui-color-background-muted: #282828;
-    --ui-color-background-panel: #1f1f1c;
+    --ui-color-background-panel: #242424;
     --ui-color-background-hover: #282828;
     --ui-color-background-active: #323232;
     --ui-color-background-secondary: #282828;
+    --ui-color-background-canvas: #1b1b1b;
+    --ui-color-background-sidebar: #151515;
     --ui-color-background-accent-muted: #3a3a3a;
     --ui-color-text-default: #ffffff;
     --ui-color-text-muted: #b3b6bd;
@@ -128,9 +135,9 @@
       --ui-color-stroke-default: #323232;
       --ui-color-stroke-muted: #323232;
       --ui-color-stroke-intense: #414141;
-      --ui-color-background-default: #1f1f1c;
+      --ui-color-background-default: #242424;
       --ui-color-background-muted: #282828;
-      --ui-color-background-panel: #1f1f1c;
+      --ui-color-background-panel: #242424;
       --ui-color-background-hover: #282828;
       --ui-color-background-active: #323232;
       --ui-color-background-secondary: #282828;
@@ -205,7 +212,7 @@ body {
   /* App shell surface — token-mapped, set once at the root so every uncovered
      region renders the theme background in both light and dark (and from the
      first SSR paint, before React mounts). Single source for shell theming. */
-  background-color: var(--ui-color-background-default);
+  background-color: var(--ui-color-background-canvas);
   color: var(--ui-color-text-default);
   font-family:
     'Inter',
