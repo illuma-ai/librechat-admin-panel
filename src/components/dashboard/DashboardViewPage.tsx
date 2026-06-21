@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Pencil, X } from 'lucide-react';
 import { Select } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { useTracingTenant } from '@/components/traces';
 import { useDashboards } from './useDashboards';
+import { useWidgets } from './useWidgets';
 import { useDashboardData, WIDGET_CATALOG, WIDGET_BY_ID, CatalogWidget } from './widgetCatalog';
+import { CustomDashboardWidget } from './CustomDashboardWidget';
 import { EditWidgetDialog } from './EditWidgetDialog';
 
 interface DashboardViewPageProps {
@@ -40,6 +42,8 @@ export function DashboardViewPage({
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
   const { dashboards, update } = useDashboards();
+  const { widgets: customWidgets, get: getWidget } = useWidgets();
+  const navigate = useNavigate();
   const data = useDashboardData(effectiveTenant, range);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -57,7 +61,16 @@ export function DashboardViewPage({
     );
   }
 
-  const available = WIDGET_CATALOG.filter((w) => !dashboard.widgetIds.includes(w.id));
+  // Add-widget options: built-in catalog + saved custom widgets, minus what's present.
+  const available = [
+    ...WIDGET_CATALOG.filter((w) => !dashboard.widgetIds.includes(w.id)).map((w) => ({
+      value: w.id,
+      label: localize(w.titleKey),
+    })),
+    ...customWidgets
+      .filter((w) => !dashboard.widgetIds.includes(w.id))
+      .map((w) => ({ value: w.id, label: w.name })),
+  ];
 
   return (
     <div role="region" aria-label={dashboard.name} className="flex flex-1 flex-col gap-4 overflow-auto p-6">
@@ -83,7 +96,7 @@ export function DashboardViewPage({
               value=""
               placeholder={localize('com_dash_add_widget')}
               onSelect={(id) => update(dashboard.id, { widgetIds: [...dashboard.widgetIds, id] })}
-              options={available.map((w) => ({ value: w.id, label: localize(w.titleKey) }))}
+              options={available}
             />
           )}
           <Select
@@ -105,41 +118,46 @@ export function DashboardViewPage({
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-6">
-          {dashboard.widgetIds
-            .filter((id) => WIDGET_BY_ID.has(id))
-            .map((id) => (
-              <div key={id} className={`col-span-1 ${WIDGET_BY_ID.get(id)!.span}`}>
-              <CatalogWidget
-                id={id}
-                data={data}
-                title={localize(WIDGET_BY_ID.get(id)!.titleKey)}
-                action={
-                  <div className="ml-auto flex items-center gap-1">
-                    <button
-                      type="button"
-                      aria-label={localize('com_dash_edit_widget')}
-                      className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
-                      onClick={() => setEditingId(id)}
-                    >
-                      <Pencil className="size-4" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={localize('com_dash_remove_widget')}
-                      className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-danger)"
-                      onClick={() =>
-                        update(dashboard.id, {
-                          widgetIds: dashboard.widgetIds.filter((w) => w !== id),
-                        })
-                      }
-                    >
-                      <X className="size-4" />
-                    </button>
-                  </div>
-                }
-              />
+          {dashboard.widgetIds.map((id) => {
+            const builtIn = WIDGET_BY_ID.get(id);
+            const isCustom = !builtIn && !!getWidget(id);
+            if (!builtIn && !isCustom) return null;
+            const remove = () =>
+              update(dashboard.id, { widgetIds: dashboard.widgetIds.filter((w) => w !== id) });
+            const onEdit = () =>
+              builtIn
+                ? setEditingId(id)
+                : navigate({ to: '/widgets/$id', params: { id }, search: { tenant: effectiveTenant, range } });
+            const action = (
+              <div className="ml-auto flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-label={localize('com_dash_edit_widget')}
+                  className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
+                  onClick={onEdit}
+                >
+                  <Pencil className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={localize('com_dash_remove_widget')}
+                  className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-danger)"
+                  onClick={remove}
+                >
+                  <X className="size-4" />
+                </button>
               </div>
-            ))}
+            );
+            return (
+              <div key={id} className={`col-span-1 ${builtIn ? builtIn.span : 'xl:col-span-3'}`}>
+                {builtIn ? (
+                  <CatalogWidget id={id} data={data} title={localize(builtIn.titleKey)} action={action} />
+                ) : (
+                  <CustomDashboardWidget widgetId={id} tenant={effectiveTenant} range={range} action={action} />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
