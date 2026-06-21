@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,6 +15,31 @@ import {
   LabelList,
 } from 'recharts';
 import { formatIntervalSeconds } from '@/components/traces';
+
+/**
+ * Clickable-legend series toggle (reference parity: legend pills hide/show a series).
+ * Returns the hidden set plus the `onClick`/`formatter` props for a recharts `Legend`
+ * — clicking a legend item toggles that series; hidden items dim to 40% opacity.
+ */
+function useLegendToggle() {
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const toggle = (key: string) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  const legendProps = {
+    wrapperStyle: { fontSize: 11, cursor: 'pointer' },
+    onClick: (o: { dataKey?: string | number; value?: string }) =>
+      toggle(String(o.dataKey ?? o.value ?? '')),
+    formatter: (value: string, entry: { dataKey?: string | number }) => (
+      <span style={{ opacity: hidden.has(String(entry?.dataKey ?? value)) ? 0.4 : 1 }}>{value}</span>
+    ),
+  } as const;
+  return { hidden, legendProps };
+}
 
 /**
  * recharts wrappers matching the reference dashboard's chart styles, themed with
@@ -121,6 +147,7 @@ export interface LatencyPoint {
 
 /** Multi-line latency percentiles over time (reference "Trace latency percentiles"). */
 export function LatencyLineChart({ points }: { points: LatencyPoint[] }) {
+  const { hidden, legendProps } = useLegendToggle();
   if (points.length === 0) return <EmptyChart />;
   const lines: { key: keyof LatencyPoint; color: string }[] = [
     { key: 'p50', color: SERIES_COLORS[0] },
@@ -135,7 +162,7 @@ export function LatencyLineChart({ points }: { points: LatencyPoint[] }) {
         <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
         <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} unit="s" />
         <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => formatIntervalSeconds(Number(v))} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Legend {...legendProps} />
         {lines.map((l) => (
           <Line
             key={l.key}
@@ -145,6 +172,7 @@ export function LatencyLineChart({ points }: { points: LatencyPoint[] }) {
             stroke={l.color}
             strokeWidth={2}
             dot={false}
+            hide={hidden.has(l.key)}
             isAnimationActive={false}
           />
         ))}
@@ -250,6 +278,7 @@ export function MultiLineChart({
   seriesKeys: string[];
   formatValue?: (n: number) => string;
 }) {
+  const { hidden, legendProps } = useLegendToggle();
   if (data.length === 0 || seriesKeys.length === 0) return <EmptyChart />;
   return (
     <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -261,7 +290,7 @@ export function MultiLineChart({
           contentStyle={TOOLTIP_STYLE}
           formatter={(v) => (formatValue ? formatValue(Number(v)) : Number(v).toLocaleString())}
         />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Legend {...legendProps} />
         {seriesKeys.map((key, i) => (
           <Line
             key={key}
@@ -270,6 +299,7 @@ export function MultiLineChart({
             stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
             strokeWidth={2}
             dot={false}
+            hide={hidden.has(key)}
             isAnimationActive={false}
           />
         ))}

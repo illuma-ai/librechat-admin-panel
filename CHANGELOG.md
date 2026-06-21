@@ -34,6 +34,10 @@ change that alters behaviour.
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
 ### Added
+- **Clickable chart legend pills** (spec `005`, T2) — legend items on the multi-line
+  charts (Model Usage, latency percentiles) now toggle their series on click (hidden
+  series dim to 40%), matching Langfuse's "Show only X" legend behaviour. Shared
+  `useLegendToggle` hook.
 - **"All models" selector on the Model Usage card** (spec `005`, T1) — a header
   popover (search + Select-All + per-model checkboxes) matching Langfuse's
   `ModelSelectorPopover`; deselecting a model hides its series on the model-dimension
