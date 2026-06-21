@@ -4,6 +4,8 @@ import {
   Bar,
   LineChart,
   Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -20,10 +22,46 @@ import {
 
 const AXIS = 'var(--ui-color-text-muted)';
 const GRID = 'var(--ui-color-stroke-default)';
-const ACCENT = 'var(--ui-color-accent)';
 
-/** Distinct, fixed hues for multi-series charts (p50/p90/p95/p99 etc.). */
-export const SERIES_COLORS = ['#1eb980', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+/**
+ * Single source for data-series colours — a vibrant, gradient-friendly palette
+ * (neumorphism / glassmorphism inspired) replacing the all-green look. Each entry
+ * has a `solid` (line strokes / legend) and a `from`→`to` pair (bar/area gradients).
+ */
+export const CHART_PALETTE = [
+  { solid: '#6366f1', from: '#818cf8', to: '#4f46e5' }, // indigo
+  { solid: '#06b6d4', from: '#22d3ee', to: '#0891b2' }, // cyan
+  { solid: '#10b981', from: '#34d399', to: '#059669' }, // emerald
+  { solid: '#f59e0b', from: '#fbbf24', to: '#d97706' }, // amber
+  { solid: '#ec4899', from: '#f472b6', to: '#db2777' }, // pink
+  { solid: '#8b5cf6', from: '#a78bfa', to: '#7c3aed' }, // violet
+] as const;
+
+export const SERIES_COLORS = CHART_PALETTE.map((p) => p.solid);
+
+/** Reusable SVG gradient defs (bar = vertical from→to; area = solid→transparent). */
+function ChartGradients() {
+  return (
+    <defs>
+      {CHART_PALETTE.map((p, i) => (
+        <linearGradient key={`g${i}`} id={`chart-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={p.from} />
+          <stop offset="100%" stopColor={p.to} />
+        </linearGradient>
+      ))}
+      {CHART_PALETTE.map((p, i) => (
+        <linearGradient key={`a${i}`} id={`chart-area-${i}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={p.solid} stopOpacity={0.35} />
+          <stop offset="100%" stopColor={p.solid} stopOpacity={0.02} />
+        </linearGradient>
+      ))}
+    </defs>
+  );
+}
+
+const grad = (i: number) => `url(#chart-grad-${((i % CHART_PALETTE.length) + CHART_PALETTE.length) % CHART_PALETTE.length})`;
+const area = (i: number) => `url(#chart-area-${((i % CHART_PALETTE.length) + CHART_PALETTE.length) % CHART_PALETTE.length})`;
+const solid = (i: number) => CHART_PALETTE[((i % CHART_PALETTE.length) + CHART_PALETTE.length) % CHART_PALETTE.length].solid;
 
 const TOOLTIP_STYLE = {
   backgroundColor: 'var(--ui-color-background-default)',
@@ -47,15 +85,18 @@ export function BarTimeChart({
   points,
   valueName,
   formatValue,
+  colorIndex = 0,
 }: {
   points: BarTimePoint[];
   valueName: string;
   formatValue?: (n: number) => string;
+  colorIndex?: number;
 }) {
   if (points.length === 0) return <EmptyChart />;
   return (
     <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
       <BarChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <ChartGradients />
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
         <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} />
@@ -63,7 +104,7 @@ export function BarTimeChart({
           contentStyle={TOOLTIP_STYLE}
           formatter={(v) => [formatValue ? formatValue(Number(v)) : Number(v).toLocaleString(), valueName]}
         />
-        <Bar dataKey="value" name={valueName} fill={ACCENT} radius={[2, 2, 0, 0]} />
+        <Bar dataKey="value" name={valueName} fill={grad(colorIndex)} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -120,15 +161,18 @@ export interface HBarPoint {
 export function HorizontalBarChart({
   points,
   formatValue,
+  colorIndex = 2,
 }: {
   points: HBarPoint[];
   formatValue?: (n: number) => string;
+  colorIndex?: number;
 }) {
   if (points.length === 0) return <EmptyChart />;
   const height = Math.max(160, points.length * 36 + 32);
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={points} layout="vertical" margin={{ top: 4, right: 48, bottom: 0, left: 8 }}>
+        <ChartGradients />
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} horizontal={false} />
         <XAxis type="number" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} />
         <YAxis
@@ -143,7 +187,7 @@ export function HorizontalBarChart({
           contentStyle={TOOLTIP_STYLE}
           formatter={(v) => (formatValue ? formatValue(Number(v)) : Number(v).toLocaleString())}
         />
-        <Bar dataKey="value" fill={ACCENT} radius={[0, 2, 2, 0]}>
+        <Bar dataKey="value" fill={grad(colorIndex)} radius={[0, 4, 4, 0]}>
           <LabelList
             dataKey="value"
             position="right"
@@ -156,20 +200,23 @@ export function HorizontalBarChart({
   );
 }
 
-/** Single smooth line over time (reference Observations by time). */
+/** Single smooth gradient area over time (reference Observations by time). */
 export function LineTimeChart({
   points,
   valueName,
   formatValue,
+  colorIndex = 1,
 }: {
   points: BarTimePoint[];
   valueName: string;
   formatValue?: (n: number) => string;
+  colorIndex?: number;
 }) {
   if (points.length === 0) return <EmptyChart />;
   return (
     <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-      <LineChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+      <AreaChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <ChartGradients />
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
         <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} />
@@ -177,8 +224,17 @@ export function LineTimeChart({
           contentStyle={TOOLTIP_STYLE}
           formatter={(v) => [formatValue ? formatValue(Number(v)) : Number(v).toLocaleString(), valueName]}
         />
-        <Line type="monotone" dataKey="value" name={valueName} stroke={ACCENT} strokeWidth={2} dot={false} isAnimationActive={false} />
-      </LineChart>
+        <Area
+          type="monotone"
+          dataKey="value"
+          name={valueName}
+          stroke={solid(colorIndex)}
+          strokeWidth={2}
+          fill={area(colorIndex)}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </AreaChart>
     </ResponsiveContainer>
   );
 }

@@ -87,7 +87,7 @@ function TracesWidget({ data, title, action }: { data: DashboardData; title: str
   return (
     <DashboardCard title={title} headerRight={action}>
       <TotalMetric metric={compact(data.summary?.traces ?? 0)} description={localize('com_dash_total_traces')} />
-      <HorizontalBarChart points={rows.map((r) => ({ name: r.name, value: r.count }))} />
+      <HorizontalBarChart points={rows.map((r) => ({ name: r.name, value: r.count }))} colorIndex={0} />
       <ExpandButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} totalLength={data.tracesByName.length} maxLength={5} />
     </DashboardCard>
   );
@@ -139,7 +139,7 @@ function ObservationsWidget({ data, title, action }: { data: DashboardData; titl
   return (
     <DashboardCard title={title} headerRight={action}>
       <TotalMetric metric={num(data.summary?.observations)} description={localize('com_dash_total_observations')} />
-      <LineTimeChart points={data.points.map((p) => ({ label: p.label, value: p.observations }))} valueName="Observations" />
+      <LineTimeChart points={data.points.map((p) => ({ label: p.label, value: p.observations }))} valueName="Observations" colorIndex={1} />
     </DashboardCard>
   );
 }
@@ -206,6 +206,7 @@ function UserConsumptionWidget({ data, title, action }: { data: DashboardData; t
       <HorizontalBarChart
         points={rows.map((r) => ({ name: r.userId, value: isCost ? r.cost : r.traces }))}
         formatValue={isCost ? formatCost : (n) => n.toLocaleString()}
+        colorIndex={4}
       />
       <ExpandButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} totalLength={all.length} maxLength={5} />
     </DashboardCard>

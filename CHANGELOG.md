@@ -8,6 +8,11 @@ change that alters behaviour.
 ## [Unreleased]
 
 ### Added
+- **Colourful gradient dashboard charts** (spec `001-modern-ui-charts`) — replaced the
+  all-green chart look with a single-source 6-hue `CHART_PALETTE` + reusable SVG
+  gradient defs: bars use vertical gradient fills (per-card `colorIndex`), the
+  time-series chart is a gradient area, and multi-series/latency charts use distinct
+  palette hues. Metric values unchanged (`verify:metrics` 12/12).
 - **Spec-driven, verified development workflow** — engineering constitution
   (`.specify/memory/constitution.md`, principles I–VIII + right-sizing tiers),
   spec/plan/tasks templates, Claude Code commands (`/specify`, `/clarify`,
