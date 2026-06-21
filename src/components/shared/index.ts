@@ -6,6 +6,7 @@ export { EmptyState } from './EmptyState';
 export { FormDialog } from './FormDialog';
 export { KebabMenu } from './KebabMenu';
 export { LoadingState } from './LoadingState';
+export { InfoTooltip } from './InfoTooltip';
 export { Markdown } from './Markdown';
 export { Pagination } from './Pagination';
 export { PermissionsUnavailable } from './PermissionsUnavailable';

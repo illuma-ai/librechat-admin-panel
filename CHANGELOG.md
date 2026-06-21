@@ -34,6 +34,11 @@ change that alters behaviour.
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
 ### Added
+- **Model-costs info tooltip + shared `InfoTooltip`** (spec `005`) — the Model costs
+  card's "Total cost" now carries an ⓘ tooltip ("Calculated by multiplying the number
+  of tokens with the cost per token…", matching Langfuse). Promoted the previously
+  file-private `InfoTooltip` to a shared `@/components/shared` component (single source;
+  `TraceFilterSidebar` now reuses it).
 - **Observations-by-Level chart** (spec `005`, T3) — the Observations-by-time card now
   splits observations into per-level series (DEFAULT / DEBUG / ERROR) over time with
   clickable legend pills, matching Langfuse's "Observations by Level". New backend

@@ -17,6 +17,7 @@ import { formatCost, formatTokens, formatIntervalSeconds } from '@/components/tr
 import { bucketLabel, pivotUsage, pivotCount } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
 import { ModelMultiSelect } from './ModelMultiSelect';
+import { InfoTooltip } from '@/components/shared';
 import { HorizontalBarChart, LineTimeChart, LatencyLineChart, MultiLineChart } from './charts/recharts';
 import { MetricTable } from './charts/MetricTable';
 
@@ -102,7 +103,9 @@ function ModelCostsWidget({ data, title, action }: { data: DashboardData; title:
   const localize = useLocalize();
   return (
     <DashboardCard title={title} headerRight={action}>
-      <TotalMetric metric={formatCost(data.summary?.cost ?? 0)} description={localize('com_dash_total_cost')} />
+      <TotalMetric metric={formatCost(data.summary?.cost ?? 0)} description={localize('com_dash_total_cost')}>
+        <InfoTooltip description={localize('com_dash_cost_info')} />
+      </TotalMetric>
       <MetricTable
         rows={data.breakdowns?.modelUsage ?? []}
         rowKey={(r) => r.model}

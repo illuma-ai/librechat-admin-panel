@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Info, Search, Sparkles, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, Sparkles, X } from 'lucide-react';
 import { Checkbox, Tooltip } from '@admin/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
@@ -8,6 +8,7 @@ import { useLocalize } from '@/hooks';
 import { cn } from '@/utils';
 import { traceFilterOptionsQueryOptions } from '@/server';
 import { TypeIcon } from './traceIcons';
+import { InfoTooltip } from '@/components/shared';
 import { formatTokens } from './format';
 
 /** Array-membership operator for the tags facet (the reference UI SOME/ALL/NONE). */
@@ -88,21 +89,6 @@ function extraOptions(
  * compound component; the codebase convention is an info-icon popover, never
  * plain inline description text.
  */
-function InfoTooltip({ description }: { description: string }) {
-  return (
-    <Tooltip>
-      <Tooltip.Trigger
-        onClick={(e) => e.stopPropagation()}
-        className="inline-flex cursor-help items-center text-(--ui-color-text-muted) hover:text-(--ui-color-text-default)"
-        aria-label={description}
-      >
-        <Info className="size-3.5" />
-      </Tooltip.Trigger>
-      <Tooltip.Content maxWidth="220px">{description}</Tooltip.Content>
-    </Tooltip>
-  );
-}
-
 /** A small segmented control. Generic so it serves both the mode and operator toggles. */
 function SegmentedToggle<T extends string>({
   label,
