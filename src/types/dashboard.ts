@@ -74,6 +74,23 @@ export interface LatencyBucket {
   p99: number;
 }
 
+/**
+ * One (bucket, model) generation-latency row (seconds) for the "Model latencies"
+ * chart — one line per model at a chosen percentile (reference parity).
+ */
+export interface ModelLatencyBucket {
+  bucket: string;
+  model: string;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+  p99: number;
+}
+
+/** Percentile keys offered by the Model-latencies tabs. */
+export type LatencyPercentile = 'p50' | 'p75' | 'p90' | 'p95' | 'p99';
+
 /** Per-model latency percentiles (seconds) for the Model latencies table. */
 export interface ModelLatencyRow {
   model: string;

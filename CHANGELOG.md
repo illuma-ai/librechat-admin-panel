@@ -33,6 +33,14 @@ change that alters behaviour.
   borders/shadows; the `Header` and sidebar dividers went borderless. Token-driven
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
+### Changed
+- **Model latencies card → per-model lines** (spec `006`, T1) — restructured to match
+  Langfuse: one line **per model** at a chosen percentile, with **percentile tabs**
+  (50/75/90/95/99th) + the "All models" dropdown + clickable legend pills (was
+  percentile-lines-over-time). New backend `getDashboardModelLatencySeriesFn`
+  (per-bucket, per-model p50/p75/p90/p95/p99 of generation latency); cross-checked vs
+  ClickHouse. Removed the now-dead `LatencyLineChart`.
+
 ### Added
 - **Model-costs info tooltip + shared `InfoTooltip`** (spec `005`) — the Model costs
   card's "Total cost" now carries an ⓘ tooltip ("Calculated by multiplying the number

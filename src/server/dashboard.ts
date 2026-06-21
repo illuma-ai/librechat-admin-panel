@@ -276,6 +276,47 @@ export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
     }));
   });
 
+// ── Per-model generation latency over time (reference "Model latencies") ──
+
+export const getDashboardModelLatencySeriesFn = createServerFn({ method: 'GET' })
+  .inputValidator(dashboardSchema)
+  .handler(async ({ data }): Promise<t.ModelLatencyBucket[]> => {
+    const params: Record<string, unknown> = { t: data.tenantId };
+    const env = envClause(data.environment, params);
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT toString(${bucketExpr(data.range, 'start_time')}) AS bucket, model AS model,
+              quantile(0.5)(lat) AS p50, quantile(0.75)(lat) AS p75, quantile(0.9)(lat) AS p90,
+              quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
+       FROM (SELECT start_time, model, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
+             FROM observations FINAL
+             WHERE tenant_id = {t:String} AND is_deleted = 0 AND type = 'generation' AND model != ''
+                   ${env} ${rangeClause(data.range, 'start_time')})
+       GROUP BY bucket, model ORDER BY bucket ASC`,
+      params,
+    );
+    return rows.map((r) => ({
+      bucket: String(r.bucket ?? ''),
+      model: String(r.model ?? ''),
+      p50: toNumber(r.p50),
+      p75: toNumber(r.p75),
+      p90: toNumber(r.p90),
+      p95: toNumber(r.p95),
+      p99: toNumber(r.p99),
+    }));
+  });
+
+export const dashboardModelLatencySeriesQueryOptions = (
+  tenantId: string,
+  range: t.TraceRange,
+  environment: string[] = [],
+) =>
+  queryOptions({
+    queryKey: ['dashboard', 'modelLatencySeries', tenantId, range, environment],
+    queryFn: () => getDashboardModelLatencySeriesFn({ data: { tenantId, range, environment } }),
+    ...LIST_QUERY_REFETCH,
+    enabled: tenantId.length > 0,
+  });
+
 // ── Traces grouped by name (horizontal bar) ──────────────────────────
 
 export const getDashboardTracesByNameFn = createServerFn({ method: 'GET' })

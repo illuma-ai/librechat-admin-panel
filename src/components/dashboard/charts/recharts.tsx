@@ -14,8 +14,6 @@ import {
   Legend,
   LabelList,
 } from 'recharts';
-import { formatIntervalSeconds } from '@/components/traces';
-
 /**
  * Clickable-legend series toggle (reference parity: legend pills hide/show a series).
  * Returns the hidden set plus the `onClick`/`formatter` props for a recharts `Legend`
@@ -133,50 +131,6 @@ export function BarTimeChart({
         />
         <Bar dataKey="value" name={valueName} fill={grad(colorIndex)} radius={[4, 4, 0, 0]} />
       </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
-export interface LatencyPoint {
-  label: string;
-  p50: number;
-  p90: number;
-  p95: number;
-  p99: number;
-}
-
-/** Multi-line latency percentiles over time (reference "Trace latency percentiles"). */
-export function LatencyLineChart({ points }: { points: LatencyPoint[] }) {
-  const { hidden, legendProps } = useLegendToggle();
-  if (points.length === 0) return <EmptyChart />;
-  const lines: { key: keyof LatencyPoint; color: string }[] = [
-    { key: 'p50', color: SERIES_COLORS[0] },
-    { key: 'p90', color: SERIES_COLORS[1] },
-    { key: 'p95', color: SERIES_COLORS[2] },
-    { key: 'p99', color: SERIES_COLORS[3] },
-  ];
-  return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-      <LineChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-        <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID }} minTickGap={20} />
-        <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} unit="s" />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => formatIntervalSeconds(Number(v))} />
-        <Legend {...legendProps} />
-        {lines.map((l) => (
-          <Line
-            key={l.key}
-            type="monotone"
-            dataKey={l.key}
-            name={l.key.toUpperCase()}
-            stroke={l.color}
-            strokeWidth={2}
-            dot={false}
-            hide={hidden.has(l.key)}
-            isAnimationActive={false}
-          />
-        ))}
-      </LineChart>
     </ResponsiveContainer>
   );
 }

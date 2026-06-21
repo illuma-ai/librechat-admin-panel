@@ -5,7 +5,7 @@ import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import {
   dashboardBreakdownsQueryOptions,
-  dashboardLatencySeriesQueryOptions,
+  dashboardModelLatencySeriesQueryOptions,
   dashboardLatencyTablesQueryOptions,
   dashboardSummaryQueryOptions,
   dashboardTimeseriesQueryOptions,
@@ -19,7 +19,7 @@ import { bucketLabel, pivotUsage, pivotCount } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
 import { ModelMultiSelect } from './ModelMultiSelect';
 import { InfoTooltip } from '@/components/shared';
-import { HorizontalBarChart, LineTimeChart, LatencyLineChart, MultiLineChart } from './charts/recharts';
+import { HorizontalBarChart, LineTimeChart, MultiLineChart } from './charts/recharts';
 import { MetricTable } from './charts/MetricTable';
 
 /** Resolved data bundle shared by every dashboard widget for a tenant + range. */
@@ -31,7 +31,7 @@ export interface DashboardData {
   usageBreakdown?: t.DashboardUsageBreakdown;
   observationsByLevel: t.LevelSeriesRow[];
   points: (t.MetricBucket & { label: string })[];
-  modelLatency: (t.LatencyBucket & { label: string })[];
+  modelLatencySeries: t.ModelLatencyBucket[];
   range: t.TraceRange;
   isLoading: boolean;
 }
@@ -56,15 +56,11 @@ export function useDashboardData(
   const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range, environment));
   const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range, environment));
   const obsByLevel = useQuery(dashboardObservationsByLevelQueryOptions(tenant, range, environment));
-  const modelLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation', environment));
+  const modelLat = useQuery(dashboardModelLatencySeriesQueryOptions(tenant, range, environment));
 
   const points = useMemo(
     () => (series.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
     [series.data, range],
-  );
-  const modelLatency = useMemo(
-    () => (modelLat.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),
-    [modelLat.data, range],
   );
 
   return {
@@ -75,7 +71,7 @@ export function useDashboardData(
     usageBreakdown: usageBreakdown.data,
     observationsByLevel: obsByLevel.data ?? [],
     points,
-    modelLatency,
+    modelLatencySeries: modelLat.data ?? [],
     range,
     isLoading: summary.isLoading || series.isLoading || breakdowns.isLoading,
   };
@@ -322,11 +318,65 @@ function makeLatencyTableWidget(pick: (t: t.DashboardLatencyTables) => t.Latency
   };
 }
 
+const PERCENTILE_TABS: { value: t.LatencyPercentile; label: string }[] = [
+  { value: 'p50', label: '50th' },
+  { value: 'p75', label: '75th' },
+  { value: 'p90', label: '90th' },
+  { value: 'p95', label: '95th' },
+  { value: 'p99', label: '99th' },
+];
+
+/**
+ * Model latencies (reference parity): one line per model at a chosen percentile, with
+ * percentile tabs + the "All models" dropdown + clickable legend pills. Pivots the
+ * per-(bucket, model) latency series to a column per model for the selected percentile.
+ */
 function ModelLatenciesWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
+  const [pct, setPct] = useState<t.LatencyPercentile>('p95');
+
+  const allModels = useMemo(() => {
+    const seen: string[] = [];
+    for (const r of data.modelLatencySeries) if (!seen.includes(r.model)) seen.push(r.model);
+    return seen;
+  }, [data.modelLatencySeries]);
+  const [selectedModels, setSelectedModels] = useState<string[] | null>(null);
+  const selected = selectedModels ?? allModels;
+
+  // Pivot to one row per bucket with a column per (selected) model = its percentile value.
+  const { chartData, keys } = useMemo(() => {
+    const byBucket = new Map<string, Record<string, number | string>>();
+    const ks: string[] = [];
+    for (const r of data.modelLatencySeries) {
+      if (!selected.includes(r.model)) continue;
+      if (!ks.includes(r.model)) ks.push(r.model);
+      const row = byBucket.get(r.bucket) ?? { bucket: r.bucket, label: bucketLabel(r.bucket, data.range) };
+      row[r.model] = r[pct];
+      byBucket.set(r.bucket, row);
+    }
+    const out = [...byBucket.values()].sort((a, b) => String(a.bucket).localeCompare(String(b.bucket)));
+    return { chartData: out, keys: ks };
+  }, [data.modelLatencySeries, selected, pct, data.range]);
+
   return (
-    <DashboardCard title={title} description={localize('com_dash_model_lat_sub')} headerRight={action}>
-      <LatencyLineChart points={data.modelLatency} />
+    <DashboardCard
+      title={title}
+      description={localize('com_dash_model_lat_sub')}
+      headerRight={
+        <div className="flex items-center gap-2">
+          <ModelMultiSelect options={allModels} selected={selected} onChange={setSelectedModels} />
+          {action}
+        </div>
+      }
+      headerChildren={
+        <CardTabs
+          active={pct}
+          onSelect={setPct}
+          tabs={PERCENTILE_TABS.map((p) => ({ value: p.value, label: localize('com_dash_percentile', { p: p.label }) }))}
+        />
+      }
+    >
+      <MultiLineChart data={chartData} seriesKeys={keys} formatValue={(n) => formatIntervalSeconds(n)} />
     </DashboardCard>
   );
 }
