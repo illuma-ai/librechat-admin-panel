@@ -100,6 +100,29 @@ export function aggregationSql(agg: t.WidgetAggregation, expr: string | null): s
   return q[agg] ?? `sum(${expr})`;
 }
 
+/**
+ * Per-widget trace-filter predicate. On the traces view the predicates apply directly
+ * (name contains / user equals / has tag); on observations & scores they restrict via
+ * `trace_id IN (subquery on traces)`. Values use deterministic `{wf{i}:String}`
+ * placeholders — the caller binds them from `q.traceFilters` in the same order.
+ */
+export function widgetFilterSql(
+  filters: { column: t.TraceFilterColumn; value: string }[] | undefined,
+  view: t.WidgetView,
+): string {
+  if (!filters || filters.length === 0) return '';
+  const predicates = filters
+    .map((f, i) => {
+      const k = `wf${i}`;
+      if (f.column === 'name') return `AND positionCaseInsensitive(name, {${k}:String}) > 0`;
+      if (f.column === 'user') return `AND user_id = {${k}:String}`;
+      return `AND has(tags, {${k}:String})`;
+    })
+    .join(' ');
+  if (view === 'traces') return ` ${predicates}`;
+  return ` AND trace_id IN (SELECT id FROM traces FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${predicates})`;
+}
+
 /** ClickHouse time-bucket expression for a range (matches the dashboard granularity). */
 export function widgetBucket(range: t.WidgetQuery['range'], col: string): string {
   if (range === '24h') return `toStartOfHour(${col})`;
@@ -146,9 +169,10 @@ export function buildWidgetSql(
   const valueSql = `${aggregationSql(aggregation, MEASURE_META[measure].expr)} AS value`;
   const dimCol = DIMENSION_COL[dimension];
   const isDeleted = q.view === 'scores' || q.view === 'traces' || q.view === 'observations';
+  const fclause = widgetFilterSql(q.traceFilters, q.view);
   const base = `FROM ${view.table} FINAL WHERE tenant_id = {t:String}${
     isDeleted ? ' AND is_deleted = 0' : ''
-  } ${rangeClause(q.range, view.timeCol)}`;
+  }${fclause} ${rangeClause(q.range, view.timeCol)}`;
   const dimNotEmpty = dimCol ? `AND ${dimCol} != ''` : '';
 
   if (q.chartType === 'number') {

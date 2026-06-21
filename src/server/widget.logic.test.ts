@@ -95,6 +95,24 @@ describe('buildWidgetSql', () => {
     expect(sql).not.toContain('AS series');
   });
 
+  it('observations view applies trace filters via a trace_id subquery', () => {
+    const sql = buildWidgetSql(
+      q({ view: 'observations', traceFilters: [{ column: 'user', value: 'u1' }] }),
+      rc,
+    );
+    expect(sql).toContain('trace_id IN (SELECT id FROM traces FINAL');
+    expect(sql).toContain('user_id = {wf0:String}');
+  });
+
+  it('traces view applies trace filters directly (no subquery)', () => {
+    const sql = buildWidgetSql(
+      q({ view: 'traces', traceFilters: [{ column: 'name', value: 'Chat' }] }),
+      rc,
+    );
+    expect(sql).toContain('positionCaseInsensitive(name, {wf0:String}) > 0');
+    expect(sql).not.toContain('trace_id IN');
+  });
+
   it('routes the view to its table + time column', () => {
     expect(buildWidgetSql(q({ view: 'scores', measure: 'value', aggregation: 'avg', chartType: 'number' }), rc)).toContain(
       'FROM scores FINAL',

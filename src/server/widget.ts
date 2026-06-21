@@ -21,13 +21,21 @@ const widgetQuerySchema = z.object({
   aggregation: z.enum(['count', 'sum', 'avg', 'max', 'p50', 'p95', 'p99']).default('count'),
   dimension: z.enum(['none', 'name', 'model', 'type', 'user', 'environment']).default('none'),
   chartType: z.enum(['line', 'bar', 'hbar', 'pie', 'table', 'number']).default('line'),
+  traceFilters: z
+    .array(z.object({ column: z.enum(['name', 'user', 'tags']), value: z.string().min(1) }))
+    .default([]),
 });
 
 export const getWidgetDataFn = createServerFn({ method: 'GET' })
   .inputValidator(widgetQuerySchema)
   .handler(async ({ data }): Promise<t.WidgetData> => {
     const sql = buildWidgetSql(data, rangeClause);
-    const rows = await chQuery<Record<string, unknown>>(sql, { t: data.tenantId });
+    // Bind the trace-filter values as `wf{i}` (matching widgetFilterSql placeholders).
+    const params: Record<string, unknown> = { t: data.tenantId };
+    data.traceFilters.forEach((f, i) => {
+      params[`wf${i}`] = f.value;
+    });
+    const rows = await chQuery<Record<string, unknown>>(sql, params);
 
     if (data.chartType === 'number') {
       return { total: toNumber(rows[0]?.value), points: [] };

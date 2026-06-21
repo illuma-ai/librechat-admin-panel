@@ -10,6 +10,7 @@ import { VIEW_META, MEASURE_META, CHART_TYPES, normalizeWidget, chartSupportsBre
 import { formatCost, formatTokens, useTracingTenant } from '@/components/traces';
 import { DashboardCard } from './cards';
 import { WidgetChart } from './charts/WidgetChart';
+import { DashboardFilters } from './DashboardFilters';
 import { useWidgets } from './useWidgets';
 
 interface WidgetBuilderPageProps {
@@ -76,6 +77,7 @@ export function WidgetBuilderPage({ widgetId, tenant, range, onTenant, onRange }
   const [aggregation, setAggregation] = useState<t.WidgetAggregation>(existing?.aggregation ?? 'count');
   const [dimension, setDimension] = useState<t.WidgetDimension>(existing?.dimension ?? 'none');
   const [chartType, setChartType] = useState<t.WidgetChartType>(existing?.chartType ?? 'line');
+  const [traceFilters, setTraceFilters] = useState<t.DashboardTraceFilter[]>(existing?.traceFilters ?? []);
 
   // Keep the combination valid whenever a higher-level field changes.
   const norm = useMemo(
@@ -89,6 +91,7 @@ export function WidgetBuilderPage({ widgetId, tenant, range, onTenant, onRange }
     aggregation: norm.aggregation,
     dimension: norm.dimension,
     chartType,
+    traceFilters,
   };
   const preview = useQuery(widgetDataQueryOptions({ tenantId: effectiveTenant, range, ...config }));
 
@@ -178,6 +181,10 @@ export function WidgetBuilderPage({ widgetId, tenant, range, onTenant, onRange }
                 options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
               />,
             )}
+          </div>
+          <div className="flex flex-col gap-1 pt-1">
+            <span className="text-sm text-(--ui-color-text-muted)">{localize('com_dash_filters')}</span>
+            <DashboardFilters filters={traceFilters} onChange={setTraceFilters} />
           </div>
           <div className="flex items-center justify-between gap-2 pt-2">
             <div className="w-52">

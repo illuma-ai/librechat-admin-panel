@@ -4,6 +4,8 @@
  * chart type over the telemetry, resolved to a ClickHouse query server-side.
  */
 
+import type { DashboardTraceFilter } from './dashboard';
+
 export type WidgetView = 'traces' | 'observations' | 'scores';
 
 /** A measure is the per-row quantity; `count` ignores the field. */
@@ -26,6 +28,8 @@ export interface WidgetConfig {
   aggregation: WidgetAggregation;
   dimension: WidgetDimension;
   chartType: WidgetChartType;
+  /** Per-widget trace filters (Trace Name / User / Tags); empty when unset. */
+  traceFilters?: DashboardTraceFilter[];
   createdAt: number;
   updatedAt: number;
 }
@@ -39,6 +43,8 @@ export interface WidgetQuery {
   aggregation: WidgetAggregation;
   dimension: WidgetDimension;
   chartType: WidgetChartType;
+  /** Per-widget trace filters threaded into the generated SQL. */
+  traceFilters?: DashboardTraceFilter[];
 }
 
 /**

@@ -42,6 +42,11 @@ change that alters behaviour.
   ClickHouse. Removed the now-dead `LatencyLineChart`.
 
 ### Added
+- **Per-widget-card filters** (spec `006`) — the custom-widget builder gained a Filters
+  section (same Trace Name / User / Tags builder as the page-level one); the filters are
+  saved with the widget and threaded into its generated SQL via `widgetFilterSql`
+  (direct predicate on the traces view, `trace_id IN (…)` subquery on observations /
+  scores). Values bound as `wf{i}` params. +2 logic tests.
 - **Page-level Filters builder** (spec `006`, T3) — the dashboard header gained a
   Langfuse-style **Filters** popover ("Where [Column] [op] [value] + Add") with active
   filters shown as removable chips + a count badge. Columns are the trace fields we
