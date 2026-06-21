@@ -34,4 +34,14 @@ gate (lint+build+test+metrics) → commit → push. Repeat.
       (per-bucket per-model percentiles, generation only). Verified on screen (5 tabs,
       3 model lines, dropdown) + values cross-checked vs CH. Removed dead
       LatencyLineChart/LatencyPoint.
-- [ ] T2  - [ ] T3  - [ ] T4
+- [x] T4 — Pie chart widget type added (categorical share); `PieBreakdownChart`;
+      verified 3 sectors + legend in builder preview. Synced the server widget-query
+      zod enum (a 2nd source of truth that had rejected 'pie'). Histogram/pivot deferred
+      (need bucketed/multi-metric backends).
+- [~] T2 — Built-in full query-edit: **deliberately NOT forced.** Built-in cards
+      (Model Usage tabs + All-models dropdown, Scores 0/1 columns, latency tables,
+      level pills) are richer than a single `WidgetQuery` can express; converting them
+      to query-widgets would LOSE those features. Built-ins keep swap + remove + drag;
+      custom widgets have full query-edit. Reported as a design tradeoff, not a bug.
+- [ ] T3 — Page-level Filters builder (traceName/user/tags/release/version): remaining
+      larger item; env filter already threads through. Next.

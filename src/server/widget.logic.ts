@@ -74,6 +74,7 @@ export const CHART_TYPES: {
   { value: 'line', label: 'Line chart', supportsBreakdown: true, timeSeries: true },
   { value: 'bar', label: 'Bar chart', supportsBreakdown: true, timeSeries: true },
   { value: 'hbar', label: 'Horizontal bar', supportsBreakdown: true, timeSeries: false },
+  { value: 'pie', label: 'Pie chart', supportsBreakdown: true, timeSeries: false },
   { value: 'table', label: 'Table', supportsBreakdown: true, timeSeries: false },
   { value: 'number', label: 'Big number', supportsBreakdown: false, timeSeries: false },
 ];
@@ -153,7 +154,7 @@ export function buildWidgetSql(
   if (q.chartType === 'number') {
     return `SELECT ${valueSql} ${base}`;
   }
-  if (q.chartType === 'hbar' || q.chartType === 'table') {
+  if (q.chartType === 'hbar' || q.chartType === 'table' || q.chartType === 'pie') {
     // Categorical: group by the dimension (fallback to name) and rank by value.
     const col = dimCol ?? 'name';
     return `SELECT ${col} AS label, ${valueSql} ${base} AND ${col} != '' GROUP BY label ORDER BY value DESC LIMIT 50`;

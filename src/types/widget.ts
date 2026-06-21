@@ -14,7 +14,7 @@ export type WidgetAggregation = 'count' | 'sum' | 'avg' | 'max' | 'p50' | 'p95' 
 /** Optional breakdown dimension (a grouping column). */
 export type WidgetDimension = 'none' | 'name' | 'model' | 'type' | 'user' | 'environment';
 
-export type WidgetChartType = 'line' | 'bar' | 'hbar' | 'table' | 'number';
+export type WidgetChartType = 'line' | 'bar' | 'hbar' | 'pie' | 'table' | 'number';
 
 /** A saved/previewed custom widget definition. */
 export interface WidgetConfig {

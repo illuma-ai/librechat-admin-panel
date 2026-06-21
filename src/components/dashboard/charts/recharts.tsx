@@ -7,6 +7,9 @@ import {
   Line,
   AreaChart,
   Area,
+  PieChart as RePieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -138,6 +141,31 @@ export function BarTimeChart({
 export interface HBarPoint {
   name: string;
   value: number;
+}
+
+/** Pie chart of a categorical breakdown (reference PIE) — one slice per palette hue. */
+export function PieBreakdownChart({
+  points,
+  formatValue,
+}: {
+  points: HBarPoint[];
+  formatValue?: (n: number) => string;
+}) {
+  if (points.length === 0) return <EmptyChart />;
+  const fmt = formatValue ?? ((n: number) => n.toLocaleString());
+  return (
+    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+      <RePieChart>
+        <Pie data={points} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} strokeWidth={1}>
+          {points.map((_, i) => (
+            <Cell key={i} fill={SERIES_COLORS[i % SERIES_COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => fmt(Number(v))} />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+      </RePieChart>
+    </ResponsiveContainer>
+  );
 }
 
 /** Horizontal bar list (reference Traces / User consumption — grouped by name). */

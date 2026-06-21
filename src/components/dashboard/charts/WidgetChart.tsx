@@ -1,6 +1,6 @@
 import type * as t from '@/types';
 import { bucketLabel } from '../chartData';
-import { BarTimeChart, HorizontalBarChart, LineTimeChart, MultiLineChart } from './recharts';
+import { BarTimeChart, HorizontalBarChart, LineTimeChart, MultiLineChart, PieBreakdownChart } from './recharts';
 import { MetricTable } from './MetricTable';
 
 interface WidgetChartProps {
@@ -53,6 +53,15 @@ export function WidgetChart({ data, chartType, range, formatValue, valueName = '
   if (chartType === 'hbar') {
     return (
       <HorizontalBarChart
+        points={data.points.map((p) => ({ name: p.label ?? '—', value: p.value }))}
+        formatValue={fmt}
+      />
+    );
+  }
+
+  if (chartType === 'pie') {
+    return (
+      <PieBreakdownChart
         points={data.points.map((p) => ({ name: p.label ?? '—', value: p.value }))}
         formatValue={fmt}
       />

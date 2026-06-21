@@ -20,7 +20,7 @@ const widgetQuerySchema = z.object({
   measure: z.enum(['count', 'cost', 'tokens', 'latency', 'value']).default('count'),
   aggregation: z.enum(['count', 'sum', 'avg', 'max', 'p50', 'p95', 'p99']).default('count'),
   dimension: z.enum(['none', 'name', 'model', 'type', 'user', 'environment']).default('none'),
-  chartType: z.enum(['line', 'bar', 'hbar', 'table', 'number']).default('line'),
+  chartType: z.enum(['line', 'bar', 'hbar', 'pie', 'table', 'number']).default('line'),
 });
 
 export const getWidgetDataFn = createServerFn({ method: 'GET' })

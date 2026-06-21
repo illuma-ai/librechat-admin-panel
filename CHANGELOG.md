@@ -42,6 +42,11 @@ change that alters behaviour.
   ClickHouse. Removed the now-dead `LatencyLineChart`.
 
 ### Added
+- **Pie chart widget type** (spec `006`, T4) — the custom-widget builder gained a
+  **Pie chart** option (categorical share of a breakdown dimension); renders via a new
+  `PieBreakdownChart`. Synced the server-side widget-query zod enum (was a second
+  source of truth that rejected new chart types). Histogram/pivot deferred (need
+  bucketed-value / multi-metric backends) — reported.
 - **Model-costs info tooltip + shared `InfoTooltip`** (spec `005`) — the Model costs
   card's "Total cost" now carries an ⓘ tooltip ("Calculated by multiplying the number
   of tokens with the cost per token…", matching Langfuse). Promoted the previously
