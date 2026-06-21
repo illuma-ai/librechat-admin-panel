@@ -133,14 +133,14 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
                   <button
                     ref={userMenuRef}
                     type="button"
-                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) transition-colors hover:border-(--ui-color-stroke-intense) hover:bg-(--ui-color-background-hover)"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-(--ui-color-accent) to-(--ui-color-accent-hover) shadow-sm ring-1 ring-(--ui-color-accent)/20 transition-shadow hover:shadow-md"
                     aria-label={`${localize('com_nav_user_menu')}, ${user?.name || user?.email || ''}`}
                     aria-haspopup="true"
                     title={user?.name || user?.email || ''}
                   >
                     <span
                       aria-hidden="true"
-                      className="text-xs font-medium text-(--ui-color-text-muted)"
+                      className="text-xs font-semibold text-(--ui-color-text-on-accent)"
                     >
                       {initials}
                     </span>
