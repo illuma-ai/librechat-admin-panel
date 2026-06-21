@@ -8,6 +8,12 @@ change that alters behaviour.
 ## [Unreleased]
 
 ### Changed
+- **Logo-level sidebar collapse + square avatar** (spec `003`, tasks T1–T2,
+  LibreChat-aligned) — the collapse/expand control is now the brand logo itself: a
+  `group` button whose logo mark swaps to a `PanelLeft` glyph on hover (pure CSS,
+  matches LibreChat's UnifiedSidebar). The separate bottom toggle button and the Help
+  (`question`) nav item were removed. The account avatar is now square-rounded
+  (`rounded-md`) like LibreChat's rail avatar (keeps the accent gradient).
 - **LibreChat-aligned surface-layered redesign** (spec `002-librechat-theme-alignment`)
   — moved the shell from a flat, border-driven look to a borderless, minimal
   **surface hierarchy** matching the host platform: new `--ui-color-background-canvas`

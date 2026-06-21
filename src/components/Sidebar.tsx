@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PanelLeft } from 'lucide-react';
 import { Dropdown, Icon  } from '@admin/ui';
 import { Link, useRouter } from '@tanstack/react-router';
 import type * as t from '@/types';
@@ -36,7 +37,6 @@ const navItems: t.NavItem[] = [
   { labelKey: 'com_nav_sessions', path: '/sessions', icon: 'chat' },
   { labelKey: 'com_nav_trace_users', path: '/trace-users', icon: 'users' },
   { labelKey: 'com_nav_scores', path: '/scores', icon: 'star' },
-  { labelKey: 'com_nav_help', path: '/help', icon: 'question' },
 ];
 
 function getUserInitials(user?: { name?: string; email?: string } | null): string {
@@ -87,17 +87,34 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
           collapsed ? 'w-14' : 'w-63',
         )}
       >
-        <div className="flex h-14 shrink-0 items-center px-2">
-          <div className="flex items-center gap-2.5 overflow-hidden px-1.5">
+        <div
+          className={cn(
+            'flex h-14 shrink-0 items-center gap-2.5 px-2',
+            collapsed ? 'justify-center' : 'px-3.5',
+          )}
+        >
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
+            title={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
+            className="group flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors hover:bg-(--ui-color-background-hover)"
+          >
             <img
               src={brandLogo}
               alt={localize('com_a11y_logo_alt')}
-              className="h-6 w-6 shrink-0"
+              className="h-6 w-6 shrink-0 group-hover:hidden"
             />
+            <PanelLeft
+              aria-hidden="true"
+              className="hidden h-4.5 w-4.5 text-(--ui-color-text-muted) group-hover:block"
+            />
+          </button>
+          {!collapsed && (
             <span className="truncate text-sm font-semibold text-(--ui-color-text-default)">
               {localize('com_auth_title')}
             </span>
-          </div>
+          )}
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-2" role="navigation">
@@ -133,7 +150,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
                   <button
                     ref={userMenuRef}
                     type="button"
-                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-(--ui-color-accent) to-(--ui-color-accent-hover) shadow-sm ring-1 ring-(--ui-color-accent)/20 transition-shadow hover:shadow-md"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-linear-to-br from-(--ui-color-accent) to-(--ui-color-accent-hover) shadow-sm ring-1 ring-(--ui-color-accent)/20 transition-shadow hover:shadow-md"
                     aria-label={`${localize('com_nav_user_menu')}, ${user?.name || user?.email || ''}`}
                     aria-haspopup="true"
                     title={user?.name || user?.email || ''}
@@ -186,15 +203,6 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
-          title={localize(collapsed ? 'com_nav_expand_sidebar' : 'com_nav_collapse_sidebar')}
-          className="flex w-full shrink-0 cursor-pointer items-center justify-center bg-transparent py-3 text-(--ui-color-text-muted) transition-colors hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)"
-        >
-          <Icon name={collapsed ? 'slide-in' : 'slide-out'} size="sm" />
-        </button>
       </aside>
 
       <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
