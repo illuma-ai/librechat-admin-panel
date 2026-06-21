@@ -33,7 +33,7 @@ export function DashboardCard({
       <div className="flex flex-col p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col space-y-1">
-            <h3 className="text-2xl leading-none font-semibold tracking-tight text-(--ui-color-text-default)">
+            <h3 className="text-xl leading-tight font-medium tracking-tight text-(--ui-color-text-default)">
               {title}
             </h3>
             {description ? (
@@ -42,7 +42,7 @@ export function DashboardCard({
           </div>
           {headerRight}
         </div>
-        {headerChildren ? <div className="mt-4">{headerChildren}</div> : null}
+        {headerChildren ? <div className="mt-6">{headerChildren}</div> : null}
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
     </div>
@@ -61,7 +61,7 @@ export function TotalMetric({
 }) {
   return (
     <div className="flex items-baseline justify-start gap-2 pt-1 pb-2">
-      <div className="text-3xl font-bold text-(--ui-color-text-default)">{metric}</div>
+      <div className="text-3xl font-semibold text-(--ui-color-text-default)">{metric}</div>
       <p className="text-sm text-(--ui-color-text-muted)">{description}</p>
       {children}
     </div>

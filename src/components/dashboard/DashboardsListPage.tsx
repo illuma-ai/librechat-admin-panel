@@ -4,6 +4,7 @@ import { Button, Icon } from '@admin/ui';
 import { useLocalize } from '@/hooks';
 import { WIDGET_CATALOG } from './widgetCatalog';
 import { useDashboards } from './useDashboards';
+import { useWidgets } from './useWidgets';
 import { NewDashboardDialog } from './NewDashboardDialog';
 
 type SubTab = 'dashboards' | 'widgets';
@@ -18,6 +19,7 @@ export function DashboardsListPage() {
   const localize = useLocalize();
   const navigate = useNavigate();
   const { dashboards, create, remove } = useDashboards();
+  const { widgets, remove: removeWidget } = useWidgets();
   const [tab, setTab] = useState<SubTab>('dashboards');
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -45,8 +47,14 @@ export function DashboardsListPage() {
             {localize('com_dash_widgets')}
           </button>
         </div>
-        {tab === 'dashboards' && (
+        {tab === 'dashboards' ? (
           <Button onClick={() => setDialogOpen(true)} iconLeft="plus" label={localize('com_dash_new')} />
+        ) : (
+          <Button
+            onClick={() => navigate({ to: '/widgets/new', search: { tenant: '', range: '7d' } })}
+            iconLeft="plus"
+            label={localize('com_widget_new')}
+          />
         )}
       </div>
 
@@ -100,18 +108,65 @@ export function DashboardsListPage() {
           </table>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {WIDGET_CATALOG.map((w) => (
-            <div
-              key={w.id}
-              className="flex items-center gap-2 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) p-4"
-            >
-              <Icon name="metrics" size="sm" />
-              <span className="text-sm font-medium text-(--ui-color-text-default)">
-                {localize(w.titleKey)}
-              </span>
+        <div className="flex flex-col gap-6">
+          <div>
+            <h3 className="mb-2 text-sm font-medium text-(--ui-color-text-muted)">
+              {localize('com_widget_custom')}
+            </h3>
+            {widgets.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-(--ui-color-stroke-default) p-6 text-center text-sm text-(--ui-color-text-muted)">
+                {localize('com_widget_empty')}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {widgets.map((w) => (
+                  <div
+                    key={w.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate({ to: '/widgets/$id', params: { id: w.id }, search: { tenant: '', range: '7d' } })}
+                    className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) p-4 hover:bg-(--ui-color-background-hover)"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-(--ui-color-text-default)">{w.name}</span>
+                      <span className="text-xs text-(--ui-color-text-muted)">
+                        {w.view} • {w.measure} • {w.chartType}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={localize('com_dash_delete')}
+                      className="text-(--ui-color-text-muted) hover:text-(--ui-color-text-danger)"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeWidget(w.id);
+                      }}
+                    >
+                      <Icon name="trash" size="sm" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div>
+            <h3 className="mb-2 text-sm font-medium text-(--ui-color-text-muted)">
+              {localize('com_widget_builtin')}
+            </h3>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {WIDGET_CATALOG.map((w) => (
+                <div
+                  key={w.id}
+                  className="flex items-center gap-2 rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) p-4"
+                >
+                  <Icon name="metrics" size="sm" />
+                  <span className="text-sm font-medium text-(--ui-color-text-default)">
+                    {localize(w.titleKey)}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
 

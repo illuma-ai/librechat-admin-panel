@@ -24,6 +24,8 @@ import { Route as AppTracesIndexRouteImport } from './routes/_app/traces.index'
 import { Route as AppDashboardsIndexRouteImport } from './routes/_app/dashboards.index'
 import { Route as AppConfigurationIndexRouteImport } from './routes/_app/configuration/index'
 import { Route as AuthOpenidCallbackRouteImport } from './routes/auth/openid/callback'
+import { Route as AppWidgetsNewRouteImport } from './routes/_app/widgets.new'
+import { Route as AppWidgetsIdRouteImport } from './routes/_app/widgets.$id'
 import { Route as AppTracesTraceIdRouteImport } from './routes/_app/traces.$traceId'
 import { Route as AppSessionsSessionIdRouteImport } from './routes/_app/sessions.$sessionId'
 import { Route as AppDashboardsIdRouteImport } from './routes/_app/dashboards.$id'
@@ -102,6 +104,16 @@ const AuthOpenidCallbackRoute = AuthOpenidCallbackRouteImport.update({
   path: '/auth/openid/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppWidgetsNewRoute = AppWidgetsNewRouteImport.update({
+  id: '/widgets/new',
+  path: '/widgets/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWidgetsIdRoute = AppWidgetsIdRouteImport.update({
+  id: '/widgets/$id',
+  path: '/widgets/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTracesTraceIdRoute = AppTracesTraceIdRouteImport.update({
   id: '/traces/$traceId',
   path: '/traces/$traceId',
@@ -132,6 +144,8 @@ export interface FileRoutesByFullPath {
   '/dashboards/$id': typeof AppDashboardsIdRoute
   '/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
+  '/widgets/$id': typeof AppWidgetsIdRoute
+  '/widgets/new': typeof AppWidgetsNewRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/configuration/': typeof AppConfigurationIndexRoute
   '/dashboards/': typeof AppDashboardsIndexRoute
@@ -151,6 +165,8 @@ export interface FileRoutesByTo {
   '/dashboards/$id': typeof AppDashboardsIdRoute
   '/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/traces/$traceId': typeof AppTracesTraceIdRoute
+  '/widgets/$id': typeof AppWidgetsIdRoute
+  '/widgets/new': typeof AppWidgetsNewRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/configuration': typeof AppConfigurationIndexRoute
   '/dashboards': typeof AppDashboardsIndexRoute
@@ -172,6 +188,8 @@ export interface FileRoutesById {
   '/_app/dashboards/$id': typeof AppDashboardsIdRoute
   '/_app/sessions/$sessionId': typeof AppSessionsSessionIdRoute
   '/_app/traces/$traceId': typeof AppTracesTraceIdRoute
+  '/_app/widgets/$id': typeof AppWidgetsIdRoute
+  '/_app/widgets/new': typeof AppWidgetsNewRoute
   '/auth/openid/callback': typeof AuthOpenidCallbackRoute
   '/_app/configuration/': typeof AppConfigurationIndexRoute
   '/_app/dashboards/': typeof AppDashboardsIndexRoute
@@ -193,6 +211,8 @@ export interface FileRouteTypes {
     | '/dashboards/$id'
     | '/sessions/$sessionId'
     | '/traces/$traceId'
+    | '/widgets/$id'
+    | '/widgets/new'
     | '/auth/openid/callback'
     | '/configuration/'
     | '/dashboards/'
@@ -212,6 +232,8 @@ export interface FileRouteTypes {
     | '/dashboards/$id'
     | '/sessions/$sessionId'
     | '/traces/$traceId'
+    | '/widgets/$id'
+    | '/widgets/new'
     | '/auth/openid/callback'
     | '/configuration'
     | '/dashboards'
@@ -232,6 +254,8 @@ export interface FileRouteTypes {
     | '/_app/dashboards/$id'
     | '/_app/sessions/$sessionId'
     | '/_app/traces/$traceId'
+    | '/_app/widgets/$id'
+    | '/_app/widgets/new'
     | '/auth/openid/callback'
     | '/_app/configuration/'
     | '/_app/dashboards/'
@@ -351,6 +375,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthOpenidCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/widgets/new': {
+      id: '/_app/widgets/new'
+      path: '/widgets/new'
+      fullPath: '/widgets/new'
+      preLoaderRoute: typeof AppWidgetsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/widgets/$id': {
+      id: '/_app/widgets/$id'
+      path: '/widgets/$id'
+      fullPath: '/widgets/$id'
+      preLoaderRoute: typeof AppWidgetsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/traces/$traceId': {
       id: '/_app/traces/$traceId'
       path: '/traces/$traceId'
@@ -399,6 +437,8 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppDashboardsIdRoute: typeof AppDashboardsIdRoute
   AppTracesTraceIdRoute: typeof AppTracesTraceIdRoute
+  AppWidgetsIdRoute: typeof AppWidgetsIdRoute
+  AppWidgetsNewRoute: typeof AppWidgetsNewRoute
   AppConfigurationIndexRoute: typeof AppConfigurationIndexRoute
   AppDashboardsIndexRoute: typeof AppDashboardsIndexRoute
   AppTracesIndexRoute: typeof AppTracesIndexRoute
@@ -416,6 +456,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppDashboardsIdRoute: AppDashboardsIdRoute,
   AppTracesTraceIdRoute: AppTracesTraceIdRoute,
+  AppWidgetsIdRoute: AppWidgetsIdRoute,
+  AppWidgetsNewRoute: AppWidgetsNewRoute,
   AppConfigurationIndexRoute: AppConfigurationIndexRoute,
   AppDashboardsIndexRoute: AppDashboardsIndexRoute,
   AppTracesIndexRoute: AppTracesIndexRoute,

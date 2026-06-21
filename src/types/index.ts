@@ -14,3 +14,4 @@ export type * from './theme';
 export type * from './user';
 export type * from './traces';
 export type * from './dashboard';
+export type * from './widget';

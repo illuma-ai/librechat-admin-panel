@@ -9,3 +9,4 @@ export * from './traces';
 export * from './traceUsers';
 export * from './scores';
 export * from './dashboard';
+export * from './widget';
