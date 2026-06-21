@@ -1086,6 +1086,7 @@
   "com_dash_model_lat_sub": "Latencies (seconds) per LLM generation",
   "com_dash_scores_analytics_sub": "Aggregate scores and averages over time",
   "com_dash_show_all": "Show all",
+  "com_dash_all_environments": "All environments",
   "com_dash_coming_soon": "Coming soon",
   "com_dash_pick_widgets": "Widgets to include",
   "com_dash_edit_widget": "Edit widget",

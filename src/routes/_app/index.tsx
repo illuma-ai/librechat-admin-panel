@@ -11,6 +11,7 @@ const RANGES: t.TraceRange[] = ['24h', '7d', '30d', 'all'];
 interface DashboardSearch {
   tenant?: string;
   range?: t.TraceRange;
+  env?: string;
 }
 
 export const Route = createFileRoute('/_app/')({
@@ -19,20 +20,23 @@ export const Route = createFileRoute('/_app/')({
     range: RANGES.includes(search.range as t.TraceRange)
       ? (search.range as t.TraceRange)
       : undefined,
+    env: typeof search.env === 'string' && search.env ? search.env : undefined,
   }),
   component: DashboardRoute,
 });
 
 function DashboardRoute() {
-  const { tenant, range } = Route.useSearch();
+  const { tenant, range, env } = Route.useSearch();
   const navigate = useNavigate({ from: '/' });
 
   return (
     <DashboardPage
       tenant={tenant ?? ''}
       range={range ?? '7d'}
+      environment={env ?? ''}
       onTenant={(value) => navigate({ search: (prev) => ({ ...prev, tenant: value }) })}
       onRange={(value) => navigate({ search: (prev) => ({ ...prev, range: value }) })}
+      onEnvironment={(value) => navigate({ search: (prev) => ({ ...prev, env: value || undefined }) })}
     />
   );
 }

@@ -39,14 +39,18 @@ export interface WidgetDef {
 }
 
 /** Run the dashboard aggregate queries and derive the shared, labelled data bundle. */
-export function useDashboardData(tenant: string, range: t.TraceRange): DashboardData {
-  const summary = useQuery(dashboardSummaryQueryOptions(tenant, range));
-  const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range));
-  const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range));
-  const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range));
-  const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range));
-  const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range));
-  const modelLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation'));
+export function useDashboardData(
+  tenant: string,
+  range: t.TraceRange,
+  environment: string[] = [],
+): DashboardData {
+  const summary = useQuery(dashboardSummaryQueryOptions(tenant, range, environment));
+  const series = useQuery(dashboardTimeseriesQueryOptions(tenant, range, environment));
+  const breakdowns = useQuery(dashboardBreakdownsQueryOptions(tenant, range, environment));
+  const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range, environment));
+  const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range, environment));
+  const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range, environment));
+  const modelLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation', environment));
 
   const points = useMemo(
     () => (series.data ?? []).map((b) => ({ ...b, label: bucketLabel(b.bucket, range) })),

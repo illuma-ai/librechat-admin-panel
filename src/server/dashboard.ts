@@ -16,7 +16,26 @@ import { bucketExpr, mergeMetricBuckets } from './dashboard.logic';
 import { chQuery } from './utils/clickhouse';
 
 const rangeSchema = z.enum(['24h', '7d', '30d', 'all']).default('7d');
-const dashboardSchema = z.object({ tenantId: z.string().min(1), range: rangeSchema });
+const dashboardSchema = z.object({
+  tenantId: z.string().min(1),
+  range: rangeSchema,
+  environment: z.array(z.string()).default([]),
+});
+
+/**
+ * Build the optional environment predicate for a dashboard query. Sets `params.env`
+ * and returns the clause (or '') for the given column (prefixed for joined queries).
+ * Values are bound as an array param — never interpolated.
+ */
+function envClause(
+  environment: string[] | undefined,
+  params: Record<string, unknown>,
+  column = 'environment',
+): string {
+  if (!environment || environment.length === 0) return '';
+  params.env = environment;
+  return `AND ${column} IN {env:Array(String)}`;
+}
 
 const LIST_QUERY_REFETCH = {
   refetchOnWindowFocus: false,
@@ -31,14 +50,15 @@ export const getDashboardSummaryFn = createServerFn({ method: 'GET' })
   .handler(async ({ data }): Promise<t.DashboardSummary> => {
     const tClause = rangeClause(data.range, 'timestamp');
     const oClause = rangeClause(data.range, 'start_time');
-    const params = { t: data.tenantId };
+    const params: Record<string, unknown> = { t: data.tenantId };
+    const env = envClause(data.environment, params);
     const [row] = await chQuery<Record<string, unknown>>(
       `SELECT
-         (SELECT count() FROM traces FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${tClause}) AS traces,
-         (SELECT uniqExact(user_id) FROM traces FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 AND user_id != '' ${tClause}) AS users,
-         (SELECT count() FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}) AS observations,
-         (SELECT sum(total_cost) FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}) AS cost,
-         (SELECT sum(total_tokens) FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}) AS tokens`,
+         (SELECT count() FROM traces FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${tClause}) AS traces,
+         (SELECT uniqExact(user_id) FROM traces FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 AND user_id != '' ${env} ${tClause}) AS users,
+         (SELECT count() FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${oClause}) AS observations,
+         (SELECT sum(total_cost) FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${oClause}) AS cost,
+         (SELECT sum(total_tokens) FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${oClause}) AS tokens`,
       params,
     );
     return {
@@ -50,10 +70,10 @@ export const getDashboardSummaryFn = createServerFn({ method: 'GET' })
     };
   });
 
-export const dashboardSummaryQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardSummaryQueryOptions = (tenantId: string, range: t.TraceRange, environment: string[] = []) =>
   queryOptions({
-    queryKey: ['dashboard', 'summary', tenantId, range],
-    queryFn: () => getDashboardSummaryFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'summary', tenantId, range, environment],
+    queryFn: () => getDashboardSummaryFn({ data: { tenantId, range, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
@@ -63,14 +83,15 @@ export const dashboardSummaryQueryOptions = (tenantId: string, range: t.TraceRan
 export const getDashboardTimeseriesFn = createServerFn({ method: 'GET' })
   .inputValidator(dashboardSchema)
   .handler(async ({ data }): Promise<t.MetricBucket[]> => {
-    const params = { t: data.tenantId };
+    const params: Record<string, unknown> = { t: data.tenantId };
+    const env = envClause(data.environment, params);
     // Traces are bucketed on their own timestamp; cost/tokens/observation counts on
     // the observation start_time. Merge the two groupings by bucket key in JS so a
     // bucket with traces-but-no-observations (or vice versa) is still represented.
     const traceRows = await chQuery<Record<string, unknown>>(
       `SELECT toString(${bucketExpr(data.range, 'timestamp')}) AS bucket, count() AS traces
        FROM traces FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0 ${rangeClause(data.range, 'timestamp')}
+       WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${rangeClause(data.range, 'timestamp')}
        GROUP BY bucket ORDER BY bucket ASC`,
       params,
     );
@@ -78,7 +99,7 @@ export const getDashboardTimeseriesFn = createServerFn({ method: 'GET' })
       `SELECT toString(${bucketExpr(data.range, 'start_time')}) AS bucket,
               count() AS observations, sum(total_cost) AS cost, sum(total_tokens) AS tokens
        FROM observations FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0 ${rangeClause(data.range, 'start_time')}
+       WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${rangeClause(data.range, 'start_time')}
        GROUP BY bucket ORDER BY bucket ASC`,
       params,
     );
@@ -94,10 +115,10 @@ export const getDashboardTimeseriesFn = createServerFn({ method: 'GET' })
     );
   });
 
-export const dashboardTimeseriesQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardTimeseriesQueryOptions = (tenantId: string, range: t.TraceRange, environment: string[] = []) =>
   queryOptions({
-    queryKey: ['dashboard', 'timeseries', tenantId, range],
-    queryFn: () => getDashboardTimeseriesFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'timeseries', tenantId, range, environment],
+    queryFn: () => getDashboardTimeseriesFn({ data: { tenantId, range, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
@@ -107,12 +128,13 @@ export const dashboardTimeseriesQueryOptions = (tenantId: string, range: t.Trace
 export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
   .inputValidator(dashboardSchema)
   .handler(async ({ data }): Promise<t.DashboardBreakdowns> => {
-    const params = { t: data.tenantId };
+    const params: Record<string, unknown> = { t: data.tenantId };
     const oClause = rangeClause(data.range, 'start_time');
+    const env = envClause(data.environment, params);
     const modelRows = await chQuery<Record<string, unknown>>(
       `SELECT model AS model, count() AS observations, sum(total_cost) AS cost, sum(total_tokens) AS tokens
        FROM observations FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0 AND model != '' ${oClause}
+       WHERE tenant_id = {t:String} AND is_deleted = 0 AND model != '' ${env} ${oClause}
        GROUP BY model ORDER BY cost DESC LIMIT 20`,
       params,
     );
@@ -120,7 +142,7 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
       `SELECT name AS name, any(data_type) AS dataType, count() AS count,
               avgIf(value, data_type != 'CATEGORICAL') AS average
        FROM scores FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${rangeClause(data.range, 'timestamp')}
+       WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${env} ${rangeClause(data.range, 'timestamp')}
        GROUP BY name ORDER BY count DESC LIMIT 20`,
       params,
     );
@@ -130,7 +152,7 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
       `SELECT t.user_id AS userId, count(DISTINCT t.id) AS traces,
               sum(o.cost) AS cost, sum(o.tokens) AS tokens
        FROM (SELECT argMax(user_id, updated_at) AS user_id, argMax(timestamp, updated_at) AS timestamp, id
-             FROM traces WHERE tenant_id = {t:String}
+             FROM traces WHERE tenant_id = {t:String} ${env}
              GROUP BY id HAVING argMax(is_deleted, updated_at) = 0) AS t
        LEFT JOIN (SELECT trace_id, sum(total_cost) AS cost, sum(total_tokens) AS tokens
                   FROM observations FINAL WHERE tenant_id = {t:String} AND is_deleted = 0
@@ -145,7 +167,7 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
       `SELECT quantile(0.5)(lat) AS p50, quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
        FROM (SELECT dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
              FROM observations FINAL
-             WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}
+             WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${oClause}
              GROUP BY trace_id)`,
       params,
     );
@@ -156,7 +178,7 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
               quantile(0.5)(lat) AS p50, quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99
        FROM (SELECT model, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
              FROM observations FINAL
-             WHERE tenant_id = {t:String} AND is_deleted = 0 AND model != '' ${oClause})
+             WHERE tenant_id = {t:String} AND is_deleted = 0 AND model != '' ${env} ${oClause})
        GROUP BY model ORDER BY p95 DESC LIMIT 20`,
       params,
     );
@@ -199,6 +221,7 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
 const latencySchema = z.object({
   tenantId: z.string().min(1),
   range: rangeSchema,
+  environment: z.array(z.string()).default([]),
   /** trace = per-trace span; generation/observation = per-observation latency. */
   scope: z.enum(['trace', 'generation', 'observation']).default('trace'),
 });
@@ -206,7 +229,8 @@ const latencySchema = z.object({
 export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
   .inputValidator(latencySchema)
   .handler(async ({ data }): Promise<t.LatencyBucket[]> => {
-    const params = { t: data.tenantId };
+    const params: Record<string, unknown> = { t: data.tenantId };
+    const env = envClause(data.environment, params);
     // Trace scope = the trace span (first obs start → last obs end), grouped per
     // trace. Generation/observation scope = each observation's own latency; the
     // generation scope further restricts to generation-type observations.
@@ -215,11 +239,11 @@ export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
         ? `SELECT min(start_time) AS startT,
                   dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
            FROM observations FINAL
-           WHERE tenant_id = {t:String} AND is_deleted = 0 ${rangeClause(data.range, 'start_time')}
+           WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${rangeClause(data.range, 'start_time')}
            GROUP BY trace_id`
         : `SELECT start_time AS startT, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
            FROM observations FINAL
-           WHERE tenant_id = {t:String} AND is_deleted = 0
+           WHERE tenant_id = {t:String} AND is_deleted = 0 ${env}
                  ${data.scope === 'generation' ? "AND type = 'generation'" : ''}
                  ${rangeClause(data.range, 'start_time')}`;
 
@@ -245,20 +269,22 @@ export const getDashboardLatencySeriesFn = createServerFn({ method: 'GET' })
 export const getDashboardTracesByNameFn = createServerFn({ method: 'GET' })
   .inputValidator(dashboardSchema)
   .handler(async ({ data }): Promise<t.NameCountRow[]> => {
+    const params: Record<string, unknown> = { t: data.tenantId };
+    const env = envClause(data.environment, params);
     const rows = await chQuery<Record<string, unknown>>(
       `SELECT name AS name, count() AS count
        FROM traces FINAL
-       WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${rangeClause(data.range, 'timestamp')}
+       WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${env} ${rangeClause(data.range, 'timestamp')}
        GROUP BY name ORDER BY count DESC LIMIT 20`,
-      { t: data.tenantId },
+      params,
     );
     return rows.map((r) => ({ name: String(r.name ?? ''), count: toNumber(r.count) }));
   });
 
-export const dashboardTracesByNameQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardTracesByNameQueryOptions = (tenantId: string, range: t.TraceRange, environment: string[] = []) =>
   queryOptions({
-    queryKey: ['dashboard', 'tracesByName', tenantId, range],
-    queryFn: () => getDashboardTracesByNameFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'tracesByName', tenantId, range, environment],
+    queryFn: () => getDashboardTracesByNameFn({ data: { tenantId, range, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
@@ -268,14 +294,15 @@ export const dashboardTracesByNameQueryOptions = (tenantId: string, range: t.Tra
 export const getDashboardUsageBreakdownFn = createServerFn({ method: 'GET' })
   .inputValidator(dashboardSchema)
   .handler(async ({ data }): Promise<t.DashboardUsageBreakdown> => {
-    const params = { t: data.tenantId };
+    const params: Record<string, unknown> = { t: data.tenantId };
     const oClause = rangeClause(data.range, 'start_time');
+    const env = envClause(data.environment, params);
     const series = (dim: string, extra: string) =>
       chQuery<Record<string, unknown>>(
         `SELECT toString(${bucketExpr(data.range, 'start_time')}) AS bucket, ${dim} AS key,
                 sum(total_cost) AS cost, sum(total_tokens) AS tokens
          FROM observations FINAL
-         WHERE tenant_id = {t:String} AND is_deleted = 0 ${extra} ${oClause}
+         WHERE tenant_id = {t:String} AND is_deleted = 0 ${extra} ${env} ${oClause}
          GROUP BY bucket, key ORDER BY bucket ASC`,
         params,
       );
@@ -293,10 +320,10 @@ export const getDashboardUsageBreakdownFn = createServerFn({ method: 'GET' })
     return { model: map(modelRows), type: map(typeRows) };
   });
 
-export const dashboardUsageBreakdownQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardUsageBreakdownQueryOptions = (tenantId: string, range: t.TraceRange, environment: string[] = []) =>
   queryOptions({
-    queryKey: ['dashboard', 'usageBreakdown', tenantId, range],
-    queryFn: () => getDashboardUsageBreakdownFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'usageBreakdown', tenantId, range, environment],
+    queryFn: () => getDashboardUsageBreakdownFn({ data: { tenantId, range, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
@@ -306,8 +333,9 @@ export const dashboardUsageBreakdownQueryOptions = (tenantId: string, range: t.T
 export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })
   .inputValidator(dashboardSchema)
   .handler(async ({ data }): Promise<t.DashboardLatencyTables> => {
-    const params = { t: data.tenantId };
+    const params: Record<string, unknown> = { t: data.tenantId };
     const oClause = rangeClause(data.range, 'start_time');
+    const env = envClause(data.environment, params);
     const pct = `quantile(0.5)(lat) AS p50, quantile(0.9)(lat) AS p90, quantile(0.95)(lat) AS p95, quantile(0.99)(lat) AS p99`;
 
     // Generation/observation: each observation's own latency, grouped by name.
@@ -316,7 +344,7 @@ export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })
         `SELECT name AS name, any(type) AS type, ${pct}
          FROM (SELECT name, type, dateDiff('millisecond', start_time, end_time) / 1000 AS lat
                FROM observations FINAL
-               WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${typeFilter} ${oClause})
+               WHERE tenant_id = {t:String} AND is_deleted = 0 AND name != '' ${typeFilter} ${env} ${oClause})
          GROUP BY name ORDER BY p95 DESC LIMIT 20`,
         params,
       );
@@ -326,7 +354,7 @@ export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })
       `SELECT tr.name AS name, '' AS type, ${pct}
        FROM (SELECT trace_id, dateDiff('millisecond', min(start_time), max(end_time)) / 1000 AS lat
              FROM observations FINAL
-             WHERE tenant_id = {t:String} AND is_deleted = 0 ${oClause}
+             WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${oClause}
              GROUP BY trace_id) AS o
        INNER JOIN (SELECT id, argMax(name, updated_at) AS name FROM traces
                    WHERE tenant_id = {t:String} GROUP BY id) AS tr ON tr.id = o.trace_id
@@ -349,10 +377,10 @@ export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })
     return { trace: map(traceRows), generation: map(generationRows), observation: map(observationRows) };
   });
 
-export const dashboardLatencyTablesQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardLatencyTablesQueryOptions = (tenantId: string, range: t.TraceRange, environment: string[] = []) =>
   queryOptions({
-    queryKey: ['dashboard', 'latencyTables', tenantId, range],
-    queryFn: () => getDashboardLatencyTablesFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'latencyTables', tenantId, range, environment],
+    queryFn: () => getDashboardLatencyTablesFn({ data: { tenantId, range, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
@@ -361,18 +389,19 @@ export const dashboardLatencySeriesQueryOptions = (
   tenantId: string,
   range: t.TraceRange,
   scope: 'trace' | 'generation' | 'observation' = 'trace',
+  environment: string[] = [],
 ) =>
   queryOptions({
-    queryKey: ['dashboard', 'latencySeries', tenantId, range, scope],
-    queryFn: () => getDashboardLatencySeriesFn({ data: { tenantId, range, scope } }),
+    queryKey: ['dashboard', 'latencySeries', tenantId, range, scope, environment],
+    queryFn: () => getDashboardLatencySeriesFn({ data: { tenantId, range, scope, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });
 
-export const dashboardBreakdownsQueryOptions = (tenantId: string, range: t.TraceRange) =>
+export const dashboardBreakdownsQueryOptions = (tenantId: string, range: t.TraceRange, environment: string[] = []) =>
   queryOptions({
-    queryKey: ['dashboard', 'breakdowns', tenantId, range],
-    queryFn: () => getDashboardBreakdownsFn({ data: { tenantId, range } }),
+    queryKey: ['dashboard', 'breakdowns', tenantId, range, environment],
+    queryFn: () => getDashboardBreakdownsFn({ data: { tenantId, range, environment } }),
     ...LIST_QUERY_REFETCH,
     enabled: tenantId.length > 0,
   });

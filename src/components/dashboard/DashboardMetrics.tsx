@@ -1,14 +1,18 @@
+import { useQuery } from '@tanstack/react-query';
 import { Select } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
+import { traceFilterOptionsQueryOptions } from '@/server';
 import { useTracingTenant } from '@/components/traces';
 import { useDashboardData, WIDGET_CATALOG, CatalogWidget } from './widgetCatalog';
 
 interface DashboardMetricsProps {
   tenant: string;
   range: t.TraceRange;
+  environment: string;
   onTenant: (tenant: string) => void;
   onRange: (range: t.TraceRange) => void;
+  onEnvironment: (environment: string) => void;
 }
 
 const RANGE_KEYS: { value: t.TraceRange; labelKey: string }[] = [
@@ -24,10 +28,23 @@ const RANGE_KEYS: { value: t.TraceRange; labelKey: string }[] = [
  * breakdown tables). All metrics derive from tenant-scoped server aggregates; custom
  * dashboards reuse the same catalog.
  */
-export function DashboardMetrics({ tenant, range, onTenant, onRange }: DashboardMetricsProps) {
+export function DashboardMetrics({
+  tenant,
+  range,
+  environment,
+  onTenant,
+  onRange,
+  onEnvironment,
+}: DashboardMetricsProps) {
   const localize = useLocalize();
   const { tenants, effectiveTenant } = useTracingTenant(tenant, onTenant);
-  const data = useDashboardData(effectiveTenant, range);
+  const filterOptions = useQuery(traceFilterOptionsQueryOptions(effectiveTenant));
+  const data = useDashboardData(effectiveTenant, range, environment ? [environment] : []);
+
+  const envOptions = [
+    { value: '', label: localize('com_dash_all_environments') },
+    ...(filterOptions.data?.environments ?? []).map((e) => ({ value: e.value, label: e.value })),
+  ];
 
   return (
     <section aria-label={localize('com_dash_metrics')} className="flex flex-col gap-3">
@@ -45,6 +62,9 @@ export function DashboardMetrics({ tenant, range, onTenant, onRange }: Dashboard
             onSelect={(value) => onRange(value as t.TraceRange)}
             options={RANGE_KEYS.map((opt) => ({ value: opt.value, label: localize(opt.labelKey) }))}
           />
+        </div>
+        <div className="w-44">
+          <Select value={environment} onSelect={onEnvironment} options={envOptions} />
         </div>
       </div>
 
