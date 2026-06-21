@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { queryOptions } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import type * as t from '@/types';
+import { ScoreDataType } from '@/constants/dashboard';
 import { rangeClause, toNumber } from './traces.logic';
 import { bucketExpr, mergeMetricBuckets } from './dashboard.logic';
 import { chQuery } from './utils/clickhouse';
@@ -201,7 +202,7 @@ export const getDashboardBreakdownsFn = createServerFn({ method: 'GET' })
         dataType: String(r.dataType ?? ''),
         count: toNumber(r.count),
         average:
-          r.dataType === 'CATEGORICAL' || r.average === null || r.average === undefined
+          r.dataType === ScoreDataType.CATEGORICAL || r.average === null || r.average === undefined
             ? null
             : toNumber(r.average),
         zero: toNumber(r.zero),

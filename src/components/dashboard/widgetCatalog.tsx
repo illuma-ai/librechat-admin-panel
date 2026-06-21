@@ -14,6 +14,7 @@ import {
   dashboardObservationsByLevelQueryOptions,
 } from '@/server';
 import { formatCost, formatTokens, formatIntervalSeconds } from '@/components/traces';
+import { ScoreDataType, OBSERVATION_LEVEL_ORDER } from '@/constants';
 import { bucketLabel, pivotUsage, pivotCount } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
 import { ModelMultiSelect } from './ModelMultiSelect';
@@ -121,9 +122,8 @@ function ModelCostsWidget({ data, title, action }: { data: DashboardData; title:
 
 /** Score-type glyph shown before a score name (reference: # numeric, Ⓑ boolean, Ⓒ categorical). */
 function scoreTypeIcon(dataType: string): string {
-  if (dataType === 'NUMERIC') return '#';
-  if (dataType === 'BOOLEAN') return 'Ⓑ';
-  if (dataType === 'CATEGORICAL') return 'Ⓒ';
+  if (dataType === ScoreDataType.BOOLEAN) return 'Ⓑ';
+  if (dataType === ScoreDataType.CATEGORICAL) return 'Ⓒ';
   return '#';
 }
 
@@ -160,13 +160,13 @@ function ScoresWidget({ data, title, action }: { data: DashboardData; title: str
             key: 'zero',
             header: '0',
             align: 'right',
-            render: (r) => (r.dataType === 'CATEGORICAL' ? '—' : cell(r.zero)),
+            render: (r) => (r.dataType === ScoreDataType.CATEGORICAL ? '—' : cell(r.zero)),
           },
           {
             key: 'one',
             header: '1',
             align: 'right',
-            render: (r) => (r.dataType === 'CATEGORICAL' ? '—' : cell(r.one)),
+            render: (r) => (r.dataType === ScoreDataType.CATEGORICAL ? '—' : cell(r.one)),
           },
         ]}
       />
@@ -175,9 +175,6 @@ function ScoresWidget({ data, title, action }: { data: DashboardData; title: str
   );
 }
 
-/** Stable level order so colours/pills stay consistent (reference: DEFAULT/DEBUG/…/ERROR). */
-const LEVEL_ORDER = ['DEFAULT', 'DEBUG', 'WARNING', 'ERROR'];
-
 function ObservationsWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
   const { data: chartData, keys } = pivotCount(
@@ -185,7 +182,8 @@ function ObservationsWidget({ data, title, action }: { data: DashboardData; titl
     data.range,
   );
   const seriesKeys = [...keys].sort(
-    (a, b) => (LEVEL_ORDER.indexOf(a) + 1 || 99) - (LEVEL_ORDER.indexOf(b) + 1 || 99),
+    (a, b) =>
+      (OBSERVATION_LEVEL_ORDER.indexOf(a) + 1 || 99) - (OBSERVATION_LEVEL_ORDER.indexOf(b) + 1 || 99),
   );
   return (
     <DashboardCard
