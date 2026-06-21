@@ -37,3 +37,26 @@ export function pivotUsage(
   );
   return { data, keys };
 }
+
+/**
+ * Pivot `{bucket, key, count}` rows into recharts multi-line rows (one row per bucket,
+ * a column per distinct key). Generic version of `pivotUsage` for single-value series
+ * (e.g. observations split by level). Keys are returned in first-seen order.
+ */
+export function pivotCount(
+  rows: { bucket: string; key: string; count: number }[],
+  range: t.TraceRange,
+): { data: Record<string, number | string>[]; keys: string[] } {
+  const byBucket = new Map<string, Record<string, number | string>>();
+  const keys: string[] = [];
+  for (const r of rows) {
+    if (!keys.includes(r.key)) keys.push(r.key);
+    const row = byBucket.get(r.bucket) ?? { bucket: r.bucket, label: bucketLabel(r.bucket, range) };
+    row[r.key] = r.count;
+    byBucket.set(r.bucket, row);
+  }
+  const data = [...byBucket.values()].sort((a, b) =>
+    String(a.bucket).localeCompare(String(b.bucket)),
+  );
+  return { data, keys };
+}

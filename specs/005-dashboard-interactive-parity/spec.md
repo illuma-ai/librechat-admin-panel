@@ -37,9 +37,11 @@ small piece on screen before moving on.
 - [x] T1 — `ModelMultiSelect` ("All models") wired into Model Usage. Verified on
       screen: header control + search + Select-All + per-model checkboxes; unchecking a
       model hides its series (7→6 lines), rechecking restores. Default = all selected.
-- [ ] T2 — Clickable legend pills (toggle series) on MultiLineChart + LatencyLineChart.
-- [ ] T3 — Observations-by-time level pills (DEFAULT/DEBUG/ERROR). Verify LibreChat
-      emits `level` first.
+- [x] T2 — Clickable legend pills (toggle series) on MultiLineChart + LatencyLineChart
+      via shared `useLegendToggle`. Verified 7→6→7 lines on click.
+- [x] T3 — Observations-by-Level: backend per-bucket per-level counts (we DO capture
+      `level`: DEFAULT 524 / DEBUG 62 / ERROR 40); card renders DEFAULT/DEBUG/ERROR
+      series + legend-pill toggles. Verified on screen. metrics 12/12.
 - [ ] T4 — Widget-builder chart-type card shapes + add/save/grid/edit round-trip.
 - [ ] T5 — Page-level filter pass + gate + commit.
 - NOTE: our "Model latencies" card shows percentile-lines-over-time, while Langfuse

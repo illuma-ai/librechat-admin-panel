@@ -1127,6 +1127,7 @@
   "com_dash_search_models": "Search models...",
   "com_dash_select_all": "Select All",
   "com_dash_model_none": "none",
+  "com_dash_obs_by_level": "Observations by Level",
   "com_dash_config_desc": "View and manage instance configuration settings.",
   "com_dash_access_desc": "Create and manage groups, assign roles, and fine-tune member permissions across your organization.",
   "com_dash_grants_desc": "Control which capabilities each role has access to, from reading configs to managing users.",

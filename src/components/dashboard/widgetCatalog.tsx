@@ -11,9 +11,10 @@ import {
   dashboardTimeseriesQueryOptions,
   dashboardTracesByNameQueryOptions,
   dashboardUsageBreakdownQueryOptions,
+  dashboardObservationsByLevelQueryOptions,
 } from '@/server';
 import { formatCost, formatTokens, formatIntervalSeconds } from '@/components/traces';
-import { bucketLabel, pivotUsage } from './chartData';
+import { bucketLabel, pivotUsage, pivotCount } from './chartData';
 import { DashboardCard, TotalMetric, ExpandButton, CardTabs } from './cards';
 import { ModelMultiSelect } from './ModelMultiSelect';
 import { HorizontalBarChart, LineTimeChart, LatencyLineChart, MultiLineChart } from './charts/recharts';
@@ -26,6 +27,7 @@ export interface DashboardData {
   tracesByName: t.NameCountRow[];
   latencyTables?: t.DashboardLatencyTables;
   usageBreakdown?: t.DashboardUsageBreakdown;
+  observationsByLevel: t.LevelSeriesRow[];
   points: (t.MetricBucket & { label: string })[];
   modelLatency: (t.LatencyBucket & { label: string })[];
   range: t.TraceRange;
@@ -51,6 +53,7 @@ export function useDashboardData(
   const tracesByName = useQuery(dashboardTracesByNameQueryOptions(tenant, range, environment));
   const latencyTables = useQuery(dashboardLatencyTablesQueryOptions(tenant, range, environment));
   const usageBreakdown = useQuery(dashboardUsageBreakdownQueryOptions(tenant, range, environment));
+  const obsByLevel = useQuery(dashboardObservationsByLevelQueryOptions(tenant, range, environment));
   const modelLat = useQuery(dashboardLatencySeriesQueryOptions(tenant, range, 'generation', environment));
 
   const points = useMemo(
@@ -68,6 +71,7 @@ export function useDashboardData(
     tracesByName: tracesByName.data ?? [],
     latencyTables: latencyTables.data,
     usageBreakdown: usageBreakdown.data,
+    observationsByLevel: obsByLevel.data ?? [],
     points,
     modelLatency,
     range,
@@ -168,12 +172,30 @@ function ScoresWidget({ data, title, action }: { data: DashboardData; title: str
   );
 }
 
+/** Stable level order so colours/pills stay consistent (reference: DEFAULT/DEBUG/…/ERROR). */
+const LEVEL_ORDER = ['DEFAULT', 'DEBUG', 'WARNING', 'ERROR'];
+
 function ObservationsWidget({ data, title, action }: { data: DashboardData; title: string; action?: ReactNode }) {
   const localize = useLocalize();
+  const { data: chartData, keys } = pivotCount(
+    data.observationsByLevel.map((r) => ({ bucket: r.bucket, key: r.level, count: r.count })),
+    data.range,
+  );
+  const seriesKeys = [...keys].sort(
+    (a, b) => (LEVEL_ORDER.indexOf(a) + 1 || 99) - (LEVEL_ORDER.indexOf(b) + 1 || 99),
+  );
   return (
-    <DashboardCard title={title} headerRight={action}>
+    <DashboardCard
+      title={title}
+      headerRight={action}
+      headerChildren={<CardTabs active="level" onSelect={() => {}} tabs={[{ value: 'level', label: localize('com_dash_obs_by_level') }]} />}
+    >
       <TotalMetric metric={num(data.summary?.observations)} description={localize('com_dash_total_observations')} />
-      <LineTimeChart points={data.points.map((p) => ({ label: p.label, value: p.observations }))} valueName="Observations" colorIndex={1} />
+      {seriesKeys.length > 0 ? (
+        <MultiLineChart data={chartData} seriesKeys={seriesKeys} formatValue={(n) => n.toLocaleString()} />
+      ) : (
+        <LineTimeChart points={data.points.map((p) => ({ label: p.label, value: p.observations }))} valueName="Observations" colorIndex={1} />
+      )}
     </DashboardCard>
   );
 }

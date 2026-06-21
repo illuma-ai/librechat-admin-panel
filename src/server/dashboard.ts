@@ -339,6 +339,41 @@ export const dashboardUsageBreakdownQueryOptions = (tenantId: string, range: t.T
     enabled: tenantId.length > 0,
   });
 
+// ── Observations-by-level over time (reference "Observations by Level") ──
+
+export const getDashboardObservationsByLevelFn = createServerFn({ method: 'GET' })
+  .inputValidator(dashboardSchema)
+  .handler(async ({ data }): Promise<t.LevelSeriesRow[]> => {
+    const params: Record<string, unknown> = { t: data.tenantId };
+    const env = envClause(data.environment, params);
+    // Empty level is the OTLP default → normalize to DEFAULT (reference parity).
+    const rows = await chQuery<Record<string, unknown>>(
+      `SELECT toString(${bucketExpr(data.range, 'start_time')}) AS bucket,
+              if(level = '', 'DEFAULT', level) AS level, count() AS count
+       FROM observations FINAL
+       WHERE tenant_id = {t:String} AND is_deleted = 0 ${env} ${rangeClause(data.range, 'start_time')}
+       GROUP BY bucket, level ORDER BY bucket ASC`,
+      params,
+    );
+    return rows.map((r) => ({
+      bucket: String(r.bucket ?? ''),
+      level: String(r.level ?? 'DEFAULT'),
+      count: toNumber(r.count),
+    }));
+  });
+
+export const dashboardObservationsByLevelQueryOptions = (
+  tenantId: string,
+  range: t.TraceRange,
+  environment: string[] = [],
+) =>
+  queryOptions({
+    queryKey: ['dashboard', 'obsByLevel', tenantId, range, environment],
+    queryFn: () => getDashboardObservationsByLevelFn({ data: { tenantId, range, environment } }),
+    ...LIST_QUERY_REFETCH,
+    enabled: tenantId.length > 0,
+  });
+
 // ── Latency-percentile tables (by trace / generation / observation name) ──
 
 export const getDashboardLatencyTablesFn = createServerFn({ method: 'GET' })

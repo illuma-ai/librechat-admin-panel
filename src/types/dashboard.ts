@@ -89,6 +89,13 @@ export interface NameCountRow {
 }
 
 /** One (bucket, series-key) usage point for the Model Usage multi-line chart. */
+/** One (bucket, level) observation count for the Observations-by-Level chart. */
+export interface LevelSeriesRow {
+  bucket: string;
+  level: string;
+  count: number;
+}
+
 export interface UsageSeriesRow {
   bucket: string;
   key: string;

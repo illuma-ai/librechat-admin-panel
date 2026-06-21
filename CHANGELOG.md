@@ -34,6 +34,12 @@ change that alters behaviour.
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
 ### Added
+- **Observations-by-Level chart** (spec `005`, T3) — the Observations-by-time card now
+  splits observations into per-level series (DEFAULT / DEBUG / ERROR) over time with
+  clickable legend pills, matching Langfuse's "Observations by Level". New backend
+  `getDashboardObservationsByLevelFn` (per-bucket, per-level counts; empty level
+  normalized to DEFAULT) — uses the observation `level` we already capture. Falls back
+  to the single-line total when no level data is present.
 - **Clickable chart legend pills** (spec `005`, T2) — legend items on the multi-line
   charts (Model Usage, latency percentiles) now toggle their series on click (hidden
   series dim to 40%), matching Langfuse's "Show only X" legend behaviour. Shared
