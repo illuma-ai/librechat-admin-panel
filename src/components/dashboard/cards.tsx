@@ -26,14 +26,14 @@ export function DashboardCard({
   return (
     <div
       className={cn(
-        'flex h-full flex-col rounded-xl border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) shadow-sm',
+        'flex h-full flex-col rounded-lg border border-(--ui-color-stroke-default) bg-(--ui-color-background-default) shadow-xs',
         className,
       )}
     >
-      <div className="flex flex-col gap-3 px-6 pt-6 pb-2">
+      <div className="flex flex-col space-y-1 p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-col gap-1.5">
-            <h3 className="text-2xl font-semibold tracking-tight text-(--ui-color-text-default)">
+          <div className="flex flex-col space-y-1">
+            <h3 className="text-2xl leading-none font-semibold tracking-tight text-(--ui-color-text-default)">
               {title}
             </h3>
             {description ? (
@@ -44,7 +44,7 @@ export function DashboardCard({
         </div>
         {headerChildren}
       </div>
-      <div className="flex flex-1 flex-col gap-5 px-6 pt-1 pb-6">{children}</div>
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
     </div>
   );
 }
