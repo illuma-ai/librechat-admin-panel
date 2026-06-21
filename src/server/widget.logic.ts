@@ -59,13 +59,31 @@ export const DIMENSION_COL: Record<t.WidgetDimension, string | null> = {
   environment: 'environment',
 };
 
-export const CHART_TYPES: { value: t.WidgetChartType; label: string }[] = [
-  { value: 'line', label: 'Line chart' },
-  { value: 'bar', label: 'Bar chart' },
-  { value: 'hbar', label: 'Horizontal bar' },
-  { value: 'table', label: 'Table' },
-  { value: 'number', label: 'Big number' },
+/**
+ * Chart types + their capability flags (mirrors the reference `chartTypes` registry).
+ * `supportsBreakdown` drives the conditional Breakdown-Dimension dropdown; `timeSeries`
+ * marks the time-bucketed charts (no row limit, breakdown becomes a series split).
+ * Big Number aggregates to a single value — no breakdown.
+ */
+export const CHART_TYPES: {
+  value: t.WidgetChartType;
+  label: string;
+  supportsBreakdown: boolean;
+  timeSeries: boolean;
+}[] = [
+  { value: 'line', label: 'Line chart', supportsBreakdown: true, timeSeries: true },
+  { value: 'bar', label: 'Bar chart', supportsBreakdown: true, timeSeries: true },
+  { value: 'hbar', label: 'Horizontal bar', supportsBreakdown: true, timeSeries: false },
+  { value: 'table', label: 'Table', supportsBreakdown: true, timeSeries: false },
+  { value: 'number', label: 'Big number', supportsBreakdown: false, timeSeries: false },
 ];
+
+export const CHART_TYPE_META = new Map(CHART_TYPES.map((c) => [c.value, c]));
+
+/** Whether a chart type shows the Breakdown-Dimension dropdown (reference parity). */
+export function chartSupportsBreakdown(chartType: t.WidgetChartType): boolean {
+  return CHART_TYPE_META.get(chartType)?.supportsBreakdown ?? false;
+}
 
 /** Wrap a measure expression in its aggregation (trusted exprs only). */
 export function aggregationSql(agg: t.WidgetAggregation, expr: string | null): string {
@@ -104,7 +122,12 @@ export function normalizeWidget(q: {
   const measure = view.measures.includes(q.measure) ? q.measure : view.measures[0];
   const aggs = MEASURE_META[measure].aggs;
   const aggregation = aggs.includes(q.aggregation) ? q.aggregation : aggs[0];
-  const dimension = view.dimensions.includes(q.dimension) ? q.dimension : 'none';
+  // Breakdown only applies to chart types that support it (reference parity): a Big
+  // Number aggregates to a single value, so it never carries a dimension.
+  const dimension =
+    chartSupportsBreakdown(q.chartType) && view.dimensions.includes(q.dimension)
+      ? q.dimension
+      : 'none';
   return { measure, aggregation, dimension };
 }
 

@@ -26,6 +26,17 @@ change that alters behaviour.
   (no hardcoded colours); verified light + dark; `verify:metrics` 12/12 unchanged.
 
 ### Added
+- **Auto-adjusting custom dashboard grid + Langfuse-parity widget editing**
+  (spec `003`, tasks T3–T5) — custom dashboards now use **react-grid-layout**
+  (`WidthProvider(Responsive)`, 12 cols, 16:9 row height, `.drag-handle`, vertical
+  compaction): widgets **drag, resize, and auto-reflow**, with placements persisted
+  per dashboard (`SavedDashboard.layout`, back-compat from `widgetIds` via the pure
+  `deriveLayout` helper; new widgets land at the bottom 6×6). Below 1024px it falls
+  back to a stacked column. Every card carries a consistent hover control row
+  (drag-grip / edit / remove). The widget builder's dropdowns are now **conditional**
+  to match the reference `WidgetForm`: Aggregation is hidden when the measure is
+  `count`; the Breakdown-Dimension dropdown shows only for chart types that support a
+  breakdown (hidden for Big Number). New deps: `react-grid-layout` + types.
 - **Modern app-shell** (spec `001-modern-ui-charts`) — sidebar rail now uses a
   vertical surface gradient (`--ui-color-background-panel`→`--ui-color-background-default`)
   and the active nav item is accent-coloured (`--ui-color-accent` text +

@@ -52,6 +52,16 @@ describe('normalizeWidget', () => {
     });
     expect(n).toEqual({ measure: 'latency', aggregation: 'p95', dimension: 'model' });
   });
+  it('drops the breakdown dimension for chart types that do not support it', () => {
+    const n = normalizeWidget({
+      view: 'observations',
+      measure: 'latency',
+      aggregation: 'p95',
+      dimension: 'model',
+      chartType: 'number',
+    });
+    expect(n.dimension).toBe('none');
+  });
 });
 
 describe('buildWidgetSql', () => {

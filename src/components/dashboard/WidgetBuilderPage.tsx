@@ -6,7 +6,7 @@ import { Select, Button } from '@admin/ui';
 import type * as t from '@/types';
 import { useLocalize } from '@/hooks';
 import { widgetDataQueryOptions } from '@/server';
-import { VIEW_META, MEASURE_META, CHART_TYPES, normalizeWidget } from '@/server/widget.logic';
+import { VIEW_META, MEASURE_META, CHART_TYPES, normalizeWidget, chartSupportsBreakdown } from '@/server/widget.logic';
 import { formatCost, formatTokens, useTracingTenant } from '@/components/traces';
 import { DashboardCard } from './cards';
 import { WidgetChart } from './charts/WidgetChart';
@@ -142,22 +142,26 @@ export function WidgetBuilderPage({ widgetId, tenant, range, onTenant, onRange }
                 options={VIEW_META[view].measures.map((m) => ({ value: m, label: MEASURE_META[m].label }))}
               />,
             )}
-            {field(
-              localize('com_widget_aggregation'),
-              <Select
-                value={norm.aggregation}
-                onSelect={(v) => setAggregation(v as t.WidgetAggregation)}
-                options={MEASURE_META[norm.measure].aggs.map((a) => ({ value: a, label: AGG_LABELS[a] }))}
-              />,
-            )}
-            {field(
-              localize('com_widget_dimension'),
-              <Select
-                value={norm.dimension}
-                onSelect={(v) => setDimension(v as t.WidgetDimension)}
-                options={VIEW_META[view].dimensions.map((d) => ({ value: d, label: DIM_LABELS[d] }))}
-              />,
-            )}
+            {/* Aggregation only when the measure has a real choice (count is fixed). */}
+            {norm.measure !== 'count' &&
+              field(
+                localize('com_widget_aggregation'),
+                <Select
+                  value={norm.aggregation}
+                  onSelect={(v) => setAggregation(v as t.WidgetAggregation)}
+                  options={MEASURE_META[norm.measure].aggs.map((a) => ({ value: a, label: AGG_LABELS[a] }))}
+                />,
+              )}
+            {/* Breakdown only for chart types that support it (hidden for Big Number). */}
+            {chartSupportsBreakdown(chartType) &&
+              field(
+                localize('com_widget_dimension'),
+                <Select
+                  value={norm.dimension}
+                  onSelect={(v) => setDimension(v as t.WidgetDimension)}
+                  options={VIEW_META[view].dimensions.map((d) => ({ value: d, label: DIM_LABELS[d] }))}
+                />,
+              )}
             {field(
               localize('com_widget_chart_type'),
               <Select

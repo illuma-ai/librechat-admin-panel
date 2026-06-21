@@ -123,12 +123,27 @@ export interface DashboardBreakdowns {
  * A user-saved custom dashboard — a named, ordered selection of catalog widgets.
  * Persisted client-side (localStorage), mirroring the Saved Views pattern.
  */
+/**
+ * Grid placement for one widget on a custom dashboard (react-grid-layout coords).
+ * Mirrors the reference `WidgetPlacement`: `x_size`/`y_size` map to RGL `w`/`h`.
+ * `widgetId` is the catalog/custom widget id (also the RGL item key).
+ */
+export interface WidgetPlacement {
+  widgetId: string;
+  x: number;
+  y: number;
+  x_size: number;
+  y_size: number;
+}
+
 export interface SavedDashboard {
   id: string;
   name: string;
   description: string;
   /** Catalog widget ids, in display order. */
   widgetIds: string[];
+  /** Per-widget grid placement (drag/resize). Absent for legacy dashboards. */
+  layout?: WidgetPlacement[];
   createdAt: number;
   updatedAt: number;
 }

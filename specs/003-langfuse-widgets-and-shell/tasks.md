@@ -12,20 +12,22 @@
       gradient). Verified on screen.
 
 ## Dashboard / widgets (Langfuse parity)
-- [ ] T3 — Grid auto-adjust: add `react-grid-layout` (+ its 2 CSS files); replace the
-      static CSS grid in `DashboardViewPage` with `WidthProvider(Responsive)` (12 cols,
-      16:9 rowHeight, margin [16,16], minW/H 2, `.drag-handle`, vertical compaction,
-      write-back placement on drag/resize; <1024px flex stack). Extend dashboard model
-      with `layout` placements (back-compat from `widgetIds`, new widget at maxY 6×6).
-      Verify: drag, resize, add, remove all reflow + persist.
-- [ ] T4 — Per-card controls: every custom-dashboard card shows the hover icon-row
-      (drag-grip `.drag-handle` + edit + remove). Fix any card missing controls.
-      Verify card-by-card on screen.
-- [ ] T5 — Builder conditional dropdowns (match Langfuse `WidgetForm`): Aggregation
+- [x] T3 — Grid auto-adjust: added `react-grid-layout` (+ its 2 CSS files);
+      `DashboardViewPage` now uses `WidthProvider(Responsive)` (12 cols, 16:9 rowHeight,
+      margin [16,16], minW/H 2, `.drag-handle`, vertical compaction, write-back
+      placement on drag/resize; <1024px flex stack). Dashboard model gained `layout`
+      placements (back-compat from `widgetIds` via pure `deriveLayout`, new widget at
+      maxY 6×6). Verified on screen: resize 6×6→8×9 reflowed the board + persisted all
+      9 placements to localStorage. Pure helpers unit-tested (`layout.test.ts`, 4).
+- [x] T4 — Per-card controls: every custom-dashboard card shows the hover icon-row
+      (drag-grip `.drag-handle` + edit + remove). Verified card-by-card (all 9 carry
+      grip/pencil/X).
+- [x] T5 — Builder conditional dropdowns (match Langfuse `WidgetForm`): Aggregation
       hidden when `measure==='count'`; Breakdown Dimension only when chart type
-      `supportsBreakdown`; Row Limit only for non-time-series breakdown; (Bins/Pivot
-      deferred unless added). Verify each chart type shows the right dropdowns.
+      `supportsBreakdown` (`CHART_TYPES.supportsBreakdown` + `chartSupportsBreakdown`,
+      `normalizeWidget` drops dimension otherwise). Verified on screen: count→no
+      aggregation; Cost→aggregation appears; Big number→breakdown vanishes. +1 test.
 
 ## Gate
-- [ ] T6 — lint + build + test + `verify:metrics` 12/12; CHANGELOG; commit + push
-      to `illuma`. Playwright light+dark, 0 console errors.
+- [x] T6 — lint clean + build ok + 770 tests + `verify:metrics` 12/12; CHANGELOG;
+      commit + push to `illuma`. Playwright verified, 0 console errors.

@@ -1117,6 +1117,7 @@
   "com_dash_add_widget": "Add widget",
   "com_dash_no_widgets": "No widgets yet — add one from the picker above.",
   "com_dash_remove_widget": "Remove widget",
+  "com_dash_move_widget": "Drag to move widget",
   "com_dash_config_desc": "View and manage instance configuration settings.",
   "com_dash_access_desc": "Create and manage groups, assign roles, and fine-tune member permissions across your organization.",
   "com_dash_grants_desc": "Control which capabilities each role has access to, from reading configs to managing users.",
