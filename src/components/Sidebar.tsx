@@ -83,7 +83,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
       <aside
         aria-label={localize('com_a11y_admin_panel')}
         className={cn(
-          'sticky top-0 z-(--z-floating) flex h-screen shrink-0 flex-col overflow-hidden border-r border-(--ui-color-stroke-default) bg-(--ui-color-background-panel) transition-[width] duration-200',
+          'sticky top-0 z-(--z-floating) flex h-screen shrink-0 flex-col overflow-hidden border-r border-(--ui-color-stroke-default) bg-linear-to-b from-(--ui-color-background-panel) to-(--ui-color-background-default) transition-[width] duration-200',
           collapsed ? 'w-14' : 'w-63',
         )}
       >
@@ -112,7 +112,7 @@ export function Sidebar({ user, collapsed, onToggle }: t.SidebarProps) {
                 className={cn(
                   'flex h-8 items-center gap-2.5 overflow-hidden rounded-md px-2.5 text-sm whitespace-nowrap no-underline transition-colors duration-100',
                   isActive(item.path)
-                    ? 'bg-(--ui-color-background-active) font-medium text-(--ui-color-text-default)'
+                    ? 'bg-(--ui-color-background-active) font-medium text-(--ui-color-accent) shadow-sm'
                     : 'font-normal text-(--ui-color-text-muted) hover:bg-(--ui-color-background-hover) hover:text-(--ui-color-text-default)',
                 )}
               >

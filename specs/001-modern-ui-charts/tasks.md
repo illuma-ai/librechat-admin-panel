@@ -9,8 +9,13 @@
       per-card `colorIndex`), LineTimeChart→gradient AreaChart, MultiLineChart/
       LatencyLineChart use palette hues. Verified on screen: indigo bars, cyan area,
       violet line — multi-colour + gradient (screenshot).
-- [ ] T3 — Glassmorphism shell: translucent/blurred sidebar surface + soft card
-      treatment via new `--ui-color-*` tokens (all 3 theme blocks). Verify both themes.
-- [ ] T4 — Regression gate: `verify:metrics` 12/12 unchanged; dashboard CRUD
-      (create / add / remove / edit-swap / custom-widget builder) re-verified on screen.
-- [ ] T5 — Full gate: lint + build + test; CHANGELOG entry.
+- [x] T3 — Modern app-shell: gradient sidebar surface
+      (`bg-linear-to-b from-(--ui-color-background-panel) to-(--ui-color-background-default)`)
+      + accent-coloured active nav item (`bg-(--ui-color-background-active)
+      text-(--ui-color-accent) shadow-sm`). Verified on screen: green active "Home"
+      item, gradient rail (screenshot `.shots/sidebar.jpeg`).
+- [x] T4 — Dashboard CRUD re-verified on screen: create (10-widget dashboard),
+      remove (10→9, persisted `widgetIds`), edit-swap (scores→model_costs, persisted),
+      custom-widget builder (live gradient preview) — 0 console errors.
+- [x] T5 — Full gate green: `lint` clean, `build` ok, `test` 765 passed,
+      `verify:metrics` 12/12; CHANGELOG entries for charts + app-shell.

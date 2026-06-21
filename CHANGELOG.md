@@ -8,6 +8,11 @@ change that alters behaviour.
 ## [Unreleased]
 
 ### Added
+- **Modern app-shell** (spec `001-modern-ui-charts`) — sidebar rail now uses a
+  vertical surface gradient (`--ui-color-background-panel`→`--ui-color-background-default`)
+  and the active nav item is accent-coloured (`--ui-color-accent` text +
+  `--ui-color-background-active` + soft shadow), matching the neumorphism-inspired
+  look. Token-driven (no hardcoded colours).
 - **Colourful gradient dashboard charts** (spec `001-modern-ui-charts`) — replaced the
   all-green chart look with a single-source 6-hue `CHART_PALETTE` + reusable SVG
   gradient defs: bars use vertical gradient fills (per-card `colorIndex`), the
