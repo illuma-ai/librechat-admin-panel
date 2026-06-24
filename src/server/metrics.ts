@@ -9,6 +9,7 @@ const KNOWN_APP_ROUTES = new Map<string, string>([
   ['/access', '/access'],
   ['/configuration', '/configuration'],
   ['/grants', '/grants'],
+  ['/channels', '/channels'],
   ['/help', '/help'],
   ['/users', '/users'],
   ['/auth/openid/callback', '/auth/openid/callback'],

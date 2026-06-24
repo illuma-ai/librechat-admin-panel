@@ -1,5 +1,6 @@
 export type * from './access';
 export type * from './auth';
+export type * from './channels';
 export type * from './config';
 export type * from './config-ui';
 export type * from './fields';
