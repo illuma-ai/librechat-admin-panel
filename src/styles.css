@@ -872,3 +872,13 @@ body > div:has(+ .modal-frost) {
   background-color: var(--cui-color-feedback-danger-bg);
   color: var(--cui-color-feedback-danger-fg);
 }
+
+.badge-warning {
+  background-color: var(--cui-color-feedback-warning-bg);
+  color: var(--cui-color-feedback-warning-fg);
+}
+
+.badge-neutral {
+  background-color: var(--cui-color-background-secondary);
+  color: var(--cui-color-text-muted);
+}

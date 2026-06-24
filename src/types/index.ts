@@ -1,6 +1,7 @@
 export type * from './access';
 export type * from './auth';
 export type * from './config';
+export type * from './connector';
 export type * from './config-ui';
 export type * from './fields';
 export type * from './grant';
